@@ -1,0 +1,36 @@
+{
+  "name": "portfolio_site",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "rm -rf .next && next build",
+    "start": "next start -p 3001",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "lucide-react": "^1.17.0",
+    "next": "^14.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.8.0",
+    "@tailwindcss/postcss": "^4.3.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.5.0",
+    "eslint": "^9.8.0",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.9",
+    "globals": "^15.9.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.0.0"
+  },
+  "overrides": {
+    "eslint": "$eslint"
+  }
+}

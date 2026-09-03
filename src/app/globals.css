@@ -1,0 +1,117 @@
+@import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+/* ─────────────────────────────────────
+   デザイントークン（ダークモード基調のカスタムカラー）
+   ───────────────────────────────────── */
+@theme {
+  --color-night: #070b14;        /* ページ背景 */
+  --color-night-soft: #0c1322;   /* カード背景 */
+  --color-night-border: #1e2a3f; /* ボーダー */
+}
+
+/* アンカーリンクのスムーズスクロール */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ─────────────────────────────────────
+   スクロール連動フェードイン（Reveal コンポーネント用）
+   ───────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────
+   Hero セクションの登場アニメーション
+   ───────────────────────────────────── */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-enter {
+  opacity: 0;
+  animation: heroFadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ─────────────────────────────────────
+   背景装飾（浮遊する光のオーブ・グリッドパターン）
+   ───────────────────────────────────── */
+@keyframes floatSlow {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(20px, -28px);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 10s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: floatSlow 14s ease-in-out infinite reverse;
+}
+
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, rgb(148 163 184 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(148 163 184 / 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ─────────────────────────────────────
+   Contribution Graph（草）の色階調
+   レベル 0（活動なし）〜 4（最多）
+   ───────────────────────────────────── */
+.contrib-0 { background-color: #e2e8f0; }
+.contrib-1 { background-color: #bae6fd; }
+.contrib-2 { background-color: #7dd3fc; }
+.contrib-3 { background-color: #38bdf8; }
+.contrib-4 { background-color: #0284c7; }
+
+.dark .contrib-0 { background-color: #172033; }
+.dark .contrib-1 { background-color: #0c4a6e; }
+.dark .contrib-2 { background-color: #0369a1; }
+.dark .contrib-3 { background-color: #0ea5e9; }
+.dark .contrib-4 { background-color: #7dd3fc; }
+
+/* ─────────────────────────────────────
+   アクセシビリティ：視差効果を減らす設定の尊重
+   ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal,
+  .hero-enter {
+    animation: none;
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .animate-float-slow,
+  .animate-float-slower {
+    animation: none;
+  }
+}
