@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { fetchWithTimeout } from '../../../lib/fetchWithTimeout';
 import {
   staticRepos,
   type GitHubRepo,
@@ -34,7 +35,10 @@ function buildHeaders(): Record<string, string> {
 function fallbackResponse(apiStatus: ApiStatus) {
   return NextResponse.json(
     { repos: staticRepos, apiStatus },
-    { status: HTTP_STATUS_OK, headers: { 'x-api-status': apiStatus } },
+    {
+      status: HTTP_STATUS_OK,
+      headers: { 'x-api-status': apiStatus, 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+    },
   );
 }
 
@@ -57,7 +61,7 @@ export async function GET() {
     const allRawRepos: RawRepo[] = [];
     for (let page = 1; page <= MAX_PAGES; page += 1) {
       const url = `https://api.github.com/users/${siteConfig.githubUsername}/repos?sort=updated&per_page=${REPOS_PER_PAGE}&page=${page}`;
-      const response = await fetch(url, {
+      const response = await fetchWithTimeout(url, {
         headers: buildHeaders(),
         next: { revalidate: REVALIDATE_SECONDS },
       });
@@ -101,7 +105,10 @@ export async function GET() {
 
     return NextResponse.json(
       { repos, apiStatus: 'success' },
-      { status: HTTP_STATUS_OK, headers: { 'x-api-status': 'success' } },
+      {
+        status: HTTP_STATUS_OK,
+        headers: { 'x-api-status': 'success', 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+      },
     );
   } catch {
     // ネットワーク不通（オフライン環境）の場合

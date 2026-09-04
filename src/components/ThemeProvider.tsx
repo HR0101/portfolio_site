@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 "use client";
 
 import React, { createContext, useEffect, useState } from 'react';
@@ -13,19 +12,19 @@ export interface ThemeContextType {
 export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // ダークモードを基調とするため，デフォルトは dark
-  const [theme, setTheme] = useState<Theme>('dark');
+  // 白を基調とするため，デフォルトは light
+  const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
-    // 明示的に light が保存されている場合のみライトモードで初期化する
-    let initialTheme: Theme = 'dark';
+    // 明示的に dark が保存されている場合のみダークモードで初期化する
+    let initialTheme: Theme = 'light';
     try {
       const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'light') {
-        initialTheme = 'light';
+      if (savedTheme === 'dark') {
+        initialTheme = 'dark';
       }
     } catch {
-      // localStorage が使えない環境ではデフォルト（ダーク）のまま
+      // localStorage が使えない環境ではデフォルト（ライト）のまま
     }
     setTheme(initialTheme);
   }, []);

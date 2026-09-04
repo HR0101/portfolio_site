@@ -1,7 +1,9 @@
 # Portfolio Site
 
 Swift / SwiftUI で個人開発した iPhone・Mac アプリを紹介する，個人ポートフォリオサイトです．
-Next.js 14（App Router）+ TypeScript + Tailwind CSS v4 で構築し，GitHub（[HR0101](https://github.com/HR0101)）の活動を動的に取得して表示します．
+Next.js 16（App Router）+ TypeScript + Tailwind CSS v4 で構築し，GitHub（[HR0101](https://github.com/HR0101)）の活動を動的に取得して表示します．
+
+Node.js 20.19以降（または22.13以降）を使用してください．
 
 ## セクション構成
 
@@ -18,18 +20,39 @@ Next.js 14（App Router）+ TypeScript + Tailwind CSS v4 で構築し，GitHub�
 
 ```bash
 npm install
-npm run dev      # 開発サーバー（http://localhost:3001）
-npm run build    # .next を削除してから本番ビルド
-npm start        # 本番サーバー
+npm run dev        # 開発サーバー（http://localhost:3001）
+npm run build      # .next を削除してから本番ビルド
+npm start          # 本番サーバー
+npm run lint       # ESLint
+npm run typecheck  # 型チェック
+npm test           # E2E スモークテスト（先に npm run build が必要）
+npm run check      # typecheck → lint → build → E2E
 ```
 
 > **注意**: 開発サーバーの起動中に `npm run build` を実行すると `.next` が削除され，
 > 開発サーバー側が `Cannot find module './xxx.js'` で 500 を返すようになります．その場合は開発サーバーを再起動してください．
 
+## 品質チェックと CI
+
+`.github/workflows/ci.yml` が push / Pull Request で `typecheck → lint → build → test` を実行します．
+ローカルでも `npm run check` で同じ検証を一括実行できます．
+
+## テスト
+
+`tests/e2e.test.mjs` が本番ビルドを実際に起動して 25 項目を検証します（セクション構成・アプリ掲載・公式アプリアイコン・GitHub リンク・問い合わせ導線・タブの ARIA・メタデータ・構造化データ・robots / sitemap / OGP 画像・API ルート・404・セキュリティヘッダー）．
+
+```bash
+npm run build && npm test
+```
+
 ## 環境変数
 
-`.env.local` に `GITHUB_TOKEN` を設定すると，Contribution Graph を GraphQL から取得して自前描画し，
-GitHub API のレート制限も緩和されます（`.env.local.example` を参照）．未設定でも全機能が動作します．
+| 変数 | 用途 |
+| --- | --- |
+| `GITHUB_TOKEN` | Contribution Graph の自前描画（GraphQL）と API レート制限の緩和 |
+| `NEXT_PUBLIC_SITE_URL` | 公開 URL．OGP 画像・sitemap・canonical の絶対 URL に使う |
+
+どちらも未設定でローカル動作します（`.env.local.example` を参照）．公開時は canonical・OGP・sitemap を正しい URL にするため，`NEXT_PUBLIC_SITE_URL` を必ず設定してください．Vercel では同変数が未設定でも，環境が提供する本番 URL を自動利用します．
 
 - API Route は必ず HTTP 200 を返し，実際の状態は JSON 内の `apiStatus`（`success` / `offline` / `rate_limited` / `no_token`）で伝えます．
 - クライアントは localStorage に1時間キャッシュし，「キャッシュ → API → 静的フォールバック」の順に表示を組み立てます．
@@ -47,6 +70,7 @@ Apps セクションの内容は **`src/data/apps.ts`** に集約しています
   tags: ['SwiftUI', 'SwiftData'],
   year: '2026',
   icon: Sparkles,             // lucide-react のアイコン
+  imageSrc: '/projects/app.webp', // 任意：公式アプリアイコン
   gradient: 'from-sky-500 to-blue-600',
   featured: true,             // true なら大きなカードで表示
   repositories: [{ name: 'GitHub のリポジトリ名' }],
@@ -61,9 +85,17 @@ Apps セクションの内容は **`src/data/apps.ts`** に集約しています
 `src/config/site.ts` に GitHub ユーザー名・表示名・肩書き・問い合わせ先メールアドレスをまとめています．
 Contact セクションのフォームとフッターのメールリンクは，ここに設定したアドレス宛にメーラーを起動します．
 
+## SEO・アクセシビリティ
+
+- OGP 画像（`src/app/opengraph-image.tsx`）は `next/og` でビルド時に生成します．日本語フォントを埋め込んでいないため，**画像内の文字は欧文のみ**にしてください．
+- 構造化データ（JSON-LD）はアプリカタログから自動生成されるため，`SWIFT_APPS` にアプリを追加すれば検索エンジン向けの一覧にも反映されます．
+- 「本文へスキップ」リンク，`:focus-visible` のフォーカスリング，WAI-ARIA タブパターン（←→ / Home / End キー対応）に対応しています．
+
 ## その他
 
-- テーマはダークモードが既定で，localStorage に `light` が保存されている場合のみライト表示になります．
-- アニメーションは外部ライブラリを使わず，IntersectionObserver（`useInView`）+ CSS トランジションで実装しています．
-- `src/legacy/`，ルートの `index.html`，`dist/` は Vite 時代の残骸です（`tsconfig.json` で除外済み）．
-- `tests/` の自作 E2E スイートは旧構成（Timeline / Blog）向けで，現在の構成には追随していません．
+- テーマは**白基調のライトモードが既定**で，localStorage に `dark` が保存されている場合のみダーク表示になります．配色は `globals.css` の `@theme`（`cream` / `mist` / `soft` / `ink`）に集約しています．フォントは外部取得に依存しない OS 標準 UI フォントです．
+- アニメーションは外部ライブラリを使わず，CSS キーフレーム + 自作の TypeScript フック（`useInView` / `useScrollLinked` / `useTilt` / `useScrollProgress` / `useCountUp` / `useActiveSection`）で実装しています．
+- スクロール連動の演出（Hero の退場，背景の視差，横に流れる帯，年表の線，Contribution Graph の出現）は `src/lib/scrollObserver.ts` に監視を集約し，リスナーはページ全体で1本だけです．
+- Apps セクションの年表の内容は `src/data/timeline.ts` を編集してください．
+- `prefers-reduced-motion: reduce` を設定している環境では，CSS・JS 双方のアニメーションが自動的に停止します．
+- `tests/e2e.test.mjs` は現在の App Router 構成を対象とし，本番ビルドを起動して主要導線を検証します．

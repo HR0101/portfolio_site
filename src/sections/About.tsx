@@ -1,35 +1,54 @@
 import { Cpu, GraduationCap, HeartHandshake, Smartphone } from 'lucide-react';
-import { Reveal } from '../components/Reveal';
+import { Reveal, type RevealVariant } from '../components/Reveal';
 import { SectionHeading } from '../components/SectionHeading';
+import { TiltCard } from '../components/TiltCard';
 
 // カードの段階表示に使う遅延間隔（ミリ秒）
 const STAGGER_DELAY_MS = 100;
 
 // About カードの定義
-const ABOUT_CARDS = [
+interface AboutCard {
+  icon: typeof GraduationCap;
+  title: string;
+  description: string;
+  // アイコンチップのグラデーション
+  gradient: string;
+  // 登場アニメーションの向き（左右交互に配置する）
+  variant: RevealVariant;
+}
+
+const ABOUT_CARDS: AboutCard[] = [
   {
     icon: GraduationCap,
     title: '情報系の学生',
     description:
       '大学で情報工学を学びながら，授業の枠を超えて日々新しい技術を吸収しています．',
+    gradient: 'from-sky-300 to-blue-400',
+    variant: 'left',
   },
   {
     icon: Smartphone,
     title: 'iOS / macOSアプリ開発',
     description:
-      'Swift / SwiftUI で iPhone・Mac 両方のアプリを個人開発し，GitHub にすべて公開しています．',
+      '2025年6月から，Swift / SwiftUI で iPhone・Mac 両方のアプリを17本つくり，すべてソースコードごと公開しています．',
+    gradient: 'from-violet-300 to-indigo-400',
+    variant: 'right',
   },
   {
     icon: Cpu,
     title: '組込み・電子工作',
     description:
       'C / Arduino を使ったハードウェア寄りの開発も好きで，ソフトとハードの両面から物事を考えます．',
+    gradient: 'from-emerald-300 to-teal-400',
+    variant: 'left',
   },
   {
     icon: HeartHandshake,
     title: '「Trust」を軸に',
     description:
       '「信頼されるソフトウェア」を目標に，使う人の体験を最優先した設計と丁寧な実装を心がけています．',
+    gradient: 'from-amber-300 to-rose-300',
+    variant: 'right',
   },
 ];
 
@@ -47,16 +66,25 @@ export function About() {
           {ABOUT_CARDS.map((card, index) => {
             const Icon = card.icon;
             return (
-              <Reveal key={card.title} delayMs={index * STAGGER_DELAY_MS}>
-                <div className="h-full p-6 rounded-2xl bg-white dark:bg-night-soft border border-slate-200 dark:border-night-border hover:border-sky-400/50 dark:hover:border-sky-500/50 transition-colors duration-300">
-                  <div className="w-12 h-12 rounded-xl bg-sky-500/10 dark:bg-sky-500/15 flex items-center justify-center mb-4">
-                    <Icon className="w-6 h-6 text-sky-500 dark:text-sky-400" />
+              <Reveal
+                key={card.title}
+                delayMs={index * STAGGER_DELAY_MS}
+                variant={card.variant}
+                className="h-full"
+              >
+                <TiltCard className="h-full">
+                  <div className="group h-full p-6 rounded-3xl bg-white dark:bg-night-soft border border-soft dark:border-night-border hover:border-sky-400/50 dark:hover:border-sky-500/50 hover:shadow-soft transition-all duration-300">
+                    <div
+                      className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-4 shadow-soft`}
+                    >
+                      <Icon className="animate-wiggle w-6 h-6 text-ink" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">{card.title}</h3>
+                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                      {card.description}
+                    </p>
                   </div>
-                  <h3 className="text-lg font-bold mb-2">{card.title}</h3>
-                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    {card.description}
-                  </p>
-                </div>
+                </TiltCard>
               </Reveal>
             );
           })}

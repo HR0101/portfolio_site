@@ -1,0 +1,24 @@
+name: CI
+
+# main への push と Pull Request で，型・lint・ビルド・E2E テストを通す
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+
+      - name: 依存関係のインストール
+        run: npm ci
+
+      - name: 品質チェック
+        run: npm run check

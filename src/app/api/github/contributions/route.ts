@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { fetchWithTimeout } from '../../../../lib/fetchWithTimeout';
 import type { ContributionDay } from '../../../../services/githubService';
 import { siteConfig } from '../../../../config/site';
 
@@ -38,7 +39,13 @@ export async function GET() {
   if (!githubToken) {
     return NextResponse.json(
       { calendar: null, apiStatus: 'no_token' },
-      { status: HTTP_STATUS_OK, headers: { 'x-api-status': 'no_token' } },
+      {
+        status: HTTP_STATUS_OK,
+        headers: {
+          'x-api-status': 'no_token',
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      },
     );
   }
 
@@ -61,7 +68,7 @@ export async function GET() {
       }
     `;
 
-    const response = await fetch(GITHUB_GRAPHQL_ENDPOINT, {
+    const response = await fetchWithTimeout(GITHUB_GRAPHQL_ENDPOINT, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${githubToken}`,
@@ -103,7 +110,10 @@ export async function GET() {
         },
         apiStatus: 'success',
       },
-      { status: HTTP_STATUS_OK, headers: { 'x-api-status': 'success' } },
+      {
+        status: HTTP_STATUS_OK,
+        headers: { 'x-api-status': 'success', 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+      },
     );
   } catch {
     // 失敗時もクライアント側の画像フォールバックに委ねる

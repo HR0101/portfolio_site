@@ -8,16 +8,17 @@ export function ThemeToggle() {
 
   return (
     <button
+      type="button"
       onClick={toggleTheme}
       id="theme-toggle"
       data-testid="theme-toggle"
       aria-label={theme === 'light' ? 'ダークモードに切り替える' : 'ライトモードに切り替える'}
-      className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+      className="group inline-flex h-11 w-11 items-center justify-center rounded-full hover:bg-mist dark:hover:bg-night-soft transition-colors"
     >
       {theme === 'light' ? (
-        <Moon className="w-5 h-5 text-gray-800" />
+        <Moon className="w-5 h-5 text-slate-800 group-hover:rotate-[360deg] group-hover:scale-110 transition-transform duration-500" />
       ) : (
-        <Sun className="w-5 h-5 text-yellow-400" />
+        <Sun className="w-5 h-5 text-yellow-400 group-hover:rotate-[360deg] group-hover:scale-110 transition-transform duration-500" />
       )}
     </button>
   );

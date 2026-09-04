@@ -3,15 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "rm -rf .next && next build",
     "start": "next start -p 3001",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/e2e.test.mjs",
+    "check": "npm run typecheck && npm run lint && npm run build && npm test"
   },
   "dependencies": {
     "lucide-react": "^1.17.0",
-    "next": "^14.2.0",
+    "next": "16.3.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -25,7 +31,7 @@
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
     "globals": "^15.9.0",
-    "postcss": "^8.5.15",
+    "postcss": "8.5.28",
     "tailwindcss": "^4.3.0",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.0"

@@ -5,14 +5,92 @@
    デザイントークン（ダークモード基調のカスタムカラー）
    ───────────────────────────────────── */
 @theme {
-  --color-night: #070b14;        /* ページ背景 */
-  --color-night-soft: #0c1322;   /* カード背景 */
-  --color-night-border: #1e2a3f; /* ボーダー */
+  /* ライト（既定）：白を基調にした，やわらかい色 */
+  --color-cream: #fbfaf9;        /* ページ背景（わずかに温かみのある白） */
+  --color-mist: #f3f4f7;         /* 面をそっと区切る淡いグレー */
+  --color-soft: #ebedf3;         /* ボーダー（線を目立たせない） */
+  --color-ink: #313a4b;          /* 本文の文字（真っ黒を避けて柔らかく） */
+
+  /* ダーク（切り替え時） */
+  --color-night: #0b1020;        /* ページ背景 */
+  --color-night-soft: #141c2e;   /* カード背景 */
+  --color-night-border: #26324a; /* ボーダー */
 }
 
-/* アンカーリンクのスムーズスクロール */
+/* ─────────────────────────────────────
+   タイポグラフィ
+   ビルドを外部配信元に依存させず，OS 標準の UI フォントを使う．
+   ───────────────────────────────────── */
+@theme {
+  --font-sans:
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI', 'Yu Gothic',
+    'Meiryo', sans-serif;
+}
+
 html {
+  /* アンカーリンクのスムーズスクロール */
   scroll-behavior: smooth;
+  /* 固定ヘッダーの高さぶん，スクロール位置を調整する */
+  scroll-padding-top: 5rem;
+}
+
+body {
+  font-family: var(--font-sans);
+  /* 和文の約物を詰めて，かなと漢字の間隔を整える */
+  font-feature-settings: 'palt' 1;
+  letter-spacing: 0.01em;
+  line-height: 1.8;
+  text-rendering: optimizeLegibility;
+}
+
+/* 見出しは行間を詰め，改行位置を自然にする */
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.4;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+
+/* 本文の折り返しを読みやすく（孤立行を防ぐ） */
+p {
+  text-wrap: pretty;
+}
+
+/* ─────────────────────────────────────
+   フォーカス表示（キーボード操作の可視性）
+   ───────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-sky-700);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+.dark :focus-visible {
+  outline-color: var(--color-sky-300);
+}
+
+/* マウス操作時は輪郭を出さない */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ─────────────────────────────────────
+   本文へのスキップリンク（キーボード利用者向け）
+   ───────────────────────────────────── */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 50%;
+  transform: translate(-50%, -150%);
+  z-index: 100;
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus-visible {
+  transform: translate(-50%, 0);
 }
 
 /* ─────────────────────────────────────
@@ -20,7 +98,7 @@ html {
    ───────────────────────────────────── */
 .reveal {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(16px);
   transition:
     opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
@@ -73,20 +151,20 @@ html {
 
 .bg-grid-pattern {
   background-image:
-    linear-gradient(to right, rgb(148 163 184 / 0.07) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(148 163 184 / 0.07) 1px, transparent 1px);
-  background-size: 48px 48px;
+    linear-gradient(to right, rgb(148 163 184 / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(148 163 184 / 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
 }
 
 /* ─────────────────────────────────────
    Contribution Graph（草）の色階調
    レベル 0（活動なし）〜 4（最多）
    ───────────────────────────────────── */
-.contrib-0 { background-color: #e2e8f0; }
-.contrib-1 { background-color: #bae6fd; }
-.contrib-2 { background-color: #7dd3fc; }
-.contrib-3 { background-color: #38bdf8; }
-.contrib-4 { background-color: #0284c7; }
+.contrib-0 { background-color: #eef0f5; }
+.contrib-1 { background-color: #d7ecfb; }
+.contrib-2 { background-color: #a8d9f6; }
+.contrib-3 { background-color: #74c2ee; }
+.contrib-4 { background-color: #3ea5dd; }
 
 .dark .contrib-0 { background-color: #172033; }
 .dark .contrib-1 { background-color: #0c4a6e; }
@@ -114,4 +192,358 @@ html {
   .animate-float-slower {
     animation: none;
   }
+}
+
+/* OS の強制カラーモードでもグラデーション文字を読めるようにする */
+@media (forced-colors: active) {
+  .text-transparent {
+    color: CanvasText !important;
+    background-image: none !important;
+  }
+
+  .scroll-progress {
+    background: Highlight !important;
+  }
+}
+
+/* ─────────────────────────────────────
+   Reveal のバリエーション
+   （方向・拡大・ぼかしから選べる登場アニメーション）
+   ───────────────────────────────────── */
+.reveal-left {
+  transform: translateX(-28px);
+}
+
+.reveal-right {
+  transform: translateX(28px);
+}
+
+.reveal-scale {
+  transform: scale(0.95);
+}
+
+.reveal-blur {
+  filter: blur(6px);
+  transform: translateY(16px);
+}
+
+.reveal-flip {
+  transform: perspective(800px) rotateX(-18deg) translateY(24px);
+  transform-origin: top center;
+}
+
+.reveal-visible.reveal-left,
+.reveal-visible.reveal-right,
+.reveal-visible.reveal-scale,
+.reveal-visible.reveal-flip {
+  transform: none;
+}
+
+.reveal-visible.reveal-blur {
+  filter: blur(0);
+  transform: none;
+}
+
+.reveal-blur {
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─────────────────────────────────────
+   遊び心のあるマイクロアニメーション
+   ───────────────────────────────────── */
+
+/* グラデーションを左右に流す（見出し・ボタン用） */
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease infinite;
+}
+
+/* 斜めに走る光沢（カード・バーのきらめき） */
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-120%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(320%) skewX(-20deg);
+  }
+}
+
+.shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.28),
+    transparent
+  );
+  transform: translateX(-120%) skewX(-20deg);
+  pointer-events: none;
+}
+
+.group:hover .shimmer-sweep::after {
+  animation: shimmerSweep 0.9s ease-out;
+}
+
+/* ふわりと上下に漂う（アイコン・バッジ用） */
+@keyframes floatBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bob {
+  animation: floatBob 3.5s ease-in-out infinite;
+}
+
+/* ぷるんと弾む登場 */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-pop-in {
+  opacity: 0;
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ぷるぷる揺れる（ホバー時のいたずら） */
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg) scale(1.05);
+  }
+  75% {
+    transform: rotate(5deg) scale(1.05);
+  }
+}
+
+.group:hover .animate-wiggle {
+  animation: wiggle 0.55s ease-in-out;
+}
+
+/* ゆっくり回る（背景の装飾リング） */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 26s linear infinite;
+}
+
+/* 呼吸するような発光（注目カードの縁） */
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 3.5s ease-in-out infinite;
+}
+
+/* タイピングのカーソル点滅 */
+@keyframes caretBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-caret {
+  animation: caretBlink 1s step-end infinite;
+}
+
+/* 無限に流れるマーキー（スキルタグの帯） */
+@keyframes marqueeScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marqueeScroll 28s linear infinite;
+}
+
+.marquee-wrapper:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+/* 紙吹雪（ロゴをクリックしたときのイースターエッグ） */
+@keyframes confettiFall {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--confetti-x), var(--confetti-y)) rotate(var(--confetti-rotate))
+      scale(0.4);
+  }
+}
+
+.confetti-piece {
+  animation: confettiFall 1.1s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+/* カードの3Dチルト（マウス追従） */
+.tilt-card {
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg))
+    translateZ(0);
+  transition: transform 0.25s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.tilt-card-glare {
+  background: radial-gradient(
+    circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgb(255 255 255 / 0.10),
+    transparent 55%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tilt-card:hover .tilt-card-glare {
+  opacity: 1;
+}
+
+/* ポインタ追従のスポットライト（ページ全体の演出） */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 460px;
+  height: 460px;
+  margin: -230px 0 0 -230px;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    circle,
+    rgb(125 211 252 / 0.18),
+    rgb(196 181 253 / 0.12) 45%,
+    transparent 70%
+  );
+  filter: blur(40px);
+  transition: opacity 0.4s ease;
+}
+
+/* スクロール量を示す上部のプログレスバー */
+.scroll-progress {
+  transform-origin: left center;
+  transition: transform 0.08s linear;
+}
+
+/* ─────────────────────────────────────
+   アクセシビリティ：新しいアニメーションも一括で無効化
+   ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-gradient,
+  .animate-bob,
+  .animate-pop-in,
+  .animate-wiggle,
+  .animate-spin-slow,
+  .animate-glow-pulse,
+  .animate-caret,
+  .animate-marquee,
+  .confetti-piece,
+  .shimmer-sweep::after,
+  .group:hover .animate-wiggle,
+  .group:hover .shimmer-sweep::after {
+    animation: none !important;
+  }
+
+  .animate-pop-in {
+    opacity: 1;
+  }
+
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale,
+  .reveal-blur,
+  .reveal-flip {
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .tilt-card {
+    transform: none !important;
+    transition: none;
+  }
+
+  .cursor-glow {
+    display: none;
+  }
+
+  /* 年表はスクロール連動をやめ，すべての項目を読める状態にする */
+  [data-testid='scroll-timeline'] li > div {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ─────────────────────────────────────
+   やわらかい影（輪郭を強調しない，広く淡い影）
+   ───────────────────────────────────── */
+.shadow-soft {
+  box-shadow: 0 18px 40px -24px rgb(49 58 75 / 0.28);
+}
+
+.shadow-soft-lg {
+  box-shadow: 0 28px 60px -30px rgb(49 58 75 / 0.32);
+}
+
+.dark .shadow-soft,
+.dark .shadow-soft-lg {
+  box-shadow: 0 24px 50px -28px rgb(0 0 0 / 0.6);
 }

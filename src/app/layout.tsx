@@ -1,13 +1,68 @@
-/* eslint-disable react-refresh/only-export-components */
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
+import { ScrollProgressBar } from '../components/ScrollProgressBar';
+import { CursorGlow } from '../components/CursorGlow';
+import { BackToTopButton } from '../components/BackToTopButton';
+import { siteConfig } from '../config/site';
 
-export const metadata = {
-  title: 'Ryuto Hara | iOS & macOS App Portfolio',
-  description:
-    '「信頼」を軸に開発に取り組む情報系学生のポートフォリオサイト．Swift / SwiftUI で個人開発した iPhone・Mac アプリと GitHub での活動を紹介しています．',
+export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.siteUrl),
+  title: {
+    default: `${siteConfig.displayName} | iOS & macOS App Portfolio`,
+    template: `%s | ${siteConfig.displayName}`,
+  },
+  description: siteConfig.description,
+  applicationName: `${siteConfig.displayName} Portfolio`,
+  authors: [{ name: siteConfig.displayName, url: siteConfig.githubUrl }],
+  creator: siteConfig.displayName,
+  keywords: [
+    'Swift',
+    'SwiftUI',
+    'iOS アプリ開発',
+    'macOS アプリ開発',
+    '個人開発',
+    'ポートフォリオ',
+    siteConfig.displayName,
+    siteConfig.githubUsername,
+  ],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ja_JP',
+    url: siteConfig.siteUrl,
+    siteName: `${siteConfig.displayName} | iOS & macOS App Portfolio`,
+    title: `${siteConfig.displayName} | iOS & macOS App Portfolio`,
+    description: siteConfig.description,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${siteConfig.displayName} | iOS & macOS App Portfolio`,
+    description: siteConfig.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
+};
+
+// ブラウザの UI 色（ライト・ダークで切り替える）
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fbfaf9' },
+    { media: '(prefers-color-scheme: dark)', color: '#0b1020' },
+  ],
+  colorScheme: 'light dark',
 };
 
 export default function RootLayout({
@@ -19,17 +74,18 @@ export default function RootLayout({
     <html lang="ja" suppressHydrationWarning>
       <head>
         {/* 初期表示時のテーマちらつき（フラッシュ）防止スクリプト．
-            デフォルトはダークモードで，明示的に light が保存されている場合のみライト表示にする */}
+            デフォルトはライトモードで，明示的に dark が保存されている場合のみダーク表示にする．
+            同じ判定が ThemeProvider にもあるため，変更時は両方を合わせること */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
                   var saved = localStorage.getItem('theme');
-                  if (saved === 'light') {
-                    document.documentElement.classList.remove('dark');
-                  } else {
+                  if (saved === 'dark') {
                     document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
                   }
                 } catch (e) {}
               })();
@@ -37,11 +93,24 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-slate-50 dark:bg-night text-slate-900 dark:text-slate-100 antialiased transition-colors min-h-screen flex flex-col">
+      <body className="bg-cream dark:bg-night text-ink dark:text-slate-100 antialiased transition-colors min-h-screen flex flex-col">
         <ThemeProvider>
+          {/* キーボード操作でヘッダーを読み飛ばすためのリンク */}
+          <a
+            href="#main-content"
+            className="skip-link px-4 py-2 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border text-sm font-medium shadow-soft"
+          >
+            本文へスキップ
+          </a>
+          {/* ポインタ追従のスポットライト（本文より背面に置く） */}
+          <CursorGlow />
+          <ScrollProgressBar />
           <Navbar />
-          <main className="flex-grow">{children}</main>
+          <main id="main-content" className="relative z-10 flex-grow">
+            {children}
+          </main>
           <Footer />
+          <BackToTopButton />
         </ThemeProvider>
       </body>
     </html>

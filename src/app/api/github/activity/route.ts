@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { fetchWithTimeout } from '../../../../lib/fetchWithTimeout';
 import {
   staticEvents,
   type GitHubEvent,
@@ -29,7 +30,10 @@ function buildHeaders(): Record<string, string> {
 function fallbackResponse(apiStatus: ApiStatus) {
   return NextResponse.json(
     { events: staticEvents, apiStatus },
-    { status: HTTP_STATUS_OK, headers: { 'x-api-status': apiStatus } },
+    {
+      status: HTTP_STATUS_OK,
+      headers: { 'x-api-status': apiStatus, 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+    },
   );
 }
 
@@ -82,7 +86,7 @@ function describeEvent(rawEvent: RawEvent): string {
 export async function GET() {
   try {
     const url = `https://api.github.com/users/${siteConfig.githubUsername}/events/public?per_page=${EVENTS_PER_PAGE}`;
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       headers: buildHeaders(),
       next: { revalidate: REVALIDATE_SECONDS },
     });
@@ -105,7 +109,10 @@ export async function GET() {
 
     return NextResponse.json(
       { events, apiStatus: 'success' },
-      { status: HTTP_STATUS_OK, headers: { 'x-api-status': 'success' } },
+      {
+        status: HTTP_STATUS_OK,
+        headers: { 'x-api-status': 'success', 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+      },
     );
   } catch {
     return fallbackResponse('offline');

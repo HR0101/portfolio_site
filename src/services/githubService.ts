@@ -1,5 +1,7 @@
 // GitHub 連携用の型定義・静的フォールバックデータ・クライアント側フェッチ処理
 
+import { fetchWithTimeout } from '../lib/fetchWithTimeout';
+
 // ─────────────────────────────────────
 // 型定義
 // ─────────────────────────────────────
@@ -254,7 +256,7 @@ export async function fetchRepos(): Promise<ReposResponse> {
   }
 
   try {
-    const response = await fetch('/api/github');
+    const response = await fetchWithTimeout('/api/github');
     if (!response.ok) {
       throw new Error(`HTTPエラー: ${response.status}`);
     }
@@ -279,7 +281,7 @@ export async function fetchActivity(): Promise<ActivityResponse> {
   }
 
   try {
-    const response = await fetch('/api/github/activity');
+    const response = await fetchWithTimeout('/api/github/activity');
     if (!response.ok) {
       throw new Error(`HTTPエラー: ${response.status}`);
     }
@@ -304,7 +306,7 @@ export async function fetchContributions(): Promise<ContributionsResponse> {
   }
 
   try {
-    const response = await fetch('/api/github/contributions');
+    const response = await fetchWithTimeout('/api/github/contributions');
     if (!response.ok) {
       throw new Error(`HTTPエラー: ${response.status}`);
     }
