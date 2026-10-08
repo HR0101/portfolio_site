@@ -3,9 +3,98 @@
 公開サイト: **https://hr0101.dev/**（Cloudflare DNS + AWS S3 / CloudFront）
 
 Swift / SwiftUI で個人開発した iPhone・Mac アプリを紹介する，個人ポートフォリオサイトです．
-Next.js 16（App Router）+ TypeScript + Tailwind CSS v4 で構築し，GitHub（[HR0101](https://github.com/HR0101)）の活動を動的に取得して表示します．
+Next.js 16（App Router）+ TypeScript + Tailwind CSS v4 で構築し，GitHub（[HR0101](https://github.com/HR0101)）の活動を表示します．AWSの公開版ではビルド時に取得したスナップショットを使用し，Node.jsサーバー版ではAPI Routeから動的に取得します．
 
 Node.js 20.19以降（または22.13以降）を使用してください．
+
+## AWSの公開構成
+
+### VMを使わない静的ホスティング
+
+現在の本番環境は **非公開のAmazon S3 + Amazon CloudFront + AWS Certificate Manager（ACM）** です。Next.jsを静的ファイルへ書き出し、CloudFrontから配信します。EC2などのVM、常駐Node.jsサーバー、データベースは使用していません。Dockerはローカル開発・テスト用です。
+
+```mermaid
+flowchart LR
+    User[訪問者のブラウザ] -->|DNS問い合わせ| DNS[Cloudflare DNS]
+    DNS -. hr0101.devの接続先 .-> User
+    User -->|HTTPS| CDN[CloudFront]
+    ACM[ACM証明書 / us-east-1] -. TLS証明書 .-> CDN
+    CDN -->|OAC署名付きHTTPS| S3[非公開S3 / ap-southeast-2]
+    CDN --- Function[CloudFront Function / URL変換]
+```
+
+Cloudflareは **DNSのみ** で利用し、ルートドメインのCNAMEをCloudFrontへ向けています。Cloudflareのプロキシを経由しないため、Web通信のTLS終端とキャッシュはCloudFrontが担当します。CloudflareのWAFやプロキシ機能による保護を、この構成の実装済み機能としては扱いません。
+
+| 要素 | 現在の設定・役割 |
+| --- | --- |
+| 公開URL | `https://hr0101.dev/` |
+| DNS | Cloudflare。ルートCNAMEをflatteningしてCloudFrontへ接続 |
+| 静的ファイル | S3。HTML・JavaScript・CSS・画像・動画・OGPを保存 |
+| S3 / CloudFormationのリージョン | `ap-southeast-2`（シドニー） |
+| CDN | CloudFront。HTTP/2・HTTP/3・IPv6、圧縮、`PriceClass_200` |
+| HTTPS証明書 | ACMの`us-east-1`（バージニア北部）。CloudFront用の証明書はこのリージョンで発行 |
+| URL変換 | CloudFront Functionで`/apps/tsumugi/`などをS3の`index.html`へ変換。拡張子のないOGP画像は変換対象から除外 |
+| エラーページ | S3の403・404をサイトの`404.html`へ変換してHTTP 404を返す |
+| インフラ定義 | [infra/aws/site.yaml](infra/aws/site.yaml)。CloudFormationで再現・更新 |
+| VM関連の設定 | vCPU・メモリ・OS・EBS・SSH鍵・Security Group・独自VPCは、このサイトのためには設定しない |
+
+### VM構成との比較と採用理由
+
+アプリ紹介とポートフォリオの閲覧が中心のため、サーバー側でリクエストごとに処理を行う必要が少なく、この構成を採用しています。
+
+| 観点 | 現在のS3 + CloudFront | EC2などのVMで運用する場合 |
+| --- | --- | --- |
+| 運用作業 | 静的成果物と配信設定を管理。ゲストOS・Webサーバーの保守が不要 | OS更新、Webサーバー・Node.jsの更新、プロセス管理、容量監視が必要 |
+| 公開する入口 | CloudFrontのWeb配信。S3は非公開 | Webポートに加え、SSHなどの管理経路とネットワーク制御を設計 |
+| アクセス増加 | CDNとマネージドストレージを利用。VM台数の調整が不要 | インスタンス容量、ロードバランサー、Auto Scalingなどを設計 |
+| 費用の要因 | 保存量・リクエスト・転送量・キャッシュ更新など | インスタンス稼働時間、ディスク、ネットワーク、必要に応じてLBなど |
+| サーバー処理 | 静的ページを配信。API Route・SSR・サーバー保存は実行しない | API・SSR・バックグラウンド処理などを実行可能 |
+
+VMを省くことで、OSやSSH、常駐アプリケーションに対する保守と公開経路を減らせます。一方、フロントエンドの依存パッケージやAWSアカウントの権限管理は継続して必要です。
+
+### 実装済みのセキュリティ対策
+
+| 対策 | 設定と利点 |
+| --- | --- |
+| S3の公開遮断 | Block Public Accessを4項目すべて有効化。公開ACLや公開バケットポリシーによる直接公開を防ぐ |
+| オリジンへのアクセス制御 | OACでSigV4署名を常時使用。バケットポリシーの`AWS:SourceArn`で、このCloudFront配信からの読み取りだけを許可する |
+| 通信の暗号化 | 訪問者→CloudFrontはHTTPからHTTPSへリダイレクト。CloudFront→S3もOACの常時署名によりHTTPSを使用 |
+| TLS設定 | 独自ドメインの証明書をACMで管理し、CloudFrontの最低TLSポリシーを`TLSv1.2_2021`に設定 |
+| 保存時の暗号化 | S3のSSE-S3（AES-256）を設定。保存されたオブジェクトを暗号化する |
+| ACLの無効化 | `BucketOwnerEnforced`を使用し、アクセス制御をIAM・バケットポリシーへ集約する |
+| HTTPSの継続利用 | HSTSを1年間設定。対応ブラウザが以後HTTPSで接続するよう促す |
+| ブラウザ側の制限 | CSP、`X-Frame-Options: DENY`、`X-Content-Type-Options: nosniff`などで埋め込み・外部読み込み・MIME推測を制限する |
+| 情報・機能の制限 | `Referrer-Policy`を設定し、Permissions Policyでカメラ・マイク・位置情報などを無効化する |
+| 配信メソッドの制限 | CloudFrontでGET・HEADのみ許可。問い合わせフォームはメーラーを起動し、サーバーへ入力内容を保存しない |
+| ビルド成果物の確認 | 公開前に必要ファイル・公開URL・秘密情報用ファイル名の混入を検証。ビルド時のトークンは公開用の環境変数にしない |
+
+S3の非公開化はオリジンへの直接アクセスを制限するもので、CloudFrontから配信するサイトや素材は公開コンテンツです。CSPはNext.jsの生成コードに対応するため`'unsafe-inline'`を許可しており、nonce・hashによる厳格なインライン制御は未実装です。公開ファイルの検査もファイル名などの確認であり、任意の文字列に含まれる秘密情報を検出する完全なシークレットスキャンではありません。
+
+設定の根拠: [AWSのOAC仕様](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html)、[CloudFrontのHTTPS設定](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-viewers-to-cloudfront.html)、[S3のSSE-S3暗号化](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingServerSideEncryption.html)、[CloudFrontの証明書要件](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html)。
+
+### キャッシュ・更新・復旧
+
+- ハッシュ付きの`_next/static/`は1年間のimmutableキャッシュ、画像・動画などの素材は5分、HTML・Next.jsのルートデータは毎回再検証に設定します。
+- アップロードは素材を先に、HTML・ルートデータを最後に行い、CloudFrontのキャッシュを無効化してから公開URLを検証します。更新中の訪問者のため、古いアセットは自動削除しません。
+- 公開確認ではトップページ、3つの詳細ページ、3つのOGP画像、sitemap、robots、404とセキュリティヘッダーを検証します。ブラウザの見た目を自動判定するテストとは異なります。
+- CloudFormationスタックを削除・置換してもS3バケットは`Retain`で保持します。ただしS3のVersioning、アクセスログ、専用監視アラーム、WAFルールは現在のテンプレートでは設定していません。
+- 復旧は以前のコードや保持済みの成果物を再公開する方式です。S3への更新は複数ファイルのアップロードであり、リリース全体を一度に切り替える仕組みや自動ロールバックは未実装です。
+
+### CI/CDとAWS権限の状態
+
+GitHub ActionsはPR・`main`へのpush・手動実行で、型チェック、Lint、本番ビルド、36件のE2E、静的ビルドと公開URLの検証を行います。検証済み成果物はcommitごとに7日間保存し、公式ActionsはコミットSHAで固定しています。[初回CIは成功済み](https://github.com/HR0101/portfolio_site/actions/runs/37748240819)です。
+
+CDは、その成果物をS3へアップロードしてCloudFrontを更新する処理まで実装済みです。認証はOIDCの短期認証情報を使う設計で、信頼先をこのリポジトリの`main`に限定し、権限を対象S3への一覧取得・書き込み、対象CloudFrontのキャッシュ更新、対象スタックの参照に絞っています。インフラ変更・IAM変更・オブジェクト削除を許可するロールではありません。
+
+**現在、CDは未有効化です。** AWS組織のService Control Policy（SCP）がOIDCプロバイダーの作成を拒否したため、管理者による設定が必要です。`AWS_DEPLOY_ROLE_ARN`が未設定の間はCIを実行し、公開ジョブをスキップします。ロールの設計と有効化手順は [infra/aws/CI-CD.md](infra/aws/CI-CD.md)、手動での公開・接続手順は [DEPLOY.md](DEPLOY.md) を参照してください。
+
+### コストと静的公開の制約
+
+VMの常時稼働費用はありませんが、S3・CloudFront・CloudFront Functionsの利用量に応じた料金とドメインの更新費用が発生します。AWSの無料プランやクレジットには期限があるため、継続公開時はアカウントのプラン・残高・利用量を確認してください。古いアセットを保持する設計なので、保存量も定期的に確認します。
+
+`hr0101.dev`は2026-10-08に取得し、管理画面で有効期限2027-10-08・更新価格年12.20米ドル・自動更新オフを確認しています。更新時は最新の価格・税・期限を確認してください。ACMの証明書更新に必要なDNS検証CNAMEは残します。
+
+GitHub情報は再ビルド時に更新し、取得失敗時は既存スナップショットを使用します。閲覧のたびに最新情報を取得する方式ではありません。API Route・SSR・ログイン・サーバーへのフォーム保存などが必要になった場合は、別途バックエンドと認証・データ管理を設計します。
 
 ## セクション構成
 
@@ -75,7 +164,7 @@ docker compose down
 
 ### ローカル・CI
 
-`.github/workflows/ci.yml` が push / Pull Request で `typecheck → lint → build → test` を実行します．
+`.github/workflows/ci.yml` がmainへのpush・Pull Request・手動実行で `typecheck → lint → build → test → 静的ビルド → 公開用ファイル検証` を実行します．
 ローカルでも `npm run check` で同じ検証を一括実行できます．
 
 ## テスト
