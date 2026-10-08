@@ -1,203 +1,135 @@
-"use client";
+'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './product.module.css';
 
-// 説明の3ステップ．スクロールの進み具合に合わせて，見出しが順に主役になる
+// 実際の操作の開始時刻に合わせたチャプター（秒）。
 const STEPS = [
-  {
-    title: '経路を確認する',
-    text: '提案された出発地と行き先を確認。逆方向への切り替えも、同じ画面から。',
-  },
-  {
-    title: '便の時刻を読む',
-    text: '出発・到着時刻を大きく表示。日付や検索時刻の条件も確認できます。',
-  },
-  {
-    title: '必要なら、時刻表へ',
-    text: 'ほかの便も見たいときはタブを切り替え。一覧から予定を考えられます。',
-  },
+  { time: 0, title: '経路と条件を選ぶ', text: '出発地と行き先を切り替え、出発・到着の条件を確認。次に乗れる便が、その場で変わります。' },
+  { time: 17, title: '出発前に、知らせてもらう', text: '乗る便を選んで、5分前・10分前・15分前の通知へ。Live Activityの設定も、同じ画面から。' },
+  { time: 29, title: '一日の便を見渡す', text: '時刻表へ切り替え、先の時間帯までスクロール。乗りたい便から、通知設定を開けます。' },
+  { time: 44, title: '見た目を、自分の好みに', text: '時刻に合わせた背景やカードの濃さを調整。毎日使う画面を、読みやすく心地よく。' },
 ];
-
-// 実際の映像への追従の滑らかさ（0〜1．大きいほど即座に追いつく）
-const SCRUB_EASING = 0.18;
-// 映像の読み込みを始める距離（画面の何個ぶん手前から始めるか）
-const PRELOAD_VIEWPORT_MARGIN = 1.5;
+const DURATION = 56.4;
 
 export function DemoScene() {
-  const sceneRef = useRef<HTMLDivElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  // スクロールから求めた目標の再生位置（0〜1）
-  const targetProgressRef = useRef(0);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const targetRef = useRef(0);
+  const appliedRef = useRef(0);
   const [progress, setProgress] = useState(0);
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const [canScrub, setCanScrub] = useState(false);
+  const [manual, setManual] = useState(false);
+  const scrollMode = canScrub && !manual;
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) {
-      return;
-    }
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(query.matches);
-    const handleChange = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
-    query.addEventListener('change', handleChange);
-    return () => query.removeEventListener('change', handleChange);
+    const desktop = window.matchMedia('(min-width: 801px)');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setCanScrub(desktop.matches && !reduced.matches);
+    update();
+    desktop.addEventListener('change', update);
+    reduced.addEventListener('change', update);
+    return () => { desktop.removeEventListener('change', update); reduced.removeEventListener('change', update); };
   }, []);
 
-  // 求めた進み具合を，画面と映像に反映する
-  const appliedProgressRef = useRef(0);
-  const applyProgress = useCallback((value: number) => {
-    appliedProgressRef.current = value;
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        setShouldLoad(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: '100% 0px' });
+    observer.observe(scene);
+    return () => observer.disconnect();
+  }, []);
+
+  const seek = useCallback((value: number) => {
+    appliedRef.current = value;
     setProgress(value);
     const video = videoRef.current;
-    if (video && Number.isFinite(video.duration) && video.duration > 0) {
-      // 端に張り付かないよう，ごくわずかに内側で止める
-      video.currentTime = Math.min(value * video.duration, video.duration - 0.05);
+    if (video && Number.isFinite(video.duration)) {
+      const time = Math.min(value * video.duration, video.duration - .05);
+      // 前のシークが完了してから次を送る。デコード待ちの積み重なりを防ぐ。
+      if (!video.seeking && Math.abs(video.currentTime - time) > .035) video.currentTime = time;
     }
   }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion) {
-      return;
-    }
-
-    let animationFrameId = 0;
-    let current = 0;
-
-    // 目標へ少しずつ近づける（急なスクロールでも映像がガタつかないようにする）
-    const smooth = () => {
-      const target = targetProgressRef.current;
-      current += (target - current) * SCRUB_EASING;
-      if (Math.abs(target - current) < 0.0008) {
-        current = target;
-        animationFrameId = 0;
-        applyProgress(current);
-        return;
-      }
-      applyProgress(current);
-      animationFrameId = window.requestAnimationFrame(smooth);
-    };
-
-    const handleScroll = () => {
-      const scene = sceneRef.current;
-      if (!scene) {
-        return;
-      }
-      const bounds = scene.getBoundingClientRect();
-
-      // 画面に近づいたら映像の読み込みを始める（初期表示では読まない）
-      if (bounds.top < window.innerHeight * PRELOAD_VIEWPORT_MARGIN) {
-        setShouldLoadVideo(true);
-      }
-
-      // 貼り付いている間（要素の高さ − 画面1つぶん）を 0→1 に対応させる
-      const scrollableHeight = bounds.height - window.innerHeight;
-      const raw = scrollableHeight <= 0 ? 0 : -bounds.top / scrollableHeight;
-      targetProgressRef.current = Math.min(Math.max(raw, 0), 1);
-
-      // まず即座に反映し，そのうえで滑らかに追従させる．
-      // これで requestAnimationFrame が動かない状況でも位置がずれない．
-      current = targetProgressRef.current;
-      applyProgress(current);
-      if (animationFrameId === 0) {
-        animationFrameId = window.requestAnimationFrame(smooth);
-      }
-    };
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-      if (animationFrameId !== 0) {
-        window.cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, [applyProgress, prefersReducedMotion]);
-
-  // 読み込みが終わった時点で，すでにスクロールしている分を映像へ反映する．
-  // あわせて iOS 向けに一度だけ再生→停止し，シークできる状態にしておく．
-  const handleMetadataLoaded = useCallback(() => {
+    if (!scrollMode) return;
     const video = videoRef.current;
-    if (!video) {
-      return;
+    video?.pause();
+    let frame = 0;
+    let current = appliedRef.current;
+    const smooth = () => {
+      current += (targetRef.current - current) * .2;
+      const settled = Math.abs(targetRef.current - current) < .0006;
+      if (settled) current = targetRef.current;
+      seek(current);
+      frame = settled ? 0 : requestAnimationFrame(smooth);
+    };
+    const update = () => {
+      const scene = sceneRef.current;
+      if (!scene) return;
+      const bounds = scene.getBoundingClientRect();
+      const distance = bounds.height - window.innerHeight;
+      targetRef.current = distance > 0 ? Math.min(1, Math.max(0, (64 - bounds.top) / distance)) : 0;
+      if (!frame) frame = requestAnimationFrame(smooth);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener('scroll', update); window.removeEventListener('resize', update); };
+  }, [scrollMode, seek]);
+
+  const jumpTo = (time: number) => {
+    setShouldLoad(true);
+    const value = time / DURATION;
+    if (scrollMode && sceneRef.current) {
+      const scene = sceneRef.current;
+      window.scrollTo({ top: window.scrollY + scene.getBoundingClientRect().top - 64 + value * (scene.offsetHeight - window.innerHeight), behavior: 'smooth' });
+    } else {
+      videoRef.current?.pause();
+      seek(value);
     }
-    video
-      .play()
-      .then(() => video.pause())
-      .catch(() => undefined);
-    applyProgress(appliedProgressRef.current);
-  }, [applyProgress]);
+  };
+  const active = Math.max(0, STEPS.findLastIndex(step => step.time <= progress * DURATION + .1));
 
-  // いま説明しているステップ（動きを減らす設定では常に全部を同じ濃さで見せる）
-  const activeStepIndex = prefersReducedMotion
-    ? -1
-    : Math.min(Math.floor(progress * STEPS.length), STEPS.length - 1);
-
-  return (
-    <div ref={sceneRef} className={styles.demoScene}>
-      <div className={styles.demoSticky}>
-        <div className={styles.demoCopy}>
-          <p className={styles.eyebrow}>A CLOSER LOOK</p>
-          <h2 id="bustime-demo-heading">
-            開く。確かめる。
-            <br />
-            <span>さあ、出かけよう。</span>
-          </h2>
-          <p>スクロールすると、画面がそのぶんだけ進みます。</p>
-          <ol className={styles.steps}>
-            {STEPS.map((step, index) => (
-              <li
-                key={step.title}
-                className={index === activeStepIndex ? styles.stepActive : undefined}
-              >
-                <span>{`0${index + 1}`}</span>
-                <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        <figure className={styles.videoFigure}>
-          <div className={styles.videoFrame}>
-            {prefersReducedMotion ? (
-              // 動きを減らす設定では，静止画だけを見せる
-              <img
-                src="/projects/bustimeapp-screens/home.png"
-                alt="BusTimeAppのホーム画面"
-                width={1080}
-                height={1920}
-              />
-            ) : (
-              <video
-                ref={videoRef}
-                muted
-                playsInline
-                preload="auto"
-                poster="/projects/bustimeapp-screens/home.png"
-                width={720}
-                height={1280}
-                aria-label="スクロールに合わせて進む、BusTimeAppのホームと時刻表の映像"
-                onLoadedMetadata={handleMetadataLoaded}
-              >
-                {shouldLoadVideo && (
-                  <source src="/projects/bustimeapp-demo-scroll.mp4" type="video/mp4" />
-                )}
-              </video>
-            )}
-          </div>
-          {/* どこまで進んだかを示す細い線 */}
-          <div className={styles.scrubTrack} aria-hidden="true">
-            <div className={styles.scrubBar} style={{ transform: `scaleX(${progress})` }} />
-          </div>
-          <figcaption>掲載画面の日時・便は撮影時のものです。</figcaption>
-        </figure>
+  return <div ref={sceneRef} className={`${styles.demoScene} ${canScrub ? styles.demoScroll : ''}`}>
+    <div className={styles.demoSticky}>
+      <div className={styles.demoCopy}>
+        <p className={styles.eyebrow}>A CLOSER LOOK</p>
+        <h2 id="bustime-demo-heading">いつもの操作を。<br /><span>そのまま、目の前で。</span></h2>
+        <p>{scrollMode ? 'スクロールで、使い心地をたどろう。気になる場面へも、すぐに。' : '動画で、使い心地をたどろう。気になる場面を選んで見られます。'}</p>
+        <ol className={styles.steps} aria-label="操作動画のチャプター">
+          {STEPS.map((step, index) => <li key={step.title} className={index === active ? styles.stepActive : undefined}>
+            <button type="button" onClick={() => jumpTo(step.time)} aria-current={index === active ? 'step' : undefined}>
+              <span>{`0${index + 1}`}</span><div><h3>{step.title}</h3><p>{step.text}</p></div>
+            </button>
+          </li>)}
+        </ol>
       </div>
+      <figure className={styles.videoFigure}>
+        <div className={styles.videoFrame}>
+          <video ref={videoRef} muted playsInline controls={!scrollMode} preload={shouldLoad ? 'auto' : 'none'}
+            poster="/projects/bustimeapp-walkthrough-poster.webp" width={900} height={1956}
+            aria-label="BusTimeAppの経路選択、通知、時刻表、設定の操作動画"
+            onLoadedMetadata={() => seek(appliedRef.current)}
+            onSeeked={() => { if (scrollMode) seek(appliedRef.current); }}
+            onTimeUpdate={() => { if (!scrollMode && videoRef.current?.duration) { const value = videoRef.current.currentTime / videoRef.current.duration; appliedRef.current = value; setProgress(value); } }}>
+            {shouldLoad && <source src="/projects/bustimeapp-walkthrough-1222.mp4" type="video/mp4" />}
+          </video>
+        </div>
+        <div className={styles.scrubTrack} aria-hidden="true"><div className={styles.scrubBar} style={{ transform: `scaleX(${progress})` }} /></div>
+        {canScrub && <button className={styles.demoPlayback} type="button" onClick={() => {
+          setShouldLoad(true);
+          setManual(!manual);
+          if (!manual) void videoRef.current?.play().catch(() => undefined);
+        }}>{manual ? 'スクロールで見る' : '動画として再生する'}<span aria-hidden="true"> {manual ? '↕' : '▶'}</span></button>}
+        <figcaption>実際のアプリの操作映像。日時・便は撮影時のものです。</figcaption>
+      </figure>
     </div>
-  );
+  </div>;
 }

@@ -231,5 +231,6 @@ Contact セクションのフォームとフッターのメールリンクは，
 - アニメーションは外部ライブラリを使わず，CSS キーフレーム + 自作の TypeScript フック（`useInView` / `useScrollLinked` / `useTilt` / `useScrollProgress` / `useCountUp` / `useActiveSection`）で実装しています．
 - スクロール連動の演出（Hero の退場，背景の視差，横に流れる帯，年表の線，Contribution Graph の出現）は `src/lib/scrollObserver.ts` に監視を集約し，リスナーはページ全体で1本だけです．
 - Apps セクションの年表の内容は `src/data/timeline.ts` を編集してください．
+- BusTimeAppの操作デモは `BusTimeApp-screenshots/videos/daytime-walkthrough-1222_full.mp4` を元にした56.4秒の実機映像です。公開用は720px幅・24fpsのH.264、0.5秒ごとのキーフレームとfaststartでシークと読み込みを改善しています。経路（0秒）・通知（17秒）・時刻表（29秒）・設定（44秒）の4チャプターを設け、PCはスクロール連動と通常再生を切り替えられます。スマートフォンと動きを減らす設定では、自動スクラブをせず手動再生にします。
 - `prefers-reduced-motion: reduce` を設定している環境では，CSS・JS 双方のアニメーションが自動的に停止します．
 - `tests/e2e.test.mjs` は現在の App Router 構成を対象とし，本番ビルドを起動して主要導線を検証します．
