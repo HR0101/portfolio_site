@@ -125,9 +125,10 @@
 .featureCopy > p { color: var(--muted); font-size: 19px; line-height: 1.7; text-wrap: pretty; }
 .featureScreens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 620px; margin: auto; gap: 36px; align-items: start; animation: screenReveal .45s ease both; }
 .featureScreens .screenshot:nth-child(2) { margin-top: 60px; }
-.featureButtons { display: flex; width: fit-content; max-width: 100%; overflow-x: auto; flex-wrap: nowrap; gap: 3px; padding: 6px; margin: 58px auto 0; border-radius: 999px; background: #e8e8ed; scrollbar-width: none; }
-.featureButtons button { flex: none; min-height: 44px; padding: 10px 16px; background: transparent; border: 0; border-radius: 999px; color: #515154; font-size: 12px; font-weight: 600; cursor: pointer; }
-.featureButtons button[aria-pressed='true'] { background: #fff; color: #1d1d1f; box-shadow: 0 2px 8px #0000000c; }
+.featureButtons { display: flex; width: fit-content; max-width: 100%; overflow-x: auto; flex-wrap: nowrap; gap: 3px; padding: 7px; margin: 58px auto 0; border: 1px solid #ffffffb3; border-radius: 999px; background: linear-gradient(135deg, #ffffff80, #e2e5eb59 48%, #ffffff66); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); box-shadow: inset 0 1px 1px #ffffffeb, inset 0 -1px 1px #a0a5b51a, 0 8px 28px #222b4010, 0 2px 6px #222b4008; scrollbar-width: none; }
+.featureButtons button { position: relative; flex: none; min-height: 44px; padding: 10px 16px; background: transparent; border: 1px solid transparent; border-radius: 999px; color: #515154; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .25s ease, box-shadow .25s ease, color .25s ease; }
+.featureButtons button:hover { background: #ffffff40; color: #1d1d1f; }
+.featureButtons button[aria-pressed='true'] { background: linear-gradient(155deg, #fffffff2, #ffffff80 55%, #eef1f5a6); border-color: #ffffffe6; color: #1d1d1f; box-shadow: inset 0 1px 2px #fff, inset 0 -1px 2px #ffffff99, 0 4px 12px #29334d18, 0 1px 3px #29334d12; }
 .screenshot { margin: 0; min-width: 0; }
 .screenshotButton { display: block; position: relative; width: 100%; padding: 0; overflow: hidden; border: 3px solid #252527; border-radius: 38px; background: #252527; box-shadow: 0 30px 45px -20px #00000040; cursor: zoom-in; }
 .screenshotButton img { display: block; width: 100%; height: auto; }
@@ -170,9 +171,10 @@
 .dialogToolbar button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #ffffff15; color: #fff; cursor: pointer; }
 .featureButtons button:focus-visible, .sceneCategories button:focus-visible, .sceneButtons button:focus-visible, .screenshotButton:focus-visible, .dialogToolbar button:focus-visible { outline: 3px solid #2997ff; outline-offset: 4px; }
 :global(.dark) .featureSection { background: #161617; }
-:global(.dark) .featureButtons { background: #29292c; }
+:global(.dark) .featureButtons { background: linear-gradient(135deg, #ffffff1a, #777f8e14 48%, #ffffff0d); border-color: #ffffff26; box-shadow: inset 0 1px 1px #ffffff33, inset 0 -1px 1px #ffffff08, 0 8px 28px #00000033; }
 :global(.dark) .featureButtons button { color: #a1a1a6; }
-:global(.dark) .featureButtons button[aria-pressed='true'] { background: #f5f5f7; color: #1d1d1f; }
+:global(.dark) .featureButtons button:hover { background: #ffffff0d; color: #f5f5f7; }
+:global(.dark) .featureButtons button[aria-pressed='true'] { background: linear-gradient(155deg, #ffffff33, #ffffff14 55%, #c6d3e326); border-color: #ffffff40; color: #f5f5f7; box-shadow: inset 0 1px 2px #ffffff40, inset 0 -1px 2px #ffffff0d, 0 4px 12px #00000026; }
 @keyframes screenReveal { from { opacity: .35; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 800px) {
   .featureSection, .skySection { padding-block: 80px; }
