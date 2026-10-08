@@ -20,13 +20,13 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
     <section className="min-h-[70vh] flex items-center justify-center px-6 py-24">
       <div className="max-w-md text-center">
-        <p className="text-sm font-semibold tracking-widest text-sky-700 dark:text-sky-400 uppercase">
+        <p className="text-sm font-semibold tracking-widest text-subtle dark:text-night-subtle uppercase">
           Something went wrong
         </p>
         <h1 className="mt-4 text-3xl md:text-4xl font-semibold tracking-tight">
           問題が発生しました
         </h1>
-        <p className="mt-4 text-slate-600 dark:text-slate-400 leading-relaxed">
+        <p className="mt-4 text-subtle dark:text-night-subtle leading-relaxed">
           一時的な不具合の可能性があります．再読み込みをお試しください．
           解消しない場合は，お手数ですがメールでご連絡ください．
         </p>
@@ -34,14 +34,14 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           <button
             type="button"
             onClick={reset}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-gradient-to-r from-sky-700 to-violet-700 shadow-soft hover:shadow-soft-lg transition-all duration-300"
+            className="press-effect inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-accent-strong shadow-soft hover:shadow-soft-lg transition-all duration-300"
           >
             <RefreshCw className="w-4 h-4" aria-hidden="true" />
             もう一度読み込む
           </button>
           <a
             href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold border border-soft dark:border-night-border text-slate-700 dark:text-slate-200 hover:border-sky-500 hover:text-sky-700 dark:hover:text-sky-400 transition-colors duration-300"
+            className="press-effect inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold border border-soft dark:border-night-border text-ink dark:text-night-ink hover:border-ink dark:hover:border-night-ink hover:text-ink dark:hover:text-night-ink transition-colors duration-300"
           >
             <Home className="w-4 h-4" aria-hidden="true" />
             トップへ戻る

@@ -1,5 +1,7 @@
 # Portfolio Site
 
+公開サイト: **https://hr0101.dev/**（Cloudflare DNS + AWS S3 / CloudFront）
+
 Swift / SwiftUI で個人開発した iPhone・Mac アプリを紹介する，個人ポートフォリオサイトです．
 Next.js 16（App Router）+ TypeScript + Tailwind CSS v4 で構築し，GitHub（[HR0101](https://github.com/HR0101)）の活動を動的に取得して表示します．
 
@@ -34,18 +36,59 @@ npm run check      # typecheck → lint → build → E2E
 
 ## 品質チェックと CI
 
+### Dockerで起動・テストする
+
+Docker Desktop（Compose対応）を起動しておけば、ホストにNode.jsをインストールせずに実行できます。
+Node.js 22のLinuxコンテナを使用します。参照元のegiftサイトと同様に、開発時はソースを共有し、依存パッケージは名前付きボリュームに保存します。このサイトにデータベースは不要です。
+
+```bash
+# 開発サーバーをバックグラウンド起動（ソース変更を自動反映）
+docker compose up --build -d --wait web
+# http://localhost:3002
+
+# 型チェック → ESLint → 本番ビルド → E2Eスモークテスト
+docker compose --profile test run --build --rm test
+
+# 状態・ログの確認
+docker compose ps
+docker compose logs -f web
+
+# 停止（依存パッケージと開発キャッシュは保持）
+docker compose down
+```
+
+同じ操作を `npm run docker:up` / `npm run docker:test` / `npm run docker:down` でも実行できます。
+ポートが使用中の場合は `PORTFOLIO_PORT=3003 docker compose up --build -d --wait web` のように変更してください。
+公開先はローカルPCのみ（127.0.0.1）です。
+
+開発用の `node_modules` と `.next` はDocker専用ボリュームに分離しています。
+起動時に `npm ci` で依存関係を揃えるため、package-lock.jsonを更新したら `docker compose restart web` を実行してください。
+開発時は共有したソースにNext.jsが生成する型定義などが書き込まれることがあります。
+
+テストはソースをイメージにコピーして実行し、ホストのファイルや開発用ボリュームには書き込みません。
+テスト用サーバーはコンテナ内の3111番で起動・終了するため、開発サーバーと同時に実行できます。
+毎回 `--build` を付けることで最新の変更を検証し、失敗時は非ゼロの終了コードを返します。
+これはHTTPレスポンスを確認するスモークテストで、ブラウザの見た目を自動判定するものではありません。
+
+`.env*` はイメージに含めません。開発サービスでは既存の `.env.local` をソース共有経由で読み込めます。
+テストはトークンなしで実行でき、GitHub APIに接続できない場合のフォールバックも既存実装で扱います。
+
+### ローカル・CI
+
 `.github/workflows/ci.yml` が push / Pull Request で `typecheck → lint → build → test` を実行します．
 ローカルでも `npm run check` で同じ検証を一括実行できます．
 
 ## テスト
 
-`tests/e2e.test.mjs` が本番ビルドを実際に起動して 25 項目を検証します（セクション構成・アプリ掲載・公式アプリアイコン・GitHub リンク・問い合わせ導線・タブの ARIA・メタデータ・構造化データ・robots / sitemap / OGP 画像・API ルート・404・セキュリティヘッダー）．
+`tests/e2e.test.mjs` が本番ビルドを実際に起動して 36 項目を検証します（セクション構成・アプリ掲載・アプリ専用ページ・公式アプリアイコン・GitHub リンク・問い合わせ導線・タブの ARIA・メタデータ・構造化データ・robots / sitemap / OGP 画像・API ルート・404・セキュリティヘッダー）．
 
 ```bash
 npm run build && npm test
 ```
 
 ## 環境変数
+
+AWSでの公開は [DEPLOY.md](DEPLOY.md) を参照してください。AWS CLI認証後、`npm run deploy:aws` でS3 + CloudFrontの構築、HTTPS公開、公開URLの反映とHTTP検証まで実行できます。
 
 | 変数 | 用途 |
 | --- | --- |

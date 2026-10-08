@@ -32,3 +32,5 @@ dist-ssr
 
 # TypeScript build cache
 *.tsbuildinfo
+out/
+.api-parked/

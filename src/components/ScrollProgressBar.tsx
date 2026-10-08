@@ -13,7 +13,7 @@ export function ScrollProgressBar() {
       data-testid="scroll-progress"
     >
       <div
-        className="scroll-progress h-full w-full bg-gradient-to-r from-sky-400 via-cyan-300 to-violet-400"
+        className="scroll-progress h-full w-full bg-ink dark:bg-night-ink"
         style={{ transform: `scaleX(${progress})` }}
       />
     </div>

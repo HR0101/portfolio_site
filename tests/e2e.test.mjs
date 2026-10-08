@@ -184,6 +184,93 @@ describe('メタデータと構造化データ', () => {
   });
 });
 
+describe('アプリ専用ページ', () => {
+  let tsumugiHtml = '';
+  let busTimeHtml = '';
+  let subghostHtml = '';
+
+  before(async () => {
+    tsumugiHtml = await (await fetch(`${BASE_URL}/apps/tsumugi`)).text();
+    busTimeHtml = await (await fetch(`${BASE_URL}/apps/bustimeapp`)).text();
+    subghostHtml = await (await fetch(`${BASE_URL}/apps/subghost`)).text();
+  });
+
+  it('BusTimeApp の紹介ページが配信される', () => {
+    assert.match(busTimeHtml, /次のバスへ/);
+    assert.ok(busTimeHtml.includes('/projects/bustimeapp-screens/home.png'));
+  });
+
+  it('Tsumugi の紹介ページが配信される', () => {
+    assert.match(tsumugiHtml, /一枚の布になる/);
+    assert.match(tsumugiHtml, /半減期/);
+  });
+
+  it('Tsumugi の5画面がタブとして並ぶ', () => {
+    assert.match(tsumugiHtml, /role="tablist"/);
+    for (const tab of ['ライブラリ', '要約', '信頼度', '鮮度', 'ダイジェスト']) {
+      assert.ok(tsumugiHtml.includes(tab), `タブ「${tab}」が見つかりません`);
+    }
+  });
+
+  it('Tsumugi の実機スクリーンショットを WebP で読み込む', () => {
+    for (const shot of ['library', 'item-summary', 'credibility', 'freshness', 'digest']) {
+      assert.ok(
+        tsumugiHtml.includes(`/projects/tsumugi-screens/${shot}.webp`),
+        `${shot}.webp が見つかりません`,
+      );
+    }
+    // 重い PNG を直接参照していないこと
+    assert.ok(!tsumugiHtml.includes('/projects/tsumugi-screens/library.png'));
+  });
+
+  it('Subghost の紹介ページが配信される', () => {
+    assert.match(subghostHtml, /終わったら分かる/);
+    assert.match(subghostHtml, /ノッチ/);
+  });
+
+  it('Subghost の状態表にフックイベントと2状態が並ぶ', () => {
+    for (const event of ['SessionStart', 'UserPromptSubmit', 'PermissionRequest', 'Stop', 'SessionEnd']) {
+      assert.ok(subghostHtml.includes(event), `${event} が見つかりません`);
+    }
+    assert.ok(subghostHtml.includes('Working'));
+    assert.ok(subghostHtml.includes('Done'));
+  });
+
+  it('Subghost が監視専用であることを明記している', () => {
+    assert.match(subghostHtml, /プロンプトを送らない/);
+    assert.match(subghostHtml, /プロセスを終了しない/);
+    // 本文プレビューが既定で無効であること
+    assert.match(subghostHtml, /既定で読まない/);
+  });
+
+  it('各アプリページから GitHub リポジトリへ導線がある', () => {
+    assert.ok(tsumugiHtml.includes('https://github.com/HR0101/Tsumugi'));
+    assert.ok(busTimeHtml.includes('https://github.com/HR0101/BusTimeApp'));
+    assert.ok(subghostHtml.includes('https://github.com/HR0101/subghost'));
+  });
+
+  it('アプリ専用の OGP 画像が生成される', async () => {
+    for (const path of ['/apps/tsumugi', '/apps/subghost']) {
+      const response = await fetch(`${BASE_URL}${path}/opengraph-image`);
+      assert.equal(response.status, 200, `${path} の OGP 画像が返りません`);
+      assert.equal(response.headers.get('content-type'), 'image/png');
+    }
+  });
+
+  it('sitemap にすべてのアプリページが登録される', async () => {
+    const xml = await (await fetch(`${BASE_URL}/sitemap.xml`)).text();
+    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost']) {
+      assert.ok(xml.includes(path), `${path} が sitemap にありません`);
+    }
+  });
+
+  it('トップページから各アプリページへ遷移できる', () => {
+    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost']) {
+      assert.ok(homePageHtml.includes(path), `${path} へのリンクがありません`);
+    }
+  });
+});
+
 describe('補助ファイル', () => {
   it('robots.txt に sitemap が記載されている', async () => {
     const response = await fetch(`${BASE_URL}/robots.txt`);

@@ -5,16 +5,27 @@
    デザイントークン（ダークモード基調のカスタムカラー）
    ───────────────────────────────────── */
 @theme {
-  /* ライト（既定）：白を基調にした，やわらかい色 */
-  --color-cream: #fbfaf9;        /* ページ背景（わずかに温かみのある白） */
-  --color-mist: #f3f4f7;         /* 面をそっと区切る淡いグレー */
-  --color-soft: #ebedf3;         /* ボーダー（線を目立たせない） */
-  --color-ink: #313a4b;          /* 本文の文字（真っ黒を避けて柔らかく） */
+  /* Apple 公式サイトの配色に合わせた中間色（ライト） */
+  --color-cream: #ffffff;        /* ページ背景（純白） */
+  --color-mist: #f5f5f7;         /* セクションやチップの淡いグレー */
+  --color-soft: #d2d2d7;         /* 区切り線 */
+  --color-ink: #1d1d1f;          /* 本文の文字 */
+  --color-body: #333336;         /* 本文の文字（apple.com で最も多く使われている色） */
+  --color-subtle: #6e6e73;       /* 補足・メタ情報の文字 */
 
   /* ダーク（切り替え時） */
-  --color-night: #0b1020;        /* ページ背景 */
-  --color-night-soft: #141c2e;   /* カード背景 */
-  --color-night-border: #26324a; /* ボーダー */
+  --color-night: #000000;        /* ページ背景（純黒） */
+  --color-night-soft: #1d1d1f;   /* カード背景 */
+  --color-night-border: #424245; /* 区切り線 */
+  --color-night-ink: #f5f5f7;    /* 見出しの文字 */
+  --color-night-body: #e8e8ed;   /* 本文の文字 */
+  --color-night-subtle: #86868b; /* 副次的な文字 */
+
+  /* アクセント（Apple の青） */
+  --color-accent: #0066cc;        /* リンク・ラベルなどの文字 */
+  --color-accent-strong: #0071e3; /* ボタンの塗り */
+  --color-accent-hover: #0077ed;  /* ボタンのホバー */
+  --color-accent-dark: #2997ff;   /* ダークモードの強調 */
 }
 
 /* ─────────────────────────────────────
@@ -22,10 +33,18 @@
    ビルドを外部配信元に依存させず，OS 標準の UI フォントを使う．
    ───────────────────────────────────── */
 @theme {
+  /* Apple 純正の組み合わせ．
+     欧文は San Francisco（-apple-system / BlinkMacSystemFont が該当），
+     和文はヒラギノ角ゴシック（Hiragino Sans は同書体の現行名で W0〜W9 を持ち，
+     太字の再現が正確なため先に置く）．
+     Apple 以外の環境では Segoe UI → 游ゴシック → メイリオへ順に落とす． */
   --font-sans:
-    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans',
-    'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI', 'Yu Gothic',
-    'Meiryo', sans-serif;
+    -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+    'Segoe UI', 'Yu Gothic Medium', 'Yu Gothic', 'Noto Sans JP', 'Meiryo', sans-serif;
+
+  /* 等幅も Apple 純正（SF Mono）を優先する */
+  --font-mono:
+    ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, 'Courier New', monospace;
 }
 
 html {
@@ -57,6 +76,25 @@ h4 {
 /* 本文の折り返しを読みやすく（孤立行を防ぐ） */
 p {
   text-wrap: pretty;
+}
+
+/* ─────────────────────────────────────
+   押せる要素のカーソル
+   Tailwind v4 から button の既定が cursor: default になったため，
+   押せることが見た目で分かるよう pointer に戻す．
+   ───────────────────────────────────── */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+[role='tab'],
+a[href],
+label[for],
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
 }
 
 /* ─────────────────────────────────────
@@ -160,17 +198,28 @@ p {
    Contribution Graph（草）の色階調
    レベル 0（活動なし）〜 4（最多）
    ───────────────────────────────────── */
-.contrib-0 { background-color: #eef0f5; }
-.contrib-1 { background-color: #d7ecfb; }
-.contrib-2 { background-color: #a8d9f6; }
-.contrib-3 { background-color: #74c2ee; }
-.contrib-4 { background-color: #3ea5dd; }
+/* GitHub 本家と同じ緑の階調（Primer のコントリビューション配色をそのまま使う） */
+.contrib-0 { background-color: #ebedf0; }
+.contrib-1 { background-color: #9be9a8; }
+.contrib-2 { background-color: #40c463; }
+.contrib-3 { background-color: #30a14e; }
+.contrib-4 { background-color: #216e39; }
 
-.dark .contrib-0 { background-color: #172033; }
-.dark .contrib-1 { background-color: #0c4a6e; }
-.dark .contrib-2 { background-color: #0369a1; }
-.dark .contrib-3 { background-color: #0ea5e9; }
-.dark .contrib-4 { background-color: #7dd3fc; }
+.dark .contrib-0 { background-color: #161b22; }
+.dark .contrib-1 { background-color: #0e4429; }
+.dark .contrib-2 { background-color: #006d32; }
+.dark .contrib-3 { background-color: #26a641; }
+.dark .contrib-4 { background-color: #39d353; }
+
+/* 本家と同じく，マスの縁にごく薄い輪郭を重ねて粒を締める */
+[class*='contrib-'] {
+  outline: 1px solid rgb(27 31 35 / 0.06);
+  outline-offset: -1px;
+}
+
+.dark [class*='contrib-'] {
+  outline-color: rgb(255 255 255 / 0.05);
+}
 
 /* ─────────────────────────────────────
    アクセシビリティ：視差効果を減らす設定の尊重
@@ -470,8 +519,8 @@ p {
   z-index: 0;
   background: radial-gradient(
     circle,
-    rgb(125 211 252 / 0.18),
-    rgb(196 181 253 / 0.12) 45%,
+    rgb(0 113 227 / 0.10),
+    rgb(0 113 227 / 0.05) 45%,
     transparent 70%
   );
   filter: blur(40px);
@@ -535,15 +584,240 @@ p {
 /* ─────────────────────────────────────
    やわらかい影（輪郭を強調しない，広く淡い影）
    ───────────────────────────────────── */
-.shadow-soft {
-  box-shadow: 0 18px 40px -24px rgb(49 58 75 / 0.28);
-}
-
-.shadow-soft-lg {
-  box-shadow: 0 28px 60px -30px rgb(49 58 75 / 0.32);
-}
-
+/* Apple のページはカードに影を落とさない（実測で box-shadow は0件）．
+   互換のためクラスは残しつつ，影は無効にしている． */
+.shadow-soft,
+.shadow-soft-lg,
 .dark .shadow-soft,
 .dark .shadow-soft-lg {
-  box-shadow: 0 24px 50px -28px rgb(0 0 0 / 0.6);
+  box-shadow: none;
+}
+
+/* ─────────────────────────────────────
+   タイル：Apple の面の作り方（塗りだけ・枠線なし・大きめの角丸）
+   白い地の上では淡いグレー，グレーの地（.tinted）の上では白を敷く．
+   ───────────────────────────────────── */
+.tile {
+  background-color: var(--color-mist);
+  border-radius: 1.75rem; /* 28px：apple.com で最も使われている角丸 */
+}
+
+.dark .tile {
+  background-color: var(--color-night-soft);
+}
+
+.tinted .tile {
+  background-color: #ffffff;
+}
+
+.dark .tinted .tile {
+  background-color: #242426;
+}
+
+/* タイルの中に置く小さな面（アイコンチップ・タグ）．
+   タイルと同色にならないよう，地の色を反転させる． */
+.chip {
+  background-color: #ffffff;
+}
+
+.dark .chip {
+  background-color: #000000;
+}
+
+.tinted .chip {
+  background-color: var(--color-mist);
+}
+
+.dark .tinted .chip {
+  background-color: var(--color-night-soft);
+}
+
+/* ─────────────────────────────────────
+   文字単位の細かいアニメーション
+   ───────────────────────────────────── */
+
+/* 1文字ずつ下から立ち上がる（見出し用） */
+@keyframes charRise {
+  from {
+    opacity: 0;
+    transform: translateY(0.5em) rotateX(-40deg);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+    filter: blur(0);
+  }
+}
+
+.animate-char-rise {
+  display: inline-block;
+  opacity: 0;
+  animation: charRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 数字が縦に回る（カウンター用） */
+.digit-roll {
+  display: inline-block;
+  overflow: hidden;
+  height: 1em;
+  line-height: 1;
+  vertical-align: bottom;
+}
+
+.digit-roll-track {
+  display: flex;
+  flex-direction: column;
+  transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.digit-roll-track > span {
+  height: 1em;
+  line-height: 1;
+}
+
+/* 年表の節目が点灯した瞬間に広がる波紋 */
+@keyframes dotPulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+.animate-dot-pulse {
+  animation: dotPulse 1.4s ease-out infinite;
+}
+
+/* ボタンを押した瞬間の沈み込み */
+.press-effect {
+  transition: transform 0.12s ease-out;
+}
+
+.press-effect:active {
+  transform: scale(0.96);
+}
+
+/* カード内の要素が順番に現れる（アイコン → 見出し → 本文 → タグ） */
+.reveal-visible .stagger-child {
+  animation: charRise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.reveal-visible .stagger-child:nth-child(1) { animation-delay: 0.05s; }
+.reveal-visible .stagger-child:nth-child(2) { animation-delay: 0.12s; }
+.reveal-visible .stagger-child:nth-child(3) { animation-delay: 0.19s; }
+.reveal-visible .stagger-child:nth-child(4) { animation-delay: 0.26s; }
+.reveal-visible .stagger-child:nth-child(5) { animation-delay: 0.33s; }
+
+/* コピー完了の吹き出し */
+@keyframes toastPop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+  15%,
+  80% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.animate-toast {
+  animation: toastPop 1.8s ease-out forwards;
+}
+
+/* リンクの下線が左から伸びる */
+.underline-grow {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 0.3s ease-out;
+}
+
+.underline-grow:hover,
+.underline-grow:focus-visible {
+  background-size: 100% 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-char-rise,
+  .animate-dot-pulse,
+  .animate-toast,
+  .reveal-visible .stagger-child {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .digit-roll-track {
+    transition: none;
+  }
+
+  .press-effect:active {
+    transform: none;
+  }
+
+  .underline-grow {
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────────────
+   カーソル・クリックまわりの演出
+   ───────────────────────────────────── */
+
+/* クリック地点から静かに広がる波紋 */
+@keyframes rippleSpread {
+  0% {
+    opacity: 0.5;
+    width: 0;
+    height: 0;
+  }
+  100% {
+    opacity: 0;
+    width: 260px;
+    height: 260px;
+  }
+}
+
+.click-ripple {
+  transform: translate(-50%, -50%);
+  animation: rippleSpread 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* カードの傾きに合わせて走る虹色の反射（ごく淡く重ねる） */
+.tilt-card-holo {
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.5) 46%,
+    rgb(0 113 227 / 0.14) 52%,
+    transparent 72%
+  );
+  background-size: 250% 250%;
+  opacity: 0;
+  mix-blend-mode: soft-light;
+  transition: opacity 0.35s ease;
+}
+
+.tilt-card:hover .tilt-card-holo {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .click-ripple {
+    animation: none;
+    display: none;
+  }
+
+  .tilt-card-holo {
+    display: none;
+  }
 }

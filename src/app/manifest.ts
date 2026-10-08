@@ -1,4 +1,7 @@
 import type { MetadataRoute } from 'next';
+
+// 内容がリクエストに依存しないため，静的ファイルとして書き出す
+export const dynamic = 'force-static';
 import { siteConfig } from '../config/site';
 
 // ホーム画面に追加したときの表示設定

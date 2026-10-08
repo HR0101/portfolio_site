@@ -62,7 +62,7 @@ export function TypingText({ phrases, className = '', accessibleText }: TypingTe
       <span className={className} aria-hidden={accessibleText ? 'true' : undefined}>
         {visibleText}
         {!prefersReducedMotion && (
-          <span className="animate-caret text-sky-500 dark:text-sky-400" aria-hidden="true">
+          <span className="animate-caret text-subtle dark:text-night-subtle" aria-hidden="true">
             |
           </span>
         )}

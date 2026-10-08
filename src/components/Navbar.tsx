@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { GitHubIcon } from './icons/GitHubIcon';
-import { ConfettiButton } from './ConfettiButton';
 import { siteConfig } from '../config/site';
 import { useActiveSection } from '../hooks/useActiveSection';
 import { subscribeToScroll } from '../lib/scrollObserver';
@@ -22,6 +23,7 @@ const NAV_LINKS = [
 const SCROLL_THRESHOLD_PX = 16;
 
 export function Navbar() {
+  const isHome = usePathname() === '/';
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -55,12 +57,6 @@ export function Navbar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMenuOpen]);
 
-  // ロゴのクリックでページ先頭へ戻る（同時に紙吹雪が舞う）
-  const scrollToTop = () => {
-    closeMenu();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   // スクロール中またはメニュー展開中は背景を不透明にする
   const headerBackgroundClass =
     isScrolled || isMenuOpen
@@ -74,14 +70,15 @@ export function Navbar() {
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* ロゴ（クリックすると紙吹雪が舞うイースターエッグ付き） */}
-        <ConfettiButton
-          onClick={scrollToTop}
-          ariaLabel="ページ先頭へ戻る"
-          className="font-semibold text-lg tracking-tight hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+        <Link
+          href="/#hero"
+          onClick={closeMenu}
+          aria-label="ホームへ戻る"
+          className="inline-flex min-h-11 items-center font-semibold text-lg tracking-tight text-ink dark:text-night-ink transition-colors"
         >
           {siteConfig.displayName}
-          <span className="text-sky-500">.</span>
-        </ConfettiButton>
+          <span className="text-subtle">.</span>
+        </Link>
 
         {/* デスクトップ用ナビゲーション */}
         <nav className="hidden md:flex items-center gap-8" aria-label="メインナビゲーション">
@@ -90,18 +87,18 @@ export function Navbar() {
             return (
               <a
                 key={link.href}
-                href={link.href}
+                href={isHome ? link.href : `/${link.href}`}
                 aria-current={isActive ? 'true' : undefined}
-                className={`group relative text-sm font-medium transition-colors ${
+                className={`group relative inline-flex min-h-11 items-center text-sm font-medium transition-colors ${
                   isActive
-                    ? 'text-sky-700 dark:text-sky-400'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400'
+                    ? 'text-ink dark:text-night-ink'
+                    : 'text-subtle dark:text-night-subtle hover:text-ink dark:hover:text-night-ink'
                 }`}
               >
                 {link.label}
                 {/* ホバー・選択中に伸びる下線 */}
                 <span
-                  className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-gradient-to-r from-sky-400 to-indigo-400 transition-all duration-300 ${
+                  className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-ink dark:bg-night-ink transition-all duration-300 ${
                     isActive ? 'w-full' : 'w-0 group-hover:w-full'
                   }`}
                   aria-hidden="true"
@@ -117,7 +114,7 @@ export function Navbar() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub プロフィールを開く"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 dark:text-slate-300 hover:bg-mist dark:hover:bg-night-soft hover:scale-110 hover:-rotate-6 transition-all duration-300"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-subtle dark:text-night-subtle hover:bg-mist dark:hover:bg-night-soft hover:scale-110 hover:-rotate-6 transition-all duration-300"
           >
             <GitHubIcon className="w-5 h-5" />
           </a>
@@ -127,7 +124,7 @@ export function Navbar() {
           <button
             ref={menuButtonRef}
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-600 dark:text-slate-300 hover:bg-mist dark:hover:bg-night-soft transition-colors md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-subtle dark:text-night-subtle hover:bg-mist dark:hover:bg-night-soft transition-colors md:hidden"
             aria-label={isMenuOpen ? 'メニューを閉じる' : 'メニューを開く'}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-navigation"
@@ -149,11 +146,11 @@ export function Navbar() {
             {NAV_LINKS.map((link, index) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={isHome ? link.href : `/${link.href}`}
                 onClick={closeMenu}
                 aria-current={`#${activeSectionId}` === link.href ? 'true' : undefined}
                 // 開いたときに上から順に現れる
-                className="animate-pop-in py-3 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400 hover:translate-x-1 transition-all"
+                className="animate-pop-in py-3 text-sm font-medium text-subtle dark:text-night-subtle hover:text-ink dark:hover:text-night-ink hover:translate-x-1 transition-all"
                 style={{ animationDelay: `${index * 45}ms` }}
               >
                 {link.label}

@@ -1,0 +1,455 @@
+/* Tsumugi（紬）専用の配色．生成りの紙に，藍（経糸）と金茶（緯糸）を重ねたトーン． */
+.page {
+  --paper: #f6f2ea;
+  --paper-deep: #ece5d8;
+  --card: #fffdf9;
+  --line: #ddd4c4;
+  --text: #322e27;
+  --muted: #6d675c;
+  --warp: #3f5c78;
+  --weft: #a3763a;
+  background: var(--paper);
+  color: var(--text);
+  padding-top: 64px;
+  overflow: clip;
+}
+.page h2 {
+  font-size: clamp(28px, 4vw, 50px);
+  line-height: 1.4;
+  letter-spacing: -.035em;
+  font-weight: 700;
+}
+.page h2 span { color: var(--warp); }
+.page h3 { font-weight: 650; }
+.page p { line-height: 1.9; }
+
+/* ── ページ内ナビ ── */
+.localNav {
+  max-width: 1160px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+.localNav a { padding-block: 10px; color: #5c6a76; }
+.localNav span { font-size: 16px; font-weight: 650; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .18em;
+  color: #7b7263;
+  margin-bottom: 22px;
+}
+
+/* ── ヒーロー ── */
+.hero {
+  position: relative;
+  max-width: 1400px;
+  margin: auto;
+  padding: 70px 36px 90px;
+  display: grid;
+  grid-template-columns: 1fr .95fr;
+  align-items: center;
+  gap: 50px;
+}
+/* 背景にうっすら織り目を敷く（内容の読みやすさを損なわない濃さに留める） */
+.heroCloth {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, #3f5c7826 0 2px, transparent 2px 9px),
+    repeating-linear-gradient(0deg, #a3763a1f 0 2px, transparent 2px 9px);
+  /* 端末の背後をいちばん濃くし，本文にかかる手前で消す */
+  mask-image: radial-gradient(ellipse 52% 76% at 74% 50%, #000 12%, transparent 78%);
+}
+/* 端末の背後に，生成りから藍へ沈むうすい光を置く */
+.heroGlow {
+  position: absolute;
+  right: 2%;
+  top: 12%;
+  width: 46%;
+  height: 78%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, #dfe7ef99 0%, #f0e9dc66 45%, transparent 72%);
+}
+.heroCopy { position: relative; z-index: 1; }
+.appName {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  font-weight: 650;
+  margin-bottom: 26px;
+}
+.appName img { border-radius: 10px; }
+.appName span { font-size: 11px; color: var(--muted); font-weight: 400; }
+.hero h1 {
+  font-size: clamp(32px, 4.3vw, 57px);
+  font-weight: 750;
+  line-height: 1.4;
+  letter-spacing: -.05em;
+}
+.hero h1 em { font-style: normal; color: var(--warp); }
+.lead { font-size: clamp(19px, 2vw, 24px); font-weight: 550; margin-top: 25px; }
+.bodyCopy { font-size: 14px; color: var(--muted); margin: 20px 0 28px; }
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 30px;
+  background: var(--warp);
+  color: #fff;
+  padding: 12px 23px;
+  font-size: 14px;
+  transition: background .2s, transform .2s;
+}
+.primaryLink:hover { background: #33506c; transform: translateY(-2px); }
+.heroNote { font-size: 10px; color: var(--muted); margin-top: 24px; }
+
+.heroVisual {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+.phone {
+  position: relative;
+  width: min(100%, 278px);
+  padding: 7px;
+  background: #2f2a24;
+  border: 1px solid #7d7466;
+  border-radius: 43px;
+  box-shadow: 14px 32px 60px #3a2f1f2e;
+}
+.phone img { display: block; width: 100%; height: auto; border-radius: 35px; }
+.heroVisual figcaption { margin-top: 24px; font-size: 10px; color: var(--muted); }
+/* ヒーローの端末はわずかに傾けて，紙に置いた一枚のように見せる */
+.heroPhone { transform: rotate(3deg); }
+
+/* ── 導入 ── */
+.intro, .craft, .halfLife { max-width: 1100px; margin: auto; padding: 100px 28px; }
+.intro > p:not(.eyebrow) { max-width: 660px; color: var(--muted); margin-top: 28px; }
+.threeColumns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 44px;
+  margin-top: 65px;
+}
+.threeColumns svg { color: var(--warp); margin-bottom: 22px; }
+.threeColumns h3 { font-size: 19px; margin-bottom: 14px; }
+.threeColumns p { font-size: 14px; color: var(--muted); }
+
+/* ── 名前の由来（紙の帯） ── */
+.originStrip {
+  background: var(--paper-deep);
+  border-block: 1px solid var(--line);
+  padding: 72px max(28px, calc((100vw - 1044px) / 2));
+}
+.originInner { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 64px; align-items: center; }
+/* 詳細度で .originInner p に負けないよう，親クラスを重ねて指定する */
+.originInner .originGlyph {
+  font-size: clamp(92px, 12vw, 150px);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -.04em;
+  color: var(--warp);
+  margin: 0;
+  text-align: center;
+}
+.originInner .originGlyph small {
+  display: block;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .3em;
+  color: var(--muted);
+  margin-top: 18px;
+}
+.originInner h2 { font-size: clamp(22px, 2.6vw, 32px); }
+.originInner p { color: var(--muted); font-size: 15px; margin-top: 20px; max-width: 680px; }
+
+/* ── 織りセクション（濃色） ── */
+.weaveSection {
+  background: #221f1a;
+  color: #f2ece1;
+  padding: 100px max(28px, calc((100vw - 1044px) / 2));
+  scroll-margin-top: 72px;
+}
+.sectionHeading { text-align: center; }
+.weaveSection .eyebrow { color: #bdae94; }
+.weaveSection h2 span { color: #b9cbdd; }
+.sectionHeading > p:last-child { color: #c5bcab; margin-top: 26px; }
+
+/* ── 診断ギャラリー ── */
+.diagnosis {
+  background: var(--card);
+  border-block: 1px solid var(--line);
+  padding: 100px max(28px, calc((100vw - 1100px) / 2));
+  scroll-margin-top: 72px;
+}
+.diagTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 48px 0 56px;
+}
+.diagTabs button {
+  min-height: 44px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .25s, color .25s, border-color .25s;
+}
+.diagTabs button:hover { border-color: var(--warp); color: var(--warp); }
+.diagTabs button[aria-selected='true'] {
+  background: var(--warp);
+  border-color: var(--warp);
+  color: #fff;
+}
+.diagPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 72px;
+  align-items: center;
+}
+.diagPanel[hidden] { display: none; }
+.diagCopy .step { font-size: 10px; letter-spacing: .14em; color: var(--muted); }
+.diagCopy h3 { font-size: clamp(22px, 2.6vw, 30px); margin: 18px 0 20px; letter-spacing: -.03em; }
+.diagCopy > p { color: var(--muted); font-size: 15px; }
+.diagPoints { list-style: none; padding: 0; margin: 30px 0 0; }
+.diagPoints li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.diagPoints strong { color: var(--text); font-weight: 650; display: block; margin-bottom: 4px; }
+.diagPoints svg { color: var(--warp); flex: none; margin-top: 2px; }
+.diagShot { display: grid; justify-items: center; margin: 0; }
+.diagShot .phone { width: min(100%, 300px); }
+.diagShot figcaption { margin-top: 22px; font-size: 10px; color: var(--muted); }
+
+/* ── 半減期の話 ── */
+.halfLife .formula {
+  margin: 44px 0 12px;
+  padding: 26px 28px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: clamp(13px, 1.6vw, 17px);
+  letter-spacing: .02em;
+  overflow-x: auto;
+}
+.halfLifeGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 60px; align-items: center; margin-top: 50px; }
+.halfLifeNotes { list-style: none; padding: 0; margin: 34px 0 0; }
+.halfLifeNotes li { border-top: 1px solid var(--line); padding: 18px 0; font-size: 14px; color: var(--muted); }
+.halfLifeNotes strong { display: block; color: var(--text); margin-bottom: 6px; font-weight: 650; }
+
+/* ── 作りこみ ── */
+.craftGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 35px; margin-top: 55px; }
+.craftGrid > div { border-top: 1px solid var(--line); padding-top: 26px; }
+.number { color: #7b7263; font-size: 10px; letter-spacing: .12em; }
+.craftGrid h3 { font-size: 19px; margin: 24px 0 15px; }
+.craftGrid p { color: var(--muted); font-size: 14px; }
+.tech { display: block; margin-top: 24px; font-size: 11px; color: var(--warp); }
+
+/* ── 結び ── */
+.closing { text-align: center; padding: 85px 24px 100px; background: var(--paper-deep); }
+.closing img { margin: 0 auto 28px; border-radius: 18px; }
+.closing h2 { font-size: clamp(27px, 3.5vw, 42px); }
+.closing p { color: var(--muted); font-size: 14px; margin: 22px 0 28px; }
+.backLink { display: block; width: fit-content; margin: 24px auto 0; padding: 10px; color: var(--warp); font-size: 13px; }
+.finePrint { font-size: 11px; color: var(--muted); margin-top: 34px; }
+
+/* ── ダークモード ── */
+:global(.dark) .page {
+  --paper: #14120f;
+  --paper-deep: #1c1915;
+  --card: #1a1713;
+  --line: #3a342c;
+  --text: #f2ece1;
+  --muted: #b1a897;
+  --warp: #93b6d6;
+  --weft: #d5aa63;
+}
+:global(.dark) .localNav a { color: #bdb3a2; }
+:global(.dark) .page .eyebrow, :global(.dark) .number { color: #b1a897; }
+:global(.dark) .primaryLink { background: #2f5578; color: #eef5fb; }
+:global(.dark) .primaryLink:hover { background: #3b6690; }
+:global(.dark) .heroCloth { opacity: .6; }
+:global(.dark) .heroGlow { background: radial-gradient(ellipse at center, #2b3d4f7a 0%, #1d1c1866 45%, transparent 72%); }
+:global(.dark) .diagTabs button { background: #221e19; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; text-align: center; gap: 40px; padding: 40px 24px 60px; }
+  /* 端末が上に回るので，織り目と光も上側へ寄せる */
+  .heroCloth { mask-image: radial-gradient(ellipse 82% 32% at 50% 24%, #000 8%, transparent 76%); }
+  .heroGlow { right: 10%; top: 1%; width: 80%; height: 38%; }
+  .appName { justify-content: center; }
+  .hero h1 { font-size: clamp(32px, 7vw, 52px); }
+  .heroVisual { grid-row: 1; }
+  .phone { width: min(100%, 232px); }
+  .intro, .craft, .halfLife { padding-block: 66px; }
+  .threeColumns, .craftGrid { grid-template-columns: 1fr; gap: 35px; }
+  .originStrip { padding-block: 56px; }
+  .originInner { grid-template-columns: 1fr; gap: 24px; text-align: center; justify-items: center; }
+  .originInner p { margin-inline: auto; }
+  .weaveSection, .diagnosis { padding-block: 66px; }
+  .diagPanel { grid-template-columns: 1fr; gap: 40px; }
+  .diagShot { grid-row: 1; }
+  .halfLifeGrid { grid-template-columns: 1fr; gap: 40px; }
+}
+@media (max-width: 500px) {
+  .localNav { padding-inline: 18px; }
+  .localNav span { font-size: 14px; }
+  .localNav a { font-size: 10px; }
+  .diagTabs { gap: 8px; margin-block: 34px 40px; }
+  .diagTabs button { padding-inline: 15px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page *, .page *::before, .page *::after { transition: none !important; animation: none !important; }
+  .primaryLink:hover { transform: none; }
+}
+
+/* ── 織りのインタラクティブ表示 ── */
+/* 濃色の面に置くため，糸の色は明るい側に振り替える */
+.weaveSection { --warp: #9dbdda; --weft: #dcb46d; }
+.weaveStage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, .85fr);
+  gap: 56px;
+  align-items: center;
+  margin-top: 58px;
+}
+.weaveCanvasWrap {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #100e0b;
+  box-shadow: 0 34px 70px #0000005e;
+}
+.weaveCanvas { display: block; width: 100%; }
+/* 布の縁がわずかに沈んで見えるように，内側へ影を落とす */
+.weaveEdge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 44px #14100a55, inset 0 0 0 1px #ffffff14;
+  border-radius: 20px;
+}
+.weaveMeters { display: flex; gap: 40px; }
+.meterLabel { display: block; font-size: 11px; letter-spacing: .12em; color: #bdae94; margin-bottom: 6px; }
+.meterValue { font-size: clamp(36px, 4vw, 48px); font-weight: 300; letter-spacing: -.04em; line-height: 1; }
+.meterValue small { font-size: 13px; margin-left: 5px; font-weight: 400; }
+.slider { display: block; margin-top: 26px; }
+.slider span { display: block; font-size: 12px; color: #c5bcab; margin-bottom: 10px; }
+.slider input { width: 100%; height: 26px; cursor: pointer; }
+.sliderWarp input { accent-color: #7fa8cc; }
+.sliderWeft input { accent-color: #d0a355; }
+.presetRow { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+.presetRow button {
+  min-height: 44px;
+  padding: 8px 17px;
+  border-radius: 999px;
+  border: 1px solid #ffffff30;
+  background: #ffffff12;
+  color: #e9e0d1;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .25s, color .25s, border-color .25s;
+}
+.presetRow button:hover { background: #ffffff24; }
+.presetRow button[aria-pressed='true'] { background: #f1e9dc; border-color: #f1e9dc; color: #221f1a; }
+.weaveNote { font-size: 11px; color: #a99f8f; margin-top: 24px; }
+
+@media (max-width: 900px) {
+  .weaveStage { grid-template-columns: 1fr; gap: 36px; }
+  .weaveMeters { justify-content: center; gap: 34px; text-align: center; }
+}
+
+/* ── 見出しに添えるアイコン ── */
+.diagCopy h3 { display: flex; align-items: center; gap: 12px; }
+.diagCopy h3 svg { color: var(--warp); flex: none; }
+
+/* ── 半減期のグラフ ── */
+.chartCard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 26px 24px 16px;
+}
+.topicRow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.topicRow button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .25s, color .25s, border-color .25s;
+}
+.topicRow button:hover { border-color: var(--warp); color: var(--warp); }
+.topicRow button small { font-size: 11px; opacity: .75; font-weight: 400; }
+.topicRow button[aria-pressed='true'] { background: var(--warp); border-color: var(--warp); color: #fff; }
+.chartSvg { display: block; width: 100%; height: auto; }
+.chartGrid { stroke: var(--line); stroke-width: 1; }
+.chartTick { fill: var(--muted); font-size: 11px; }
+.chartMarker { stroke: var(--weft); stroke-width: 1; stroke-dasharray: 3 4; }
+.chartCurve { fill: none; stroke: var(--warp); stroke-width: 2.5; stroke-linecap: round; }
+.chartDot { fill: var(--weft); transition: opacity .45s ease; }
+.chartCallout { fill: var(--text); font-size: 13px; font-weight: 650; transition: opacity .45s ease; }
+.chartAxisNote { font-size: 10px; color: var(--muted); text-align: center; margin-top: 8px; }
+
+/* 作りこみカードの見出しにもアイコンを添える */
+.craftGrid h3 { display: flex; align-items: center; gap: 10px; }
+.craftGrid h3 svg { color: var(--warp); flex: none; }
+
+/* ── そのほかの画面（横に流せるストリップ） ── */
+.stripBlock { margin-top: 54px; border-top: 1px solid var(--line); padding-top: 42px; }
+.stripHeading {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .18em;
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+.strip {
+  display: flex;
+  gap: 26px;
+  overflow-x: auto;
+  padding: 6px 2px 22px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+.stripItem { flex: none; width: 178px; margin: 0; scroll-snap-align: start; }
+.stripPhone {
+  padding: 5px;
+  background: #2f2a24;
+  border: 1px solid #7d7466;
+  border-radius: 26px;
+  box-shadow: 0 16px 30px #3a2f1f1f;
+}
+.stripPhone img { display: block; width: 100%; height: auto; border-radius: 21px; }
+.stripItem figcaption { margin-top: 16px; font-size: 12px; color: var(--muted); line-height: 1.75; }
+.stripItem strong { display: block; color: var(--text); font-size: 14px; margin-bottom: 5px; font-weight: 650; }

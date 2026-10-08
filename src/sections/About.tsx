@@ -73,14 +73,14 @@ export function About() {
                 className="h-full"
               >
                 <TiltCard className="h-full">
-                  <div className="group h-full p-6 rounded-3xl bg-white dark:bg-night-soft border border-soft dark:border-night-border hover:border-sky-400/50 dark:hover:border-sky-500/50 hover:shadow-soft transition-all duration-300">
+                  <div className="tile group h-full p-6 hover:border-ink/25 dark:hover:border-night-ink/25 hover:shadow-soft transition-all duration-300">
                     <div
-                      className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mb-4 shadow-soft`}
+                      className="chip w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
                     >
                       <Icon className="animate-wiggle w-6 h-6 text-ink" aria-hidden="true" />
                     </div>
                     <h3 className="text-lg font-semibold mb-2">{card.title}</h3>
-                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    <p className="text-sm leading-relaxed text-subtle dark:text-night-subtle">
                       {card.description}
                     </p>
                   </div>

@@ -8,7 +8,8 @@ import { clamp, subscribeToScroll } from '../lib/scrollObserver';
 // - 'enter': 要素の上端が画面下端に触れてから，画面の中ほどに来るまでを 0→1 とする（線を描く演出向け）
 // - 'leave': 要素の上端が画面上端に達してから，1画面ぶんスクロールするまでを 0→1 とする（Hero の退場向け）
 // - 'fill': 要素が画面の少し下から，下端が画面中ほどを抜けるまでを 0→1 とする（縦線を描く演出向け）
-export type ScrollLinkMode = 'through' | 'enter' | 'leave' | 'fill';
+// - 'read': 要素が画面下寄りに現れてから，画面の6割ぶんスクロールする間を 0→1 とする（読ませる演出向け）
+export type ScrollLinkMode = 'through' | 'enter' | 'leave' | 'fill' | 'read';
 
 // 'enter' モードで進捗が 1 になる位置（画面高さに対する割合）
 const ENTER_COMPLETION_RATIO = 0.55;
@@ -40,6 +41,14 @@ export function useScrollLinked<T extends HTMLElement>(mode: ScrollLinkMode = 't
         // 要素の上端が画面下端に触れてから，画面中ほどに達するまで
         const travelDistance = viewportHeight * ENTER_COMPLETION_RATIO;
         setProgress(clamp((viewportHeight - bounds.top) / (travelDistance + bounds.height)));
+        return;
+      }
+
+      if (mode === 'read') {
+        // 要素の高さに関係なく，画面の6割ぶんスクロールする間で 0→1 にする
+        const startY = viewportHeight * 0.78;
+        const travelDistance = viewportHeight * 0.75;
+        setProgress(clamp((startY - bounds.top) / travelDistance));
         return;
       }
 

@@ -46,12 +46,20 @@ export interface SwiftApp {
   icon: LucideIcon;
   // 公式アプリアイコン（用意できる場合のみ．public からの絶対パス）
   imageSrc?: string;
+  // 注目カードに表示する実際のアプリ画面
+  screenshotSrc?: string;
+  // スクリーンショットの内容を表す代替テキスト
+  screenshotAlt?: string;
+  // 縦長画面をカード内で切り抜く際の焦点位置
+  screenshotPosition?: string;
   // カードヘッダーのグラデーション
   gradient: string;
   // 大きなカードで目立たせるかどうか
   featured: boolean;
   // 関連する GitHub リポジトリ（1〜2件）
   repositories: AppRepository[];
+  // サイト内に専用の紹介ページがある場合のパス
+  detailHref?: string;
 }
 
 // GitHub（HR0101）で公開している Swift 製アプリのカタログ．
@@ -70,6 +78,7 @@ export const SWIFT_APPS: SwiftApp[] = [
     gradient: 'from-violet-300 to-indigo-400',
     featured: true,
     repositories: [{ name: 'subghost' }],
+    detailHref: '/apps/subghost',
   },
   {
     name: 'BusTimeApp',
@@ -81,9 +90,13 @@ export const SWIFT_APPS: SwiftApp[] = [
     year: '2026',
     icon: Bus,
     imageSrc: '/projects/bustimeapp.webp',
+    screenshotSrc: '/projects/bustimeapp-screens/home.png',
+    screenshotAlt: 'BusTimeAppで次に乗れるバスを案内しているホーム画面',
+    screenshotPosition: '50% 31%',
     gradient: 'from-sky-300 to-blue-400',
     featured: true,
     repositories: [{ name: 'BusTimeApp' }],
+    detailHref: '/apps/bustimeapp',
   },
   {
     name: 'Fomura',
@@ -109,6 +122,9 @@ export const SWIFT_APPS: SwiftApp[] = [
     year: '2025 – 2026',
     icon: Server,
     imageSrc: '/projects/allserverformac.webp',
+    screenshotSrc: '/projects/allserverformac-screens/main.png',
+    screenshotAlt: 'AllServerForMacのサーバー待機状態を表示したホーム画面',
+    screenshotPosition: '50% 45%',
     gradient: 'from-amber-300 to-orange-400',
     featured: true,
     repositories: [
@@ -126,6 +142,9 @@ export const SWIFT_APPS: SwiftApp[] = [
     year: '2026',
     icon: LayoutDashboard,
     imageSrc: '/projects/teledeck.webp',
+    screenshotSrc: '/projects/teledeck-screens/ipad-main.png',
+    screenshotAlt: 'TeleDeckのMac接続手順を案内するiPad画面',
+    screenshotPosition: '50% 44%',
     gradient: 'from-rose-300 to-pink-400',
     featured: true,
     repositories: [
@@ -142,9 +161,14 @@ export const SWIFT_APPS: SwiftApp[] = [
     tags: ['SwiftUI', 'Share Extension', '端末内解析'],
     year: '2026',
     icon: NotebookPen,
+    imageSrc: '/projects/tsumugi.webp',
+    screenshotSrc: '/projects/tsumugi-screens/item-summary.png',
+    screenshotAlt: 'Tsumugiが記事の要約と信頼度・鮮度を表示している画面',
+    screenshotPosition: '50% 34%',
     gradient: 'from-cyan-300 to-sky-400',
     featured: true,
     repositories: [{ name: 'Tsumugi' }],
+    detailHref: '/apps/tsumugi',
   },
   {
     name: 'MenuDock',

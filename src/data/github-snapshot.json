@@ -1,0 +1,188 @@
+{
+  "generatedAt": "2026-09-07T16:44:37.384Z",
+  "repos": [
+    {
+      "id": 1330055945,
+      "name": "BusTimeApp",
+      "htmlUrl": "https://github.com/HR0101/BusTimeApp",
+      "description": "",
+      "language": "Swift",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-09-07T15:47:29Z",
+      "topics": []
+    },
+    {
+      "id": 1359191063,
+      "name": "rinkou-handout-builder-claude",
+      "htmlUrl": "https://github.com/HR0101/rinkou-handout-builder-claude",
+      "description": "原著PDFから高品質な日本語LaTeX輪講資料を作成・検証するClaude Code用スキル",
+      "language": "Python",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-09-06T14:26:54Z",
+      "topics": []
+    },
+    {
+      "id": 1358283455,
+      "name": "rinkou-handout-builder-codex",
+      "htmlUrl": "https://github.com/HR0101/rinkou-handout-builder-codex",
+      "description": "Codex skill for building verified Japanese LaTeX seminar handouts from source PDFs",
+      "language": "Shell",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-09-06T14:24:50Z",
+      "topics": [
+        "agent-skills",
+        "codex",
+        "japanese",
+        "latex",
+        "pdf"
+      ]
+    },
+    {
+      "id": 1078327712,
+      "name": "AllServerForMac",
+      "htmlUrl": "https://github.com/HR0101/AllServerForMac",
+      "description": "",
+      "language": "Swift",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-09-03T03:54:56Z",
+      "topics": []
+    },
+    {
+      "id": 1260587004,
+      "name": "EkiHub",
+      "htmlUrl": "https://github.com/HR0101/EkiHub",
+      "description": "",
+      "language": "JavaScript",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-08-31T06:03:11Z",
+      "topics": []
+    },
+    {
+      "id": 1348687494,
+      "name": "Tsumugi",
+      "htmlUrl": "https://github.com/HR0101/Tsumugi",
+      "description": "",
+      "language": "Swift",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-08-28T01:15:16Z",
+      "topics": []
+    },
+    {
+      "id": 1222325227,
+      "name": "VideoPlayer",
+      "htmlUrl": "https://github.com/HR0101/VideoPlayer",
+      "description": "",
+      "language": "Swift",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-08-23T17:16:40Z",
+      "topics": []
+    },
+    {
+      "id": 1302176687,
+      "name": "subghost",
+      "htmlUrl": "https://github.com/HR0101/subghost",
+      "description": "",
+      "language": "Swift",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-08-16T16:12:58Z",
+      "topics": []
+    },
+    {
+      "id": 1320179262,
+      "name": "ShortsBlock",
+      "htmlUrl": "https://github.com/HR0101/ShortsBlock",
+      "description": "",
+      "language": "JavaScript",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-08-15T13:34:43Z",
+      "topics": []
+    },
+    {
+      "id": 1297616501,
+      "name": "TeleDeck",
+      "htmlUrl": "https://github.com/HR0101/TeleDeck",
+      "description": "",
+      "language": "Swift",
+      "stargazersCount": 1,
+      "forksCount": 0,
+      "updatedAt": "2026-08-11T16:56:00Z",
+      "topics": []
+    },
+    {
+      "id": 1297619273,
+      "name": "TeleDeckMac",
+      "htmlUrl": "https://github.com/HR0101/TeleDeckMac",
+      "description": "",
+      "language": "Swift",
+      "stargazersCount": 1,
+      "forksCount": 0,
+      "updatedAt": "2026-08-11T10:02:59Z",
+      "topics": []
+    },
+    {
+      "id": 1108062117,
+      "name": "IntroDon",
+      "htmlUrl": "https://github.com/HR0101/IntroDon",
+      "description": "",
+      "language": "Swift",
+      "stargazersCount": 0,
+      "forksCount": 0,
+      "updatedAt": "2026-08-09T17:03:52Z",
+      "topics": []
+    }
+  ],
+  "events": [
+    {
+      "id": "14580824018",
+      "type": "PullRequestEvent",
+      "repoName": "HR0101/BusTimeApp",
+      "summary": "BusTimeApp のプルリクエストを更新",
+      "createdAt": "2026-09-07T15:47:30Z"
+    },
+    {
+      "id": "20347469976",
+      "type": "PushEvent",
+      "repoName": "HR0101/BusTimeApp",
+      "summary": "BusTimeApp に1件のコミットをプッシュ",
+      "createdAt": "2026-09-07T15:47:31Z"
+    },
+    {
+      "id": "14580008478",
+      "type": "PullRequestEvent",
+      "repoName": "HR0101/BusTimeApp",
+      "summary": "BusTimeApp のプルリクエストを更新",
+      "createdAt": "2026-09-07T15:31:39Z"
+    },
+    {
+      "id": "20346247510",
+      "type": "PushEvent",
+      "repoName": "HR0101/BusTimeApp",
+      "summary": "BusTimeApp に1件のコミットをプッシュ",
+      "createdAt": "2026-09-07T15:30:27Z"
+    },
+    {
+      "id": "20338064706",
+      "type": "CreateEvent",
+      "repoName": "HR0101/rinkou-handout-builder-codex",
+      "summary": "rinkou-handout-builder-codex にブランチを作成",
+      "createdAt": "2026-09-05T14:40:34Z"
+    },
+    {
+      "id": "20247290573",
+      "type": "PushEvent",
+      "repoName": "HR0101/rinkou-handout-builder-claude",
+      "summary": "rinkou-handout-builder-claude に1件のコミットをプッシュ",
+      "createdAt": "2026-09-06T14:26:55Z"
+    }
+  ],
+  "calendar": null
+}

@@ -27,7 +27,7 @@ export function Marquee({ items, className = '' }: MarqueeProps) {
         {loopedItems.map((item, index) => (
           <span
             key={`${item}-${index}`}
-            className="shrink-0 px-4 py-2 text-sm rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border text-slate-600 dark:text-slate-300 hover:border-sky-500 hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+            className="shrink-0 px-4 py-2 text-sm rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border text-subtle dark:text-night-subtle hover:border-ink dark:hover:border-night-ink hover:text-ink dark:hover:text-night-ink transition-colors"
             // 複製した後半は読み上げ対象から外す
             aria-hidden={index >= items.length}
           >

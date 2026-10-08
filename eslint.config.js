@@ -38,7 +38,7 @@ export default tseslint.config(
       // 型の表明より，型ガードでの絞り込みを促す
       '@typescript-eslint/no-explicit-any': 'error',
       // 意図しない console 出力を防ぐ（警告・エラーは許可）
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
       eqeqeq: ['error', 'always'],
       'prefer-const': 'error',
     },

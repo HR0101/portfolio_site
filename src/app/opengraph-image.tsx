@@ -6,6 +6,9 @@ export const alt = 'Ryuto Hara — iOS & macOS App Portfolio';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+// 内容がリクエストに依存しないため，ビルド時に画像として書き出す
+export const dynamic = 'force-static';
+
 // 画像に載せる数値
 const productCount = SWIFT_APPS.length;
 const repositoryCount = SWIFT_APPS.reduce((total, app) => total + app.repositories.length, 0);

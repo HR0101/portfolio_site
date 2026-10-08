@@ -1,9 +1,11 @@
 import { Hero } from '../sections/Hero';
+import { ProductShowcase } from '../sections/ProductShowcase';
 import { About } from '../sections/About';
 import { Skills } from '../sections/Skills';
 import { Projects } from '../sections/Projects';
 import { GitHubActivity } from '../sections/GitHubActivity';
 import { Contact } from '../sections/Contact';
+import { ScrollHighlightText } from '../components/ScrollHighlightText';
 import { siteConfig } from '../config/site';
 import { buildRepositoryUrl, PLATFORM_LABELS, SWIFT_APPS } from '../data/apps';
 
@@ -74,7 +76,19 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(buildStructuredData()) }}
       />
       <Hero />
+      <ProductShowcase />
       <About />
+
+      {/* スクロールに合わせて1語ずつ明るくなる一文 */}
+      <section className="py-24 md:py-32" aria-label="制作の姿勢">
+        <div className="max-w-4xl mx-auto px-6">
+          <ScrollHighlightText
+            text={'「あったらいいな」を，/自分の手で形にする．/使う人が迷わない導線と，/こわれにくい実装で，/小さな信頼を積み上げていく．'}
+            className="text-2xl md:text-4xl font-semibold leading-[1.7] tracking-tight"
+          />
+        </div>
+      </section>
+
       <Skills />
       <Projects />
       <GitHubActivity />

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">BusTimeApp 時刻連動の空</title>
+  <desc id="desc">夜明け、昼、夕暮れ、夜で色と光が変わるBusTimeAppのドット絵背景。</desc>
+  <defs>
+    <linearGradient id="dawnSky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#555694"/><stop offset=".58" stop-color="#be7e86"/><stop offset="1" stop-color="#fcae67"/></linearGradient>
+    <linearGradient id="daySky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5fa5ea"/><stop offset=".62" stop-color="#a9d9f3"/><stop offset="1" stop-color="#d9effd"/></linearGradient>
+    <linearGradient id="sunsetSky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e17b4f"/><stop offset=".56" stop-color="#ef9a5e"/><stop offset="1" stop-color="#fee2a1"/></linearGradient>
+    <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#0e1234"/><stop offset=".58" stop-color="#252a58"/><stop offset="1" stop-color="#3b4071"/></linearGradient>
+    <linearGradient id="dawnWater" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#536e89"/><stop offset="1" stop-color="#29465c"/></linearGradient>
+    <linearGradient id="dayWater" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5e9bb1"/><stop offset="1" stop-color="#235766"/></linearGradient>
+    <linearGradient id="sunsetWater" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a56c65"/><stop offset="1" stop-color="#533f54"/></linearGradient>
+    <linearGradient id="nightWater" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#222c52"/><stop offset="1" stop-color="#101c35"/></linearGradient>
+    <pattern id="roadDither" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#343943"/><rect width="4" height="4" fill="#3e424a"/><rect x="8" y="8" width="4" height="4" fill="#292e37"/></pattern>
+    <style>
+      .pixel { shape-rendering: crispEdges; }
+      .label { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; letter-spacing: 1.4px; }
+    </style>
+  </defs>
+
+  <!-- 夜明け -->
+  <g transform="translate(0 0)" class="pixel">
+    <rect width="400" height="900" fill="url(#dawnSky)"/>
+    <g fill="#f9d6bb" opacity=".55"><rect x="30" y="180" width="92" height="8"/><rect x="70" y="172" width="42" height="8"/><rect x="272" y="260" width="80" height="8"/><rect x="300" y="252" width="44" height="8"/></g>
+    <rect y="495" width="400" height="210" fill="url(#dawnWater)"/>
+    <g fill="#e8b179" opacity=".38"><rect x="40" y="546" width="120" height="4"/><rect x="230" y="585" width="110" height="4"/><rect x="90" y="638" width="170" height="4"/></g>
+    <path d="M0 620h40v-8h24v12h32v-5h38v7h28v-14h38v10h32v-8h26v12h40v-8h34v9h38v-7h40v85H0z" fill="#53606f" opacity=".85"/>
+    <rect y="720" width="400" height="180" fill="url(#roadDither)"/>
+    <g fill="#c6bda8" opacity=".7"><rect x="18" y="726" width="12" height="4"/><rect x="68" y="726" width="12" height="4"/><rect x="118" y="726" width="12" height="4"/><rect x="168" y="726" width="12" height="4"/><rect x="218" y="726" width="12" height="4"/><rect x="268" y="726" width="12" height="4"/><rect x="318" y="726" width="12" height="4"/><rect x="368" y="726" width="12" height="4"/></g>
+    <g transform="translate(48 598)"><rect x="24" y="0" width="6" height="125" fill="#ddd9cf"/><rect x="0" y="0" width="54" height="38" rx="4" fill="#8ab2c6" stroke="#254d67" stroke-width="5"/><rect x="10" y="10" width="34" height="5" fill="#254d67"/><rect x="17" y="20" width="20" height="5" fill="#254d67"/><rect x="13" y="125" width="28" height="8" fill="#656b6e"/></g>
+    <g fill="#fff3ca"><rect x="294" y="300" width="12" height="12"/><rect x="306" y="312" width="12" height="12"/></g>
+    <rect x="20" y="24" width="360" height="64" rx="16" fill="#142442" opacity=".24"/>
+    <text x="40" y="54" class="label" fill="#fff7ec" font-size="15">DAWN</text><text x="40" y="76" class="label" fill="#fff7ec" font-size="12" opacity=".78">06:00  ·  柔らかな朝焼け</text>
+  </g>
+
+  <!-- 昼 -->
+  <g transform="translate(400 0)" class="pixel">
+    <rect width="400" height="900" fill="url(#daySky)"/>
+    <g fill="#fff" opacity=".42"><rect x="45" y="190" width="80" height="9"/><rect x="68" y="181" width="42" height="9"/><rect x="238" y="264" width="110" height="9"/><rect x="266" y="255" width="44" height="9"/></g>
+    <rect y="495" width="400" height="210" fill="url(#dayWater)"/>
+    <g fill="#b9e4e7" opacity=".35"><rect x="20" y="540" width="140" height="4"/><rect x="210" y="575" width="140" height="4"/><rect x="80" y="630" width="210" height="4"/></g>
+    <path d="M0 620h38v-8h26v13h40v-5h30v6h35v-15h35v11h40v-8h26v12h42v-9h30v10h38v-8h40v85H0z" fill="#62776f" opacity=".83"/>
+    <rect y="720" width="400" height="180" fill="url(#roadDither)"/>
+    <g fill="#c6bda8" opacity=".7"><rect x="18" y="726" width="12" height="4"/><rect x="68" y="726" width="12" height="4"/><rect x="118" y="726" width="12" height="4"/><rect x="168" y="726" width="12" height="4"/><rect x="218" y="726" width="12" height="4"/><rect x="268" y="726" width="12" height="4"/><rect x="318" y="726" width="12" height="4"/><rect x="368" y="726" width="12" height="4"/></g>
+    <g transform="translate(48 598)"><rect x="24" y="0" width="6" height="125" fill="#eee9dc"/><rect x="0" y="0" width="54" height="38" rx="4" fill="#9cc7d9" stroke="#254d67" stroke-width="5"/><rect x="10" y="10" width="34" height="5" fill="#254d67"/><rect x="17" y="20" width="20" height="5" fill="#254d67"/><rect x="13" y="125" width="28" height="8" fill="#656b6e"/></g>
+    <g fill="#fff8df"><rect x="300" y="94" width="28" height="28"/><rect x="292" y="102" width="44" height="12"/><rect x="308" y="86" width="12" height="44"/></g>
+    <rect x="20" y="24" width="360" height="64" rx="16" fill="#17345a" opacity=".16"/>
+    <text x="40" y="54" class="label" fill="#18304b" font-size="15">DAY</text><text x="40" y="76" class="label" fill="#18304b" font-size="12" opacity=".78">11:00  ·  透明な青空</text>
+  </g>
+
+  <!-- 夕暮れ -->
+  <g transform="translate(800 0)" class="pixel">
+    <rect width="400" height="900" fill="url(#sunsetSky)"/>
+    <g fill="#ffd3a0" opacity=".36"><rect x="30" y="210" width="115" height="8"/><rect x="66" y="202" width="54" height="8"/><rect x="250" y="160" width="98" height="8"/></g>
+    <rect y="495" width="400" height="210" fill="url(#sunsetWater)"/>
+    <g fill="#f3b971" opacity=".42"><rect x="18" y="550" width="130" height="5"/><rect x="220" y="590" width="120" height="5"/><rect x="90" y="650" width="190" height="5"/></g>
+    <path d="M0 620h40v-8h24v12h32v-5h38v7h28v-14h38v10h32v-8h26v12h40v-8h34v9h38v-7h40v85H0z" fill="#5d4d5b" opacity=".9"/>
+    <rect y="720" width="400" height="180" fill="url(#roadDither)"/>
+    <g fill="#f2c87e" opacity=".76"><rect x="18" y="726" width="12" height="4"/><rect x="68" y="726" width="12" height="4"/><rect x="118" y="726" width="12" height="4"/><rect x="168" y="726" width="12" height="4"/><rect x="218" y="726" width="12" height="4"/><rect x="268" y="726" width="12" height="4"/><rect x="318" y="726" width="12" height="4"/><rect x="368" y="726" width="12" height="4"/></g>
+    <g transform="translate(48 598)"><rect x="24" y="0" width="6" height="125" fill="#d9d4c8"/><rect x="0" y="0" width="54" height="38" rx="4" fill="#8eafbd" stroke="#29455e" stroke-width="5"/><rect x="10" y="10" width="34" height="5" fill="#29455e"/><rect x="17" y="20" width="20" height="5" fill="#29455e"/><rect x="13" y="125" width="28" height="8" fill="#4e4f59"/></g>
+    <g fill="#fff0bc" opacity=".92"><rect x="304" y="344" width="24" height="24"/><rect x="296" y="352" width="40" height="8"/><rect x="312" y="336" width="8" height="40"/></g>
+    <rect x="20" y="24" width="360" height="64" rx="16" fill="#391e3f" opacity=".24"/>
+    <text x="40" y="54" class="label" fill="#fff3dc" font-size="15">SUNSET</text><text x="40" y="76" class="label" fill="#fff3dc" font-size="12" opacity=".8">17:30  ·  夕焼けから夜へ</text>
+  </g>
+
+  <!-- 夜 -->
+  <g transform="translate(1200 0)" class="pixel">
+    <rect width="400" height="900" fill="url(#nightSky)"/>
+    <g fill="#fff5c9"><rect x="42" y="150" width="4" height="4"/><rect x="94" y="102" width="4" height="4"/><rect x="155" y="208" width="4" height="4"/><rect x="222" y="124" width="4" height="4"/><rect x="287" y="186" width="4" height="4"/><rect x="344" y="100" width="4" height="4"/><rect x="356" y="232" width="4" height="4"/><rect x="180" y="72" width="4" height="4"/></g>
+    <rect y="495" width="400" height="210" fill="url(#nightWater)"/>
+    <g fill="#8b85a2" opacity=".34"><rect x="22" y="546" width="130" height="4"/><rect x="230" y="585" width="108" height="4"/><rect x="88" y="638" width="170" height="4"/></g>
+    <path d="M0 620h40v-8h24v12h32v-5h38v7h28v-14h38v10h32v-8h26v12h40v-8h34v9h38v-7h40v85H0z" fill="#22283e" opacity=".96"/>
+    <g fill="#ffd47b"><rect x="38" y="625" width="5" height="5"/><rect x="101" y="642" width="5" height="5"/><rect x="184" y="632" width="5" height="5"/><rect x="286" y="650" width="5" height="5"/><rect x="342" y="628" width="5" height="5"/></g>
+    <rect y="720" width="400" height="180" fill="url(#roadDither)"/>
+    <g fill="#e8d59b" opacity=".72"><rect x="18" y="726" width="12" height="4"/><rect x="68" y="726" width="12" height="4"/><rect x="118" y="726" width="12" height="4"/><rect x="168" y="726" width="12" height="4"/><rect x="218" y="726" width="12" height="4"/><rect x="268" y="726" width="12" height="4"/><rect x="318" y="726" width="12" height="4"/><rect x="368" y="726" width="12" height="4"/></g>
+    <g transform="translate(48 598)"><rect x="24" y="0" width="6" height="125" fill="#d7d9de"/><rect x="0" y="0" width="54" height="38" rx="4" fill="#5f7790" stroke="#d2d2ce" stroke-width="5"/><rect x="10" y="10" width="34" height="5" fill="#e7dba7"/><rect x="17" y="20" width="20" height="5" fill="#e7dba7"/><rect x="13" y="125" width="28" height="8" fill="#313746"/></g>
+    <g fill="#fff1c0"><rect x="302" y="154" width="20" height="20"/><rect x="294" y="162" width="36" height="4"/><rect x="310" y="146" width="4" height="36"/></g>
+    <rect x="20" y="24" width="360" height="64" rx="16" fill="#050917" opacity=".38"/>
+    <text x="40" y="54" class="label" fill="#f4f5ff" font-size="15">NIGHT</text><text x="40" y="76" class="label" fill="#f4f5ff" font-size="12" opacity=".78">21:00  ·  月明かりと星</text>
+  </g>
+</svg>

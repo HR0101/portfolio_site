@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { ArrowUpRight, Laptop, Smartphone } from 'lucide-react';
 import { Reveal, type RevealVariant } from '../components/Reveal';
 import { SectionHeading } from '../components/SectionHeading';
-import { TiltCard } from '../components/TiltCard';
-import { ScrollMarquee } from '../components/ScrollMarquee';
 import { ScrollTimeline } from '../components/ScrollTimeline';
 import { GitHubIcon } from '../components/icons/GitHubIcon';
 import { siteConfig } from '../config/site';
@@ -41,7 +40,7 @@ function PlatformBadge({ platform }: { platform: AppPlatform }) {
   const showsMac = platform === 'macos' || platform === 'both';
 
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white/90 text-slate-700 backdrop-blur-sm border border-white/60">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white dark:bg-night-soft text-ink dark:text-night-ink backdrop-blur-sm border border-soft dark:border-night-border">
       {showsPhone && <Smartphone className="w-3.5 h-3.5" aria-hidden="true" />}
       {showsMac && <Laptop className="w-3.5 h-3.5" aria-hidden="true" />}
       {PLATFORM_LABELS[platform]}
@@ -52,11 +51,11 @@ function PlatformBadge({ platform }: { platform: AppPlatform }) {
 // 技術タグの一覧（ホバーで少し持ち上がる）
 function TagList({ tags }: { tags: string[] }) {
   return (
-    <div className="mt-4 flex flex-wrap gap-2">
+    <div className="stagger-child mt-4 flex flex-wrap gap-2">
       {tags.map((tag) => (
         <span
           key={tag}
-          className="px-2.5 py-1 text-xs rounded-full bg-mist dark:bg-night border border-soft dark:border-night-border text-slate-600 dark:text-slate-300 hover:-translate-y-0.5 hover:border-sky-500 hover:text-sky-700 dark:hover:text-sky-400 transition-all duration-200"
+          className="chip px-2.5 py-1 text-xs rounded-full text-subtle dark:text-night-subtle hover:-translate-y-0.5 hover:border-ink dark:hover:border-night-ink hover:text-ink dark:hover:text-night-ink transition-all duration-200"
         >
           {tag}
         </span>
@@ -68,7 +67,15 @@ function TagList({ tags }: { tags: string[] }) {
 // GitHub リポジトリへのリンク（2リポジトリ構成のアプリは複数並ぶ）
 function RepositoryLinks({ app }: { app: SwiftApp }) {
   return (
-    <div className="mt-5 pt-4 border-t border-soft dark:border-night-border flex flex-wrap gap-x-4 gap-y-2">
+    <div className="stagger-child mt-5 pt-4 border-t border-soft dark:border-night-border flex flex-wrap gap-x-4 gap-y-2">
+      {app.detailHref && (
+        <Link
+          href={app.detailHref}
+          className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-accent dark:text-accent-dark"
+        >
+          {app.name}のこだわりを見る →
+        </Link>
+      )}
       {app.repositories.map((repository) => (
         <a
           key={repository.name}
@@ -76,12 +83,12 @@ function RepositoryLinks({ app }: { app: SwiftApp }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`${repository.name}${repository.role ? `（${repository.role}）` : ''}を新しいタブで開く`}
-          className="group/link inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
+          className="group/link inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-accent dark:text-accent-dark transition-colors"
         >
           <GitHubIcon className="w-4 h-4 group-hover/link:rotate-12 transition-transform" />
-          <span className="group-hover/link:underline underline-offset-4">{repository.name}</span>
+          <span className="underline-grow">{repository.name}</span>
           {repository.role && (
-            <span className="text-xs text-slate-500 dark:text-slate-400">（{repository.role}）</span>
+            <span className="text-xs text-subtle dark:text-night-subtle">（{repository.role}）</span>
           )}
           <ArrowUpRight
             className="w-3.5 h-3.5 opacity-0 group-hover/link:opacity-100 -translate-x-1 group-hover/link:translate-x-0 transition-all"
@@ -98,19 +105,38 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
   const Icon = app.icon;
 
   return (
-    <TiltCard className="h-full">
-      <article className="group h-full flex flex-col rounded-3xl overflow-hidden bg-white dark:bg-night-soft border border-soft dark:border-night-border hover:border-sky-400/50 dark:hover:border-sky-500/50 hover:shadow-soft-lg transition-all duration-300">
-        {/* ヘッダー：グラデーション＋アイコン＋プラットフォーム表示 */}
+    <div className="h-full">
+      <article className="product-card tile group h-full flex flex-col overflow-hidden">
+        {/* ヘッダー：取得済みなら実画面、未取得ならグラデーション＋アイコン */}
         <div
-          className={`shimmer-sweep relative h-40 overflow-hidden bg-gradient-to-br ${app.gradient} flex items-center justify-center`}
+          className="product-card-visual relative overflow-hidden flex items-center justify-center"
         >
-          <div className="absolute inset-0 bg-grid-pattern opacity-30" aria-hidden="true" />
-          {/* 背後でゆっくり回る装飾リング */}
-          <div
-            className="absolute w-52 h-52 rounded-full border border-dashed border-white/25 animate-spin-slow"
-            aria-hidden="true"
-          />
-          {app.imageSrc ? (
+          {app.screenshotSrc ? (
+            <>
+              <img
+                src={app.screenshotSrc}
+                alt={app.screenshotAlt ?? `${app.name}のアプリ画面`}
+                // 枠いっぱいに敷く画像だが，比率を宣言して読み込み前のずれを防ぐ
+                width={1280}
+                height={800}
+                loading="lazy"
+                decoding="async"
+                className="product-card-screen transition-transform duration-700 ease-out group-hover:scale-[1.025]"
+                style={{ objectPosition: app.screenshotPosition ?? '50% 50%' }}
+              />
+              {app.imageSrc && (
+                <img
+                  src={app.imageSrc}
+                  alt=""
+                  width={56}
+                  height={56}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute bottom-4 left-4 h-14 w-14 rounded-2xl object-cover shadow-soft-lg ring-1 ring-white/70 transition-transform duration-300 group-hover:-translate-y-1"
+                />
+              )}
+            </>
+          ) : app.imageSrc ? (
             <img
               src={app.imageSrc}
               alt=""
@@ -118,35 +144,44 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
               height={112}
               loading="lazy"
               decoding="async"
-              className="relative h-28 w-28 rounded-[1.7rem] object-cover shadow-soft-lg ring-1 ring-white/60 group-hover:scale-105 transition-transform duration-300"
+              className="relative z-10 h-28 w-28 rounded-[1.7rem] object-cover shadow-soft-lg ring-1 ring-white/60 group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
             <Icon
-              className="animate-wiggle relative w-14 h-14 text-ink/90 drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
+              className="animate-wiggle relative z-10 w-14 h-14 text-ink/90 drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
               aria-hidden="true"
             />
+          )}
+          {!app.screenshotSrc && (
+            <>
+              <div className="absolute inset-0 bg-grid-pattern opacity-30" aria-hidden="true" />
+              <div
+                className="absolute w-52 h-52 rounded-full border border-dashed border-soft dark:border-night-border animate-spin-slow"
+                aria-hidden="true"
+              />
+            </>
           )}
           <div className="absolute top-4 left-4">
             <PlatformBadge platform={app.platform} />
           </div>
-          <span className="absolute top-4 right-4 px-2 py-0.5 rounded-full bg-white/90 text-xs font-mono text-slate-600">
+          <span className="absolute top-4 right-4 px-2 py-0.5 rounded-full bg-white/90 dark:bg-night-soft/90 border border-soft dark:border-night-border text-xs font-mono text-subtle dark:text-night-subtle">
             {app.year}
           </span>
         </div>
 
         <div className="flex flex-col flex-grow p-6">
-          <h3 className="text-lg font-semibold group-hover:text-sky-700 dark:group-hover:text-sky-400 transition-colors">
+          <h3 className="stagger-child text-lg font-semibold transition-colors">
             {app.name}
           </h3>
-          <p className="mt-1 text-sm font-medium text-sky-700 dark:text-sky-400">{app.tagline}</p>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400 flex-grow">
+          <p className="stagger-child mt-1 text-sm font-medium text-body dark:text-night-body">{app.tagline}</p>
+          <p className="stagger-child mt-3 text-sm leading-relaxed text-subtle dark:text-night-subtle flex-grow">
             {app.description}
           </p>
           <TagList tags={app.tags} />
           <RepositoryLinks app={app} />
         </div>
       </article>
-    </TiltCard>
+    </div>
   );
 }
 
@@ -155,33 +190,33 @@ function CompactAppCard({ app }: { app: SwiftApp }) {
   const Icon = app.icon;
 
   return (
-    <TiltCard className="h-full">
-      <article className="group h-full flex flex-col p-6 rounded-3xl bg-white dark:bg-night-soft border border-soft dark:border-night-border hover:border-sky-400/50 dark:hover:border-sky-500/50 hover:shadow-soft transition-all duration-300">
+    <div className="product-card h-full">
+      <article className="tile group h-full flex flex-col p-6 hover:border-ink/25 dark:hover:border-night-ink/25 hover:shadow-soft transition-all duration-300">
         <div className="flex items-start gap-4">
           <div
-            className={`w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-br ${app.gradient} flex items-center justify-center shadow-soft group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300`}
+            className="chip w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300"
             aria-hidden="true"
           >
             <Icon className="w-5 h-5 text-ink" />
           </div>
           <div className="min-w-0">
-            <h4 className="font-semibold leading-snug group-hover:text-sky-700 dark:group-hover:text-sky-400 transition-colors">
+            <h4 className="font-semibold leading-snug transition-colors">
               {app.name}
             </h4>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-xs text-subtle dark:text-night-subtle">
               {PLATFORM_LABELS[app.platform]} ・ {app.year}
             </p>
           </div>
         </div>
 
-        <p className="mt-4 text-sm font-medium text-sky-700 dark:text-sky-400">{app.tagline}</p>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400 flex-grow">
+        <p className="mt-4 text-sm font-medium text-body dark:text-night-body">{app.tagline}</p>
+        <p className="mt-2 text-sm leading-relaxed text-subtle dark:text-night-subtle flex-grow">
           {app.description}
         </p>
         <TagList tags={app.tags} />
         <RepositoryLinks app={app} />
       </article>
-    </TiltCard>
+    </div>
   );
 }
 
@@ -263,8 +298,6 @@ export function Projects() {
     0,
   );
   const visibleCount = featuredApps.length + otherApps.length;
-  // 帯に流すアプリ名（絞り込みに関係なく全アプリを並べる）
-  const marqueeNames = SWIFT_APPS.map((app) => app.name);
 
   return (
     <section id="projects" data-testid="projects-section" className="scroll-mt-24 py-24 md:py-32">
@@ -280,13 +313,13 @@ export function Projects() {
           <div className="flex flex-wrap items-center gap-4">
             <div
               ref={tabListRef}
-              className="relative inline-flex p-1 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border"
+              className="relative inline-flex p-1 rounded-full bg-mist dark:bg-night-soft border border-soft dark:border-night-border"
               role="tablist"
               aria-label="プラットフォームで絞り込み"
             >
               {/* 選択中を示す背景（位置と幅をアニメーションさせる） */}
               <span
-                className="absolute top-1 bottom-1 rounded-full bg-gradient-to-r from-sky-700 to-violet-700 shadow-soft transition-all duration-300 ease-out"
+                className="absolute top-1 bottom-1 rounded-full bg-white dark:bg-night border border-soft dark:border-night-border shadow-soft transition-all duration-300 ease-out"
                 style={{ left: `${indicatorStyle.left}px`, width: `${indicatorStyle.width}px` }}
                 aria-hidden="true"
               />
@@ -304,10 +337,10 @@ export function Projects() {
                     tabIndex={isActive ? 0 : -1}
                     onClick={() => setActiveFilterId(filter.id)}
                     onKeyDown={(event) => handleTabKeyDown(event, index)}
-                    className={`relative z-10 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+                    className={`press-effect relative z-10 inline-flex min-h-11 items-center px-4 rounded-full text-sm font-medium transition-colors duration-200 ${
                       isActive
-                        ? 'text-white'
-                        : 'text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400'
+                        ? 'text-ink dark:text-night-ink'
+                        : 'text-subtle dark:text-night-subtle hover:text-ink dark:hover:text-night-ink'
                     }`}
                   >
                     {filter.label}
@@ -319,7 +352,7 @@ export function Projects() {
             {/* 表示件数（絞り込みに応じて切り替わる） */}
             <p
               key={activeFilterId}
-              className="animate-pop-in text-sm text-slate-500 dark:text-slate-400"
+              className="animate-pop-in text-sm text-subtle dark:text-night-subtle"
               aria-live="polite"
             >
               {visibleCount} 件を表示中
@@ -354,7 +387,7 @@ export function Projects() {
           <>
             <Reveal className="mt-16 mb-8">
               <h3
-                className="text-sm font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase"
+                className="text-sm font-semibold tracking-widest text-subtle dark:text-night-subtle uppercase"
                 lang="en"
               >
                 Other Apps
@@ -377,23 +410,18 @@ export function Projects() {
         </div>
       </div>
 
-      {/* スクロールした量だけ左右に流れるアプリ名の帯（上下で逆方向に動く） */}
-      <div className="mt-20 space-y-3 select-none">
-        <ScrollMarquee items={marqueeNames} distancePx={-320} />
-        <ScrollMarquee items={[...marqueeNames].reverse()} distancePx={320} />
-      </div>
 
       {/* 開発の軌跡（スクロールに合わせて線が伸びる年表） */}
       <div className="max-w-6xl mx-auto px-6 mt-20">
         <Reveal className="mb-10">
           <p
-            className="text-sm font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase"
+            className="text-sm font-semibold tracking-widest text-subtle dark:text-night-subtle uppercase"
             lang="en"
           >
             Timeline
           </p>
           <h3 className="mt-2 text-2xl font-semibold tracking-tight">開発の軌跡</h3>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+          <p className="mt-2 text-sm text-subtle dark:text-night-subtle max-w-2xl leading-relaxed">
             スクロールに合わせて，これまでにつくってきたアプリの流れをたどれます．
           </p>
         </Reveal>

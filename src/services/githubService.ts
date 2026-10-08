@@ -1,6 +1,16 @@
 // GitHub 連携用の型定義・静的フォールバックデータ・クライアント側フェッチ処理
 
 import { fetchWithTimeout } from '../lib/fetchWithTimeout';
+import githubSnapshot from '../data/github-snapshot.json';
+
+// 静的書き出し（S3 などへ置く形）ではサーバー側の API ルートが存在しないため，
+// ビルド時に取得して同梱したスナップショットをそのまま使う．
+const IS_STATIC_EXPORT = process.env.NEXT_PUBLIC_STATIC_EXPORT === '1';
+
+// スナップショットの中身（JSON なので，使う側で型を与える）
+const snapshotRepos = githubSnapshot.repos as GitHubRepo[];
+const snapshotEvents = githubSnapshot.events as GitHubEvent[];
+const snapshotCalendar = githubSnapshot.calendar as ContributionCalendar | null;
 
 // ─────────────────────────────────────
 // 型定義
@@ -250,6 +260,9 @@ function writeCache<T>(key: string, data: T): void {
 
 // リポジトリ一覧を取得する
 export async function fetchRepos(): Promise<ReposResponse> {
+  if (IS_STATIC_EXPORT) {
+    return { repos: snapshotRepos.length > 0 ? snapshotRepos : staticRepos, apiStatus: 'success' };
+  }
   const cached = readCache<GitHubRepo[]>(REPOS_CACHE_KEY);
   if (cached) {
     return { repos: cached, apiStatus: 'success' };
@@ -275,6 +288,12 @@ export async function fetchRepos(): Promise<ReposResponse> {
 
 // 最近のアクティビティを取得する
 export async function fetchActivity(): Promise<ActivityResponse> {
+  if (IS_STATIC_EXPORT) {
+    return {
+      events: snapshotEvents.length > 0 ? snapshotEvents : staticEvents,
+      apiStatus: 'success',
+    };
+  }
   const cached = readCache<GitHubEvent[]>(ACTIVITY_CACHE_KEY);
   if (cached) {
     return { events: cached, apiStatus: 'success' };
@@ -300,6 +319,12 @@ export async function fetchActivity(): Promise<ActivityResponse> {
 
 // Contribution Graph（草）のデータを取得する
 export async function fetchContributions(): Promise<ContributionsResponse> {
+  if (IS_STATIC_EXPORT) {
+    return {
+      calendar: snapshotCalendar,
+      apiStatus: snapshotCalendar ? 'success' : 'no_token',
+    };
+  }
   const cached = readCache<ContributionCalendar>(CONTRIB_CACHE_KEY);
   if (cached) {
     return { calendar: cached, apiStatus: 'success' };

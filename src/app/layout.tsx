@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import './refinements.css';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { ScrollProgressBar } from '../components/ScrollProgressBar';
-import { CursorGlow } from '../components/CursorGlow';
 import { BackToTopButton } from '../components/BackToTopButton';
+import { CommandPalette } from '../components/CommandPalette';
 import { siteConfig } from '../config/site';
+
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
@@ -93,18 +95,18 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-cream dark:bg-night text-ink dark:text-slate-100 antialiased transition-colors min-h-screen flex flex-col">
+      <body className="bg-cream dark:bg-night text-ink dark:text-night-ink antialiased transition-colors min-h-screen flex flex-col">
         <ThemeProvider>
           {/* キーボード操作でヘッダーを読み飛ばすためのリンク */}
           <a
             href="#main-content"
-            className="skip-link px-4 py-2 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border text-sm font-medium shadow-soft"
+            className="skip-link inline-flex min-h-11 items-center px-4 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border text-sm font-medium shadow-soft"
           >
             本文へスキップ
           </a>
-          {/* ポインタ追従のスポットライト（本文より背面に置く） */}
-          <CursorGlow />
           <ScrollProgressBar />
+          {/* ⌘K で開く操作パネル */}
+          <CommandPalette />
           <Navbar />
           <main id="main-content" className="relative z-10 flex-grow">
             {children}

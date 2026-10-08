@@ -5,6 +5,7 @@ import { Mail, Send } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { SectionHeading } from '../components/SectionHeading';
 import { GitHubIcon } from '../components/icons/GitHubIcon';
+import { CopyEmailButton } from '../components/CopyEmailButton';
 import { siteConfig } from '../config/site';
 
 // フォーム入力値の型
@@ -108,7 +109,7 @@ export function Contact() {
     }`;
 
   const inputClassName =
-    'w-full px-4 py-3 rounded-2xl bg-white dark:bg-night-soft border border-soft dark:border-night-border text-ink dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-400 focus:-translate-y-0.5 focus:shadow-soft transition-all duration-200';
+    'w-full px-4 py-3 rounded-2xl bg-white dark:bg-night-soft border border-soft dark:border-night-border text-ink dark:text-night-ink placeholder:text-subtle dark:placeholder:text-night-subtle focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent focus:-translate-y-0.5 focus:shadow-soft transition-all duration-200';
 
   return (
     <section id="contact" data-testid="contact-section" className="scroll-mt-24 py-24 md:py-32">
@@ -123,41 +124,44 @@ export function Contact() {
           {/* 左カラム：直接の連絡先リンク */}
           <Reveal variant="left">
             <div className="space-y-6">
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-subtle dark:text-night-subtle leading-relaxed">
                 フォームからのお問い合わせのほか，メールや GitHub から
                 直接ご連絡いただくことも可能です．
               </p>
               <div className="space-y-4">
+                <div className="tile group flex items-center gap-4 p-4 hover:border-ink/25 dark:hover:border-night-ink/25 hover:translate-x-1 hover:shadow-soft transition-all duration-300">
                 <a
                   href={`mailto:${siteConfig.email}`}
-                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-night-soft border border-soft dark:border-night-border hover:border-sky-400/50 dark:hover:border-sky-500/50 hover:translate-x-1 hover:shadow-soft transition-all duration-300"
+                  className="flex items-center gap-4 min-w-0 flex-grow"
                 >
-                  <span className="w-10 h-10 rounded-full bg-sky-400/12 dark:bg-sky-500/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                    <Mail className="animate-wiggle w-5 h-5 text-sky-700 dark:text-sky-400" />
+                  <span className="w-10 h-10 rounded-full bg-mist dark:bg-night flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                    <Mail className="animate-wiggle w-5 h-5 text-ink dark:text-night-ink" />
                   </span>
                   <div className="min-w-0">
-                    <p className="font-semibold group-hover:text-sky-700 dark:group-hover:text-sky-400 transition-colors">
+                    <p className="font-semibold transition-colors">
                       Email
                     </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                    <p className="text-sm text-subtle dark:text-night-subtle truncate">
                       {siteConfig.email}
                     </p>
                   </div>
                 </a>
+                <CopyEmailButton email={siteConfig.email} />
+                </div>
                 <a
                   href={siteConfig.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-night-soft border border-soft dark:border-night-border hover:border-sky-400/50 dark:hover:border-sky-500/50 hover:translate-x-1 hover:shadow-soft transition-all duration-300"
+                  className="tile group flex items-center gap-4 p-4 hover:border-ink/25 dark:hover:border-night-ink/25 hover:translate-x-1 hover:shadow-soft transition-all duration-300"
                 >
-                  <span className="w-10 h-10 rounded-full bg-sky-400/12 dark:bg-sky-500/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                    <GitHubIcon className="animate-wiggle w-5 h-5 text-sky-700 dark:text-sky-400" />
+                  <span className="w-10 h-10 rounded-full bg-mist dark:bg-night flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                    <GitHubIcon className="animate-wiggle w-5 h-5 text-ink dark:text-night-ink" />
                   </span>
                   <div className="min-w-0">
-                    <p className="font-semibold group-hover:text-sky-700 dark:group-hover:text-sky-400 transition-colors">
+                    <p className="font-semibold transition-colors">
                       GitHub
                     </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                    <p className="text-sm text-subtle dark:text-night-subtle truncate">
                       github.com/{siteConfig.githubUsername}
                     </p>
                   </div>
@@ -241,7 +245,7 @@ export function Contact() {
                 />
                 <p
                   id="contact-message-hint"
-                  className="mt-2 text-xs text-slate-500 dark:text-slate-400"
+                  className="mt-2 text-xs text-subtle dark:text-night-subtle"
                 >
                   {MIN_MESSAGE_LENGTH}〜{MAX_MESSAGE_LENGTH}文字（現在{formValues.message.length}文字）
                 </p>
@@ -267,7 +271,7 @@ export function Contact() {
 
               <button
                 type="submit"
-                className="group relative overflow-hidden inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white animate-gradient bg-gradient-to-r from-sky-700 via-violet-700 to-sky-700 shadow-soft hover:shadow-soft-lg hover:scale-105 transition-all duration-300"
+                className="press-effect group relative overflow-hidden inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-accent-strong hover:bg-accent-hover shadow-soft hover:shadow-soft-lg hover:scale-105 transition-all duration-300"
               >
                 <span className="shimmer-sweep absolute inset-0 overflow-hidden rounded-full" aria-hidden="true" />
                 <span className="relative">メールソフトで確認する</span>
