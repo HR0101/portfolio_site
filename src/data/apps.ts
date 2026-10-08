@@ -90,7 +90,7 @@ export const SWIFT_APPS: SwiftApp[] = [
     year: '2026',
     icon: Bus,
     imageSrc: '/projects/bustimeapp.webp',
-    screenshotSrc: '/projects/bustimeapp-screens/home.png',
+    screenshotSrc: '/projects/bustimeapp-screens/morning.webp',
     screenshotAlt: 'BusTimeAppで次に乗れるバスを案内しているホーム画面',
     screenshotPosition: '50% 31%',
     gradient: 'from-sky-300 to-blue-400',

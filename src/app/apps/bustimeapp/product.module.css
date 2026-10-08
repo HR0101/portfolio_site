@@ -111,3 +111,62 @@
   .heroCopy .eyebrow { margin-bottom: 12px; }
   .appName { margin-bottom: 15px; }
 }
+
+/* 実際の画面から、機能と風景を見比べる。 */
+.featureSection { max-width: 1160px; margin: auto; padding: 100px 28px; }
+.featureSection .sectionHeading > p:last-child { color: var(--muted); }
+.featureGallery { margin-top: 44px; }
+.featureButtons { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 34px; }
+.featureButtons button { border: 1px solid #d6e1ea; border-radius: 999px; padding: 11px 17px; min-height: 44px; font-size: 12px; color: #48647a; background: #f7fafc; cursor: pointer; }
+.featureButtons button[aria-pressed='true'] { background: #216ba1; color: #fff; border-color: #216ba1; }
+.featureButtons button:hover { border-color: #216ba1; }
+.featurePanel { display: grid; grid-template-columns: .8fr 1.2fr; align-items: center; gap: 48px; padding: 44px; border-radius: 30px; background: #f3f7fa; min-height: 620px; }
+.featureCopy h3 { font-size: clamp(24px, 3vw, 34px); line-height: 1.5; letter-spacing: -.04em; margin-bottom: 24px; }
+.featureCopy > p:not(.eyebrow) { color: var(--muted); font-size: 14px; }
+.featureCopy > span { display: block; font-size: 11px; color: var(--muted); margin-top: 25px; }
+.featureScreens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 20px; }
+.featureScreens .screenshot:nth-child(2) { margin-top: 40px; }
+.screenshot { margin: 0; min-width: 0; }
+.screenshotButton { display: block; position: relative; width: 100%; padding: 0; overflow: hidden; border: 4px solid #263645; border-radius: 28px; background: #263645; box-shadow: 0 20px 40px #23485f20; cursor: zoom-in; }
+.screenshotButton img { display: block; width: 100%; height: auto; }
+.screenshot figcaption { margin-top: 18px; font-size: 11px; text-align: center; color: var(--muted); line-height: 1.6; }
+.zoomHint { position: absolute; display: flex; gap: 6px; align-items: center; right: 10px; bottom: 10px; padding: 7px 9px; background: #0c1728df; color: #fff; border: 1px solid #ffffff35; border-radius: 20px; font-size: 10px; }
+.captureNote { margin-top: 24px; text-align: center; font-size: 11px; color: var(--muted); }
+.scenePanel { display: grid; grid-template-columns: minmax(145px, 1fr) minmax(0, 2fr); gap: 35px; padding: 40px 50px; min-height: 650px; overflow: visible; }
+.sceneControls { display: grid; gap: 24px; }
+.sceneGroup > p { font-size: 11px; letter-spacing: .12em; color: #99b6ce; margin-bottom: 9px; }
+.sceneButtons { position: static; transform: none; gap: 7px; margin: 0; }
+.sceneButtons button { cursor: pointer; padding: 9px 18px; min-height: 44px; font-size: 13px; }
+.sceneImage { width: min(260px, 100%); border-radius: 0; overflow: visible; background: transparent; box-shadow: none; }
+.sceneImage .screenshotButton { border-color: #566a80; box-shadow: 0 25px 60px #0007; }
+.sceneImage figcaption { color: #afbed1; }
+.screenshotDialog { padding: 0; border: 1px solid #ffffff30; border-radius: 20px; background: #101820; color: #f1f5fa; max-width: min(480px, 94vw); width: 100%; max-height: 92svh; margin: auto; overflow: auto; overscroll-behavior: contain; }
+.screenshotDialog::backdrop { background: #070d18d9; backdrop-filter: blur(8px); }
+.screenshotDialog > img { display: block; width: 100%; height: auto; border-radius: 0; }
+.dialogToolbar { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 10px 16px; background: #101820f2; font-size: 12px; }
+.dialogToolbar button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #ffffff15; color: #fff; cursor: pointer; }
+.featureButtons button:focus-visible, .sceneButtons button:focus-visible, .screenshotButton:focus-visible, .dialogToolbar button:focus-visible { outline: 3px solid #69b4ec; outline-offset: 4px; }
+:global(.dark) .featurePanel { background: #182330; }
+:global(.dark) .featureButtons button { background: #182330; border-color: #42566a; color: #c2d7e7; }
+:global(.dark) .featureButtons button[aria-pressed='true'] { background: #a8d9f7; border-color: #a8d9f7; color: #122331; }
+@media (max-width: 800px) {
+  .featureSection { padding: 65px 24px; }
+  .featurePanel { grid-template-columns: 1fr; gap: 30px; padding: 28px; min-height: 0; }
+  .featureScreens { max-width: 480px; width: 100%; margin: auto; }
+  .scenePanel { grid-template-columns: 1fr; gap: 28px; padding: 28px 24px; min-height: 0; }
+  .sceneControls { gap: 16px; }
+  .sceneGroup > p { text-align: center; }
+  .sceneButtons { flex-direction: row; justify-content: center; flex-wrap: wrap; margin: 0; }
+  .sceneImage { width: min(270px, 75vw); }
+}
+@media (max-width: 500px) {
+  .featureButtons { gap: 6px; }
+  .featureButtons button { padding: 9px 12px; }
+  .featurePanel { padding: 26px 16px; border-radius: 22px; }
+  .featureCopy { padding-inline: 5px; }
+  .featureScreens { gap: 12px; }
+  .featureScreens .screenshot:nth-child(2) { margin-top: 25px; }
+  .screenshotButton { border-width: 3px; border-radius: 19px; }
+  .screenshot figcaption { font-size: 10px; margin-top: 13px; }
+  .sceneButtons button { padding: 8px 12px; }
+}

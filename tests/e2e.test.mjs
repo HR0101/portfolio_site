@@ -197,7 +197,7 @@ describe('アプリ専用ページ', () => {
 
   it('BusTimeApp の紹介ページが配信される', () => {
     assert.match(busTimeHtml, /次のバスへ/);
-    assert.ok(busTimeHtml.includes('/projects/bustimeapp-screens/home.png'));
+    assert.ok(busTimeHtml.includes('/projects/bustimeapp-screens/morning.webp'));
   });
 
   it('Tsumugi の紹介ページが配信される', () => {

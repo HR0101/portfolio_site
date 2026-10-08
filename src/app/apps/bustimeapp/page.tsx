@@ -5,6 +5,7 @@ import { siteConfig } from '../../../config/site';
 import { DemoScene } from './demo-scene';
 import { SkyGallery } from './sky-gallery';
 import { AppIconCube } from './app-icon-cube';
+import { FeatureGallery } from './feature-gallery';
 import styles from './product.module.css';
 
 const description = '次に乗れる便を、迷わず確認。BusTimeAppの経路判断、時刻や天気で変わるドット絵の風景、通知・ウィジェットへのこだわりを紹介します。';
@@ -46,7 +47,7 @@ export default function BusTimeAppPage() {
           <AppIconCube />
           <figure className={styles.heroScreen}>
             <div className={styles.phone}>
-              <img src="/projects/bustimeapp-screens/home.png" alt="BusTimeAppのホーム画面。経路、検索条件、便の時刻をまとめて表示" width={1206} height={2622} fetchPriority="high" />
+              <img src="/projects/bustimeapp-screens/morning.webp" alt="BusTimeAppの朝のホーム画面。経路、検索条件、次の便まであと8分と表示" width={840} height={1826} fetchPriority="high" />
             </div>
             <figcaption>実際のアプリ画面</figcaption>
           </figure>
@@ -64,6 +65,11 @@ export default function BusTimeAppPage() {
 
       <section id="bustime-demo" className={styles.demo} aria-labelledby="bustime-demo-heading">
         <DemoScene />
+      </section>
+
+      <section className={styles.featureSection} aria-labelledby="bustime-features-heading">
+        <div className={styles.sectionHeading}><p className={styles.eyebrow}>MADE FOR THE WAY YOU GO</p><h2 id="bustime-features-heading">確かめる。備える。<br /><span>いつもの移動を、自分のペースで。</span></h2><p>時刻表から、出発前の通知まで。<br />実際の画面で、使い心地を見てみよう。</p></div>
+        <FeatureGallery />
       </section>
 
       <section className={styles.skySection} aria-labelledby="bustime-sky-heading">
