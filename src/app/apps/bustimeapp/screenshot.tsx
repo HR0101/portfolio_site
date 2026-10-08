@@ -11,7 +11,7 @@ export function Screenshot({ image, alt, caption }: { image: string; alt: string
     <figure className={styles.screenshot}>
       <button type="button" className={styles.screenshotButton} onClick={() => dialog.current?.showModal()} aria-label={`${alt}を拡大`}>
         <img src={src} alt={alt} width={840} height={1826} loading="lazy" />
-        <span className={styles.zoomHint} aria-hidden="true"><Maximize2 size={14} /> 拡大</span>
+        <span className={styles.zoomHint} aria-hidden="true"><Maximize2 size={14} /></span>
       </button>
       {caption && <figcaption>{caption}</figcaption>}
       <dialog ref={dialog} className={styles.screenshotDialog} aria-label={alt} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}>

@@ -18,13 +18,13 @@ export function FeatureGallery() {
   const [active, setActive] = useState('timetable');
   const feature = features.find(item => item.id === active)!;
   return <div className={styles.featureGallery}>
+    <div id="bustime-feature" className={styles.featurePanel}>
+      <div className={styles.featureCopy} aria-live="polite" aria-atomic="true"><h3>{feature.title}</h3><p>{feature.copy}</p></div>
+      <div className={styles.featureScreens} key={feature.id}>{feature.shots.map(shot => <Screenshot key={shot.image} {...shot} />)}</div>
+    </div>
     <div className={styles.featureButtons} role="group" aria-label="BusTimeAppの機能を選ぶ">
       {features.map(item => <button type="button" key={item.id} aria-pressed={active === item.id} aria-controls="bustime-feature" onClick={() => setActive(item.id)}>{item.label}</button>)}
     </div>
-    <div id="bustime-feature" className={styles.featurePanel}>
-      <div className={styles.featureCopy} aria-live="polite" aria-atomic="true"><p className={styles.eyebrow}>{feature.label}</p><h3>{feature.title}</h3><p>{feature.copy}</p><span>画面を選ぶと、拡大して確認できます。</span></div>
-      <div className={styles.featureScreens} key={feature.id}>{feature.shots.map(shot => <Screenshot key={shot.image} {...shot} />)}</div>
-    </div>
-    <p className={styles.captureNote}>掲載画面の日時・便は撮影時のものです。Live Activityの表示は端末やOSにより異なります。</p>
+    <p className={styles.captureNote}>画面を選ぶと拡大できます。日時・便は撮影時のものです。</p>
   </div>;
 }

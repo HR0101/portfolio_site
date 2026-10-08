@@ -19,24 +19,28 @@ const scenes = [
 
 export function SkyGallery() {
   const [active, setActive] = useState('morning');
+  const [group, setGroup] = useState('時間帯');
   const scene = scenes.find(item => item.id === active)!;
+  const options = scenes.filter(item => item.group === group);
+  const index = options.findIndex(item => item.id === active);
+  const neighbors = [options[(index + options.length - 1) % options.length], options[(index + 1) % options.length]];
   return (
     <div className={styles.gallery}>
+      <div className={styles.sceneCopy} aria-live="polite" aria-atomic="true"><p className={styles.sceneTime}>{scene.time}</p><h3>{scene.title}</h3><p>{scene.copy}</p></div>
       <div className={styles.scenePanel}>
-        <div className={styles.sceneControls}>
-          {['時間帯', '季節', '雨の夜'].map(group => <div key={group} className={styles.sceneGroup} role="group" aria-label={group}>
-            <p>{group}</p>
-            <div className={styles.sceneButtons}>{scenes.filter(item => item.group === group).map(item => <button key={item.id} type="button" aria-pressed={active === item.id} aria-controls="bustime-scene" onClick={() => setActive(item.id)}>{item.label}</button>)}</div>
-          </div>)}
+        <div className={styles.sceneFlank} aria-hidden="true"><img src={`/projects/bustimeapp-screens/${neighbors[0].id}.webp`} alt="" width={840} height={1826} loading="lazy" /></div>
+        <div id="bustime-scene" className={styles.sceneImage} key={scene.id}><Screenshot image={scene.id} alt={`BusTimeAppの${scene.label}のホーム画面`} /></div>
+        <div className={styles.sceneFlank} aria-hidden="true"><img src={`/projects/bustimeapp-screens/${neighbors[1].id}.webp`} alt="" width={840} height={1826} loading="lazy" /></div>
+      </div>
+      <div className={styles.sceneControls}>
+        <div className={styles.sceneCategories} role="group" aria-label="風景の種類">
+          {['時間帯', '季節', '雨の夜'].map(item => <button type="button" key={item} aria-pressed={group === item} onClick={() => { setGroup(item); setActive(scenes.find(entry => entry.group === item)!.id); }}>{item}</button>)}
         </div>
-        <div id="bustime-scene" className={styles.sceneImage} key={scene.id}>
-          <Screenshot image={scene.id} alt={`BusTimeAppの${scene.label}のホーム画面`} caption={`${scene.label} / ${scene.time}`} />
+        <div className={styles.sceneButtons} role="group" aria-label={group}>
+          {options.map(item => <button type="button" key={item.id} aria-pressed={active === item.id} aria-controls="bustime-scene" onClick={() => setActive(item.id)}><span className={styles.sceneSwatch} data-scene={item.id} aria-hidden="true" />{item.label}</button>)}
         </div>
       </div>
-      <div className={styles.sceneCopy} aria-live="polite" aria-atomic="true">
-        <p className={styles.sceneTime}>{scene.time}</p><h3>{scene.title}</h3><p>{scene.copy}</p>
-        <p className={styles.finePrint}>すべて実際のアプリのスクリーンショットです。時刻・天気・便は撮影時の条件です。画像を選ぶと拡大できます。</p>
-      </div>
+      <p className={styles.captureNote}>実際のアプリ画面。時刻・天気・便は撮影時の条件です。</p>
     </div>
   );
 }
