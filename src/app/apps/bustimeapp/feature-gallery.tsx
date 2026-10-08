@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Screenshot } from './screenshot';
 import styles from './product.module.css';
 
@@ -16,6 +16,42 @@ const features = [
 
 export function FeatureGallery() {
   const [active, setActive] = useState('timetable');
+  const trackRef = useRef<HTMLDivElement>(null);
+  const glassRef = useRef<HTMLSpanElement>(null);
+  const motionRef = useRef<Animation | null>(null);
+  const targetRef = useRef<{ left: number; width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    const glass = glassRef.current;
+    if (!track || !glass) return;
+    const updateGlass = (animate: boolean) => {
+      const button = track.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+      if (!button) return;
+      const next = { left: button.offsetLeft, width: button.offsetWidth, height: button.offsetHeight };
+      const previous = targetRef.current;
+      if (previous && previous.left === next.left && previous.width === next.width && previous.height === next.height) return;
+      // Capture the current visual position so rapid selections continue smoothly.
+      const current = getComputedStyle(glass);
+      const from = { left: current.left, width: current.width, transform: current.transform };
+      motionRef.current?.cancel();
+      Object.assign(glass.style, { left: `${next.left}px`, width: `${next.width}px`, height: `${next.height}px`, opacity: '1' });
+      targetRef.current = next;
+      if (!animate || !previous || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      motionRef.current = glass.animate([
+        { ...from, offset: 0 },
+        { transform: 'scale(1.09, 1.14)', offset: .22 },
+        { left: `${next.left}px`, width: `${next.width}px`, transform: 'scale(1.025, 1.04)', offset: .76 },
+        { left: `${next.left}px`, width: `${next.width}px`, transform: 'scale(1)', offset: 1 },
+      ], { duration: 620, easing: 'cubic-bezier(.4, 0, .2, 1)' });
+    };
+    updateGlass(true);
+    const observer = new ResizeObserver(() => updateGlass(false));
+    observer.observe(track);
+    for (const button of track.querySelectorAll('button')) observer.observe(button);
+    return () => observer.disconnect();
+  }, [active]);
+
   const feature = features.find(item => item.id === active)!;
   return <div className={styles.featureGallery}>
     <div id="bustime-feature" className={styles.featurePanel}>
@@ -23,7 +59,10 @@ export function FeatureGallery() {
       <div className={styles.featureScreens} key={feature.id}>{feature.shots.map(shot => <Screenshot key={shot.image} {...shot} />)}</div>
     </div>
     <div className={styles.featureButtons} role="group" aria-label="BusTimeAppの機能を選ぶ">
-      {features.map(item => <button type="button" key={item.id} aria-pressed={active === item.id} aria-controls="bustime-feature" onClick={() => setActive(item.id)}>{item.label}</button>)}
+      <div className={styles.featureButtonTrack} ref={trackRef}>
+        <span className={styles.featureGlass} ref={glassRef} aria-hidden="true" />
+        {features.map(item => <button type="button" key={item.id} aria-pressed={active === item.id} aria-controls="bustime-feature" onClick={() => setActive(item.id)}>{item.label}</button>)}
+      </div>
     </div>
     <p className={styles.captureNote}>画面を選ぶと拡大できます。日時・便は撮影時のものです。</p>
   </div>;
