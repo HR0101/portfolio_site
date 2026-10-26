@@ -1,113 +1,113 @@
 "use client";
 
+import type { CSSProperties, ReactNode } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowRight, ArrowUpRight, Code2, Cpu, Globe2, Layers3, Terminal } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { SectionHeading } from '../components/SectionHeading';
+import { AnimatedCounter } from '../components/AnimatedCounter';
+import { useTilt } from '../hooks/useTilt';
+import { SWIFT_APPS } from '../data/apps';
+import { siteConfig } from '../config/site';
+import styles from './Skills.module.css';
 
-// 主要な言語・環境と，その使い道．
-// 習熟度を自己採点した数値ではなく，実際に何をつくったかを事実として並べる
-// （Apple の「技術仕様」ページと同じ，罫線で区切った仕様リストの形）．
-interface SkillSpec {
-  name: string;
-  // 何に使っているか
-  usage: string;
-  // 公開しているものなど，裏づけになる事実（無い場合は空でよい）
-  evidence?: string;
+const SHOWCASE_APPS = ['Subghost', 'BusTimeApp', 'Tsumugi'].map((name) => SWIFT_APPS.find((app) => app.name === name)!);
+const REPOSITORY_COUNT = SWIFT_APPS.reduce((total, app) => total + app.repositories.length, 0);
+const TOOL_GROUPS = [
+  { title: 'Interface & Experience', icon: Layers3, technologies: ['SwiftUI', 'WidgetKit', 'Live Activity', 'App Intents', 'React / Next.js', 'Tailwind CSS'] },
+  { title: 'Data & System', icon: Cpu, technologies: ['SwiftData', 'AVFoundation', 'Bonjour / Network.framework', 'ScreenCaptureKit', 'MediaPipe', 'MapKit'] },
+  { title: 'Everyday Tools', icon: Terminal, technologies: ['Git / GitHub', 'LaTeX'] },
+];
+
+function SkillCard({ children, className = '' }: { children: ReactNode; className?: string }) {
+  const { ref, handlers } = useTilt<HTMLDivElement>();
+  return <div ref={ref} {...handlers} className={`${styles.card} ${className}`}>{children}</div>;
 }
-
-const SKILL_SPECS: SkillSpec[] = [
-  {
-    name: 'Swift / SwiftUI',
-    usage: 'iOS・macOS アプリ開発（SwiftUI / UIKit）',
-    evidence: '17プロダクト・22リポジトリを公開',
-  },
-  {
-    name: 'Python',
-    usage: 'データ処理・自動化・機械学習',
-    evidence: 'AeroPath / FraTerm など3リポジトリを公開',
-  },
-  {
-    name: 'C',
-    usage: '組込み開発・低レイヤプログラミング',
-  },
-  {
-    name: 'Arduino',
-    usage: '電子工作・IoT プロトタイピング',
-  },
-  {
-    name: 'TypeScript / Next.js',
-    usage: 'Web フロントエンド開発',
-    evidence: 'このポートフォリオサイト',
-  },
-];
-
-// 関連して扱う技術（帯で流す）
-const RELATED_TECHNOLOGIES = [
-  'SwiftUI',
-  'SwiftData',
-  'AVFoundation',
-  'WidgetKit',
-  'Live Activity',
-  'App Intents',
-  'Bonjour / Network.framework',
-  'ScreenCaptureKit',
-  'MediaPipe',
-  'MapKit',
-  'React / Next.js',
-  'Tailwind CSS',
-  'Git / GitHub',
-  'LaTeX',
-];
-
-// 行の段階表示に使う遅延間隔（ミリ秒）
-const STAGGER_DELAY_MS = 70;
 
 export function Skills() {
   return (
-    <section
-      id="skills"
-      data-testid="skills-section"
-      className="tinted scroll-mt-24 py-24 md:py-32 bg-mist dark:bg-night-soft/40"
-    >
+    <section id="skills" data-testid="skills-section" className={`tinted scroll-mt-24 py-24 md:py-32 bg-mist dark:bg-night-soft/40 ${styles.section}`}>
       <div className="max-w-6xl mx-auto px-6">
         <SectionHeading
           label="02. Skills"
-          title="技術スタック"
-          description="iOS / macOS アプリ開発を中心に，スクリプティングから組込みまで幅広く扱います．"
+          title="アイデアを、動くものに。"
+          description="Swift で日常のアプリを。TypeScript で Web の体験を。目的に合わせて技術を選び、ソフトウェアからハードウェアまで形にしています。"
         />
-
-        {/* 仕様リスト：左に名称，右に使い道と裏づけ．行は細い罫線で区切る */}
-        <div className="tile px-6 md:px-8">
-          <dl>
-            {SKILL_SPECS.map((skill, index) => (
-              <Reveal key={skill.name} delayMs={index * STAGGER_DELAY_MS}>
-                <div
-                  className={`flex flex-col gap-1 py-6 md:flex-row md:items-baseline md:gap-8 ${
-                    index === 0 ? '' : 'border-t border-soft dark:border-night-border'
-                  }`}
-                >
-                  <dt className="md:w-64 shrink-0 font-semibold text-ink dark:text-night-ink">
-                    {skill.name}
-                  </dt>
-                  <dd className="text-body dark:text-night-body">
-                    {skill.usage}
-                    {skill.evidence && (
-                      <span className="block mt-1 text-sm text-subtle dark:text-night-subtle">
-                        {skill.evidence}
-                      </span>
-                    )}
-                  </dd>
+        <div className={styles.sectionLabel}><span>MY DEVELOPMENT TOOLKIT</span><span>技術と、それでつくったもの</span></div>
+        <div className={styles.grid}>
+          <Reveal className={styles.nativeSlot}>
+            <SkillCard className={styles.native}>
+              <div className={styles.cardTop}><span className={styles.icon}><Code2 size={22} aria-hidden="true" /></span><span className={styles.category}>APP DEVELOPMENT</span><span className={styles.primaryBadge}>メインスキル</span></div>
+              <h3>Swift <span>/ SwiftUI</span></h3>
+              <p className={styles.description}>毎日使いたくなる、<br />iPhone と Mac のアプリを。</p>
+              <div className={styles.nativeVisual}>
+                <div className={styles.orbit} aria-hidden="true" />
+                <span className={`${styles.platform} ${styles.ios}`}>iOS</span>
+                <span className={`${styles.platform} ${styles.macos}`}>macOS</span>
+                <div className={styles.appShelf}>
+                  {SHOWCASE_APPS.map((app, index) => (
+                    <Link key={app.name} href={app.detailHref!} className={styles.app} style={{ '--app-index': index } as CSSProperties} aria-label={`${app.name}の紹介を見る`}>
+                      <Image src={app.imageSrc!} alt="" width={96} height={96} />
+                      <span>{app.name}</span>
+                    </Link>
+                  ))}
                 </div>
-              </Reveal>
-            ))}
-          </dl>
+              </div>
+              <dl className={styles.stats}>
+                <div><dt>公開プロダクト</dt><dd><AnimatedCounter value={SWIFT_APPS.length} /><span>Apps</span></dd></div>
+                <div><dt>公開リポジトリ</dt><dd><AnimatedCounter value={REPOSITORY_COUNT} /><span>Repositories</span></dd></div>
+              </dl>
+              <div className={styles.cardFooter}><span>SwiftUI / UIKit</span><Link href="#projects">つくったアプリへ <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
+            </SkillCard>
+          </Reveal>
+          <Reveal className={styles.webSlot} delayMs={80}>
+            <SkillCard className={styles.web}>
+              <div className={styles.webCopy}>
+                <div className={styles.cardTop}><span className={styles.icon}><Globe2 size={21} aria-hidden="true" /></span><span className={styles.category}>WEB EXPERIENCE</span></div>
+                <h3>TypeScript <span>/ Next.js</span></h3>
+                <p className={styles.description}>ブラウザから、体験を届ける。</p>
+                <p className={styles.evidence}>EkiHub・このポートフォリオサイト</p>
+                <Link className={styles.textLink} href="#works">Web サービスとゲームへ <ArrowUpRight size={16} aria-hidden="true" /></Link>
+              </div>
+              <div className={styles.browserVisual} aria-hidden="true">
+                <div className={styles.browserBar}><i /><i /><i /><span>localhost</span></div>
+                <div className={styles.code}><span>&lt;<b>Idea</b></span><span>   language=<em>"TypeScript"</em></span><span>   framework=<em>"Next.js"</em></span><span>   /&gt;<i className={styles.caret} /></span></div>
+                <div className={styles.browserPreview}><span /><span /><span /></div>
+              </div>
+            </SkillCard>
+          </Reveal>
+          <Reveal delayMs={150}>
+            <SkillCard className={styles.python}>
+              <div className={styles.cardTop}><span className={styles.icon}><Terminal size={21} aria-hidden="true" /></span><span className={styles.category}>AUTOMATION</span></div>
+              <h3>Python</h3>
+              <p className={styles.description}>繰り返す作業に、仕組みを。</p>
+              <div className={styles.pipeline} aria-hidden="true"><span>Data</span><ArrowRight size={14} /><span>Script</span><ArrowRight size={14} /><span>Done</span></div>
+              <p className={styles.evidence}>データ処理・自動化・機械学習</p>
+              <a className={styles.textLink} href={`${siteConfig.githubUrl}?tab=repositories&language=python`}>AeroPath / FraTerm など <ArrowUpRight size={15} aria-hidden="true" /></a>
+            </SkillCard>
+          </Reveal>
+          <Reveal delayMs={220}>
+            <SkillCard className={styles.hardware}>
+              <div className={styles.cardTop}><span className={styles.icon}><Cpu size={21} aria-hidden="true" /></span><span className={styles.category}>HARDWARE</span></div>
+              <h3>C <span>/ Arduino</span></h3>
+              <p className={styles.description}>画面の先の、ものづくり。</p>
+              <div className={styles.circuit} aria-hidden="true"><span /><span /><Cpu size={32} /><span /><span /></div>
+              <p className={styles.evidence}>組込み開発・低レイヤプログラミング<br />電子工作・IoT プロトタイピング</p>
+            </SkillCard>
+          </Reveal>
         </div>
+        <Reveal delayMs={100}>
+          <div className={styles.toolbox}>
+            {TOOL_GROUPS.map(({ title, icon: Icon, technologies }) => (
+              <div className={styles.toolGroup} key={title}>
+                <h3><Icon size={15} aria-hidden="true" />{title}</h3>
+                <ul aria-label={title}>{technologies.map((technology) => <li key={technology}>{technology}</li>)}</ul>
+              </div>
+            ))}
+          </div>
+        </Reveal>
       </div>
-
-      <Reveal className="max-w-6xl mx-auto px-6 mt-10">
-        <ul className="portfolio-technologies" aria-label="関連技術">
-          {RELATED_TECHNOLOGIES.map((technology) => <li key={technology}>{technology}</li>)}
-        </ul>
-      </Reveal>
     </section>
   );
 }

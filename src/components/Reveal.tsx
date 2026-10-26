@@ -4,7 +4,7 @@ import React from 'react';
 import { useInView } from '../hooks/useInView';
 
 // 登場アニメーションの種類
-export type RevealVariant = 'up' | 'left' | 'right' | 'scale' | 'blur' | 'flip';
+export type RevealVariant = 'up' | 'left' | 'right' | 'scale' | 'blur' | 'flip' | 'scene';
 
 // バリアント名と CSS クラスの対応（'up' は基本の .reveal だけで表現する）
 const VARIANT_CLASS_NAMES: Record<RevealVariant, string> = {
@@ -14,6 +14,7 @@ const VARIANT_CLASS_NAMES: Record<RevealVariant, string> = {
   scale: 'reveal-scale',
   blur: 'reveal-blur',
   flip: 'reveal-flip',
+  scene: 'reveal-scene',
 };
 
 // スクロールで画面内に入ったときに子要素をアニメーション表示するラッパー

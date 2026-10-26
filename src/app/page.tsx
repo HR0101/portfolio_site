@@ -3,9 +3,11 @@ import { ProductShowcase } from '../sections/ProductShowcase';
 import { About } from '../sections/About';
 import { Skills } from '../sections/Skills';
 import { Projects } from '../sections/Projects';
+import { Works } from '../sections/Works';
 import { GitHubActivity } from '../sections/GitHubActivity';
 import { Contact } from '../sections/Contact';
 import { ScrollHighlightText } from '../components/ScrollHighlightText';
+import { VelocityMarquee } from '../components/VelocityMarquee';
 import { siteConfig } from '../config/site';
 import { buildRepositoryUrl, PLATFORM_LABELS, SWIFT_APPS } from '../data/apps';
 
@@ -91,7 +93,10 @@ export default function HomePage() {
 
       <Skills />
       <Projects />
+      <VelocityMarquee words={['Swift', 'SwiftUI', 'Next.js', 'TypeScript', 'Three.js', 'Canvas']} />
+      <Works />
       <GitHubActivity />
+      <VelocityMarquee words={["Let's build", 'something', 'trustworthy', 'together']} direction={-1} />
       <Contact />
     </>
   );

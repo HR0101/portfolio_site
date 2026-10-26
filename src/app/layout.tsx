@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import './refinements.css';
+import './motion.css';
 import { ThemeProvider } from '../components/ThemeProvider';
+import { CursorRing } from '../components/CursorRing';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { ScrollProgressBar } from '../components/ScrollProgressBar';
@@ -73,7 +75,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja" suppressHydrationWarning>
+    <html lang="ja" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         {/* 初期表示時のテーマちらつき（フラッシュ）防止スクリプト．
             デフォルトはライトモードで，明示的に dark が保存されている場合のみダーク表示にする．
@@ -108,6 +110,7 @@ export default function RootLayout({
           {/* ⌘K で開く操作パネル */}
           <CommandPalette />
           <Navbar />
+          <CursorRing />
           <main id="main-content" className="relative z-10 flex-grow">
             {children}
           </main>

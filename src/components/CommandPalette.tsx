@@ -14,9 +14,10 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { siteConfig } from '../config/site';
 import { SWIFT_APPS } from '../data/apps';
+import { ALL_WORKS } from '../data/works';
 
 // 専用の紹介ページを持つアプリ（apps.ts に detailHref を足せば，ここにも自動で並ぶ）
-const DETAIL_PAGE_APPS = SWIFT_APPS.filter((app) => app.detailHref);
+const DETAIL_PAGE_APPS = [...SWIFT_APPS, ...ALL_WORKS].filter((app) => app.detailHref);
 
 // 実行できる項目1件分
 interface PaletteAction {
@@ -35,6 +36,7 @@ const SECTION_ITEMS = [
   { id: 'about', label: '自己紹介へ移動', keywords: 'about jikoshoukai プロフィール' },
   { id: 'skills', label: '技術スタックへ移動', keywords: 'skills gijutsu スキル' },
   { id: 'projects', label: 'つくったアプリへ移動', keywords: 'apps projects アプリ 作品' },
+  { id: 'works', label: 'Web サービスとゲームへ移動', keywords: 'works web games ゲーム ekihub' },
   { id: 'github', label: 'GitHub アクティビティへ移動', keywords: 'github activity 活動' },
   { id: 'contact', label: 'お問い合わせへ移動', keywords: 'contact mail 連絡' },
 ];

@@ -1,0 +1,196 @@
+.site-navbar {
+  --nav-bg: 250 250 249;
+  --nav-text: #20282b;
+  --nav-muted: #687578;
+  --nav-line: rgb(32 40 43 / 9%);
+  color: var(--nav-text);
+  border-bottom: 1px solid transparent;
+  transition: background-color 200ms, border-color 200ms, box-shadow 200ms;
+}
+.dark .site-navbar {
+  --nav-bg: 14 20 32;
+  --nav-text: #edf1f5;
+  --nav-muted: #a3adbb;
+  --nav-line: rgb(237 241 245 / 10%);
+}
+.site-navbar.is-solid {
+  background: rgb(var(--nav-bg) / 96%);
+  backdrop-filter: blur(24px);
+  border-color: var(--nav-line);
+}
+.site-navbar:has(.mega-trigger.is-open) { box-shadow: 0 24px 48px rgb(0 0 0 / 7%); }
+.mega-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 24px;
+  color: var(--nav-text);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 180ms;
+}
+.mega-trigger:hover, .mega-trigger.is-open { background: var(--nav-line); }
+.mega-trigger svg { opacity: .5; transition: transform 200ms; }
+.mega-trigger.is-open svg, .mobile-mega-trigger[aria-expanded='true'] svg { transform: rotate(180deg); }
+.mega-panel[hidden], .mobile-mega-details[hidden] { display: none; }
+.mega-panel { border-top: 1px solid var(--nav-line); animation: mega-reveal 200ms ease-out; }
+.mega-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 280px;
+  gap: 48px;
+  padding-top: 42px;
+  padding-bottom: 48px;
+  max-height: calc(100dvh - 64px);
+  overflow-y: auto;
+}
+.mega-group-title { margin: 0 0 18px; color: var(--nav-muted); font-size: 12px; font-weight: 600; letter-spacing: .035em; }
+.site-navbar .mega-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 8px 0;
+  margin-bottom: 5px;
+  color: var(--nav-text);
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.5;
+  transition: color 180ms, transform 180ms;
+}
+.mega-link small { color: var(--nav-muted); font-size: 11px; font-weight: 400; overflow-wrap: anywhere; }
+.mega-link:hover { color: #2672db; transform: translateX(4px); }
+.mega-feature { display: block; align-self: start; }
+.mega-feature-image { position: relative; aspect-ratio: 1.65; overflow: hidden; border-radius: 18px; background: linear-gradient(130deg, #e3eafb, #dfe7ee 55%, #e8e2f3); }
+.dark .mega-feature-image { background: linear-gradient(130deg, #1c2943, #222b3d 55%, #302a46); }
+.mega-feature-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 400ms; }
+.mega-feature-image.is-icon { display: grid; place-items: center; }
+.mega-feature-image.is-icon img { width: 92px; height: 92px; object-fit: contain; border-radius: 22px; box-shadow: 0 14px 28px rgb(0 0 0 / 12%); }
+.mega-feature:hover img { transform: scale(1.05); }
+.mega-feature-arrow { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgb(var(--nav-bg) / 90%); }
+.mega-feature p { margin: 14px 0 4px; font-size: 18px; font-weight: 600; }
+.mega-feature small { color: var(--nav-muted); font-size: 11px; }
+.site-navbar button:focus-visible, .site-navbar a:focus-visible { outline: 2px solid #2672db; outline-offset: 4px; border-radius: 6px; }
+.mobile-mega { max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain; padding: 12px 24px 24px; border-top: 1px solid var(--nav-line); }
+.mobile-mega-item { border-bottom: 1px solid var(--nav-line); }
+.mobile-mega-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 56px; font-size: 16px; font-weight: 500; }
+.mobile-mega-trigger svg { transition: transform 200ms; }
+.mobile-mega-details { padding: 12px 0 24px; animation: mega-reveal 180ms ease-out; }
+.mobile-mega-details .mega-group { margin-bottom: 24px; }
+.mobile-mega-details .mega-group-title { margin-bottom: 8px; }
+.site-navbar .mobile-mega-details .mega-link { font-size: 18px; }
+.mobile-mega-details .mega-feature { max-width: 320px; }
+@keyframes mega-reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+@media (min-width: 768px) and (max-width: 1023px) {
+  .mega-trigger { padding: 0 7px; font-size: 12px; }
+  .navbar-bar { padding-inline: 16px; }
+  .mega-layout { grid-template-columns: 1fr 1fr 220px; gap: 24px; }
+  .site-navbar .mega-link { font-size: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-navbar *, .site-navbar { animation: none !important; transition: none !important; }
+}
+
+/* Opening and closing share the same layout, so the panel also eases shut. */
+.site-navbar { --nav-ease: cubic-bezier(.22, 1, .36, 1); }
+.navbar-bar { animation: nav-bar-arrive 650ms var(--nav-ease) both; }
+.navbar-bar > a { transition: transform 280ms var(--nav-ease); }
+.navbar-bar > a:hover { transform: translateY(-2px); }
+.mega-trigger { transition: background 220ms, transform 300ms var(--nav-ease); }
+.mega-trigger:active { transform: scale(.95); }
+.mega-trigger svg { transition: transform 380ms var(--nav-ease), opacity 220ms; }
+.mega-trigger.is-open svg { opacity: 1; }
+.nav-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: grid-template-rows 440ms var(--nav-ease), opacity 220ms ease, visibility 0s 440ms;
+}
+.nav-collapse.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+.nav-collapse-inner { min-height: 0; overflow: hidden; }
+.mega-panel { animation: none; border-top: 0; }
+.mega-panel.is-open { box-shadow: inset 0 1px var(--nav-line); }
+.mega-panel.is-open .mega-group-title,
+.mobile-detail-shell.is-open .mega-group-title {
+  animation: nav-content-arrive 560ms var(--nav-ease) both;
+  animation-delay: calc(60ms + var(--group-index, 0) * 65ms);
+}
+.mega-panel.is-open .mega-link,
+.mobile-detail-shell.is-open .mega-link {
+  animation: nav-content-arrive 600ms var(--nav-ease) both;
+  animation-delay: calc(100ms + var(--group-index, 0) * 65ms + var(--link-index, 0) * 45ms);
+}
+.site-navbar .mega-link { position: relative; transition: color 220ms, transform 350ms var(--nav-ease); }
+.site-navbar .mega-link > span { position: relative; }
+.mega-link > span::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 350ms var(--nav-ease);
+}
+.site-navbar .mega-link:is(:hover, :focus-visible) { color: #2672db; transform: translateX(7px); }
+.mega-link:is(:hover, :focus-visible) > span::after { transform: scaleX(1); transform-origin: left; }
+.mega-panel.is-open .mega-feature,
+.mobile-detail-shell.is-open .mega-feature { animation: nav-feature-arrive 750ms 140ms var(--nav-ease) both; }
+.mega-feature-image {
+  isolation: isolate;
+  transform: perspective(700px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 350ms var(--nav-ease), box-shadow 350ms;
+}
+.mega-feature-image::after {
+  content: '';
+  position: absolute;
+  inset: -60%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 40%, rgb(255 255 255 / 35%) 50%, transparent 60%);
+  transform: translateX(-65%) rotate(-12deg);
+  transition: transform 800ms var(--nav-ease);
+}
+.mega-feature:is(:hover, :focus-visible) .mega-feature-image::after { transform: translateX(65%) rotate(-12deg); }
+.mega-feature:is(:hover, :focus-visible) .mega-feature-image { box-shadow: 0 18px 32px rgb(0 0 0 / 12%); }
+.mega-feature-image img { transition: transform 650ms var(--nav-ease); }
+.mega-feature:is(:hover, :focus-visible) .mega-feature-image:not(.is-icon) img { transform: scale(1.08); }
+.mega-feature-image.is-icon img { animation: nav-icon-float 4.5s ease-in-out infinite; animation-play-state: paused; }
+.mega-panel.is-open .is-icon img, .mobile-detail-shell.is-open .is-icon img { animation-play-state: running; }
+.mega-feature-arrow { z-index: 2; transition: background 250ms, color 250ms, transform 400ms var(--nav-ease); overflow: hidden; }
+.mega-feature:is(:hover, :focus-visible) .mega-feature-arrow { background: #2672db; color: white; transform: rotate(8deg) scale(1.08); }
+.mega-feature:is(:hover, :focus-visible) .mega-feature-arrow svg { animation: nav-arrow-travel 450ms var(--nav-ease); }
+.mobile-mega-details { animation: none; }
+.mobile-mega-trigger { transition: color 200ms, padding 300ms var(--nav-ease); }
+.mobile-mega-trigger[aria-expanded='true'] { color: #2672db; padding-inline: 6px; }
+.mobile-menu-shell.is-open .mobile-mega-item { animation: nav-content-arrive 450ms var(--nav-ease) both; }
+.mobile-mega-item:nth-child(2) { animation-delay: 35ms !important; }
+.mobile-mega-item:nth-child(3) { animation-delay: 70ms !important; }
+.mobile-mega-item:nth-child(4) { animation-delay: 105ms !important; }
+.mobile-mega-item:nth-child(5) { animation-delay: 140ms !important; }
+.mobile-mega-item:nth-child(6) { animation-delay: 175ms !important; }
+.navbar-bar button[aria-controls='mobile-navigation'] svg { animation: nav-button-turn 300ms var(--nav-ease); }
+@keyframes nav-bar-arrive { from { opacity: 0; translate: 0 -12px; } to { opacity: 1; translate: 0 0; } }
+@keyframes nav-content-arrive { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
+@keyframes nav-feature-arrive { from { opacity: 0; translate: 0 20px; scale: .96; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes nav-icon-float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
+@keyframes nav-arrow-travel { 0% { translate: 0 0; } 45% { translate: 18px -18px; opacity: 0; } 46% { translate: -18px 18px; } 100% { translate: 0 0; opacity: 1; } }
+@keyframes nav-button-turn { from { opacity: .4; transform: rotate(-80deg) scale(.65); } to { opacity: 1; transform: rotate(0) scale(1); } }
+@media (max-width: 767px) { .mega-panel { display: none; } }
+@media (min-width: 768px) { .mobile-menu-shell { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .site-navbar *, .site-navbar, .site-navbar *::after { animation: none !important; transition: none !important; }
+  .site-navbar .mega-feature-image { transform: none; }
+}

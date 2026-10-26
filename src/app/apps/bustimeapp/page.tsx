@@ -93,6 +93,10 @@ export default function BusTimeAppPage() {
         <img src="/projects/bustimeapp.webp" alt="" width={72} height={72} loading="lazy" />
         <h2 id="bustime-end-heading">毎日の「乗れるかな」を、<br />小さな安心に。</h2><p>BusTimeAppの設計と実装を、ソースコードで公開しています。</p>
         <a className={styles.primaryLink} href={`${siteConfig.githubUrl}/BusTimeApp`} target="_blank" rel="noopener noreferrer">GitHubでソースを見る <ArrowUpRight size={17} aria-hidden="true" /></a>
+        <nav className={styles.legalLinks} aria-label="規約・ポリシー">
+          <Link href="/apps/bustimeapp/privacy/">プライバシーポリシー</Link>
+          <Link href="/apps/bustimeapp/terms/">利用規約</Link>
+        </nav>
         <Link className={styles.backLink} href="/#projects">ほかのアプリも見る →</Link>
       </section>
     </article>

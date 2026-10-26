@@ -189,6 +189,13 @@ AWSでの公開は [DEPLOY.md](DEPLOY.md) を参照してください。AWS CLI�
 - API Route は必ず HTTP 200 を返し，実際の状態は JSON 内の `apiStatus`（`success` / `offline` / `rate_limited` / `no_token`）で伝えます．
 - クライアントは localStorage に1時間キャッシュし，「キャッシュ → API → 静的フォールバック」の順に表示を組み立てます．
 
+## BusTimeAppの規約ページ
+
+- プライバシーポリシー: `/apps/bustimeapp/privacy/`
+- 利用規約: `/apps/bustimeapp/terms/`
+
+紹介ページ末尾から各ページへ移動できます。両ページは静的書き出しとsitemapに対応し、アプリ内「設定」のリンク先と一致しています。本文は `src/app/apps/bustimeapp/privacy/page.tsx` と `terms/page.tsx`、共通の表示と更新日は `legal-layout.tsx` で管理します。情報の取り扱いを変更したときは本文・更新日・sitemapの更新日を合わせて見直してください。
+
 ## アプリカタログの編集
 
 BusTimeAppの詳細ページには実画面24枚を使用しています。時間帯・季節・夜の雨を10場面で切り替えるギャラリーと、時刻表・通知・Live Activity・土日祝・大きな文字・英語／中国語・設定の7つの機能紹介があります。画像はWebPで配信し、選択すると拡大、Escapeキーで閉じられます。雨の紹介には元スクリーンショットの21番（夜の強い雨）と22番（冬の夜の雨）を採用しています。

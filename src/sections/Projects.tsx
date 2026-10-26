@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Laptop, Smartphone } from 'lucide-react';
+import { SpotlightCard } from '../components/SpotlightCard';
 import { Reveal, type RevealVariant } from '../components/Reveal';
 import { SectionHeading } from '../components/SectionHeading';
 import { ScrollTimeline } from '../components/ScrollTimeline';
@@ -105,11 +106,14 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
   const Icon = app.icon;
 
   return (
-    <div className="h-full">
+    <SpotlightCard className="h-full rounded-[1.75rem]">
       <article className="product-card tile group h-full flex flex-col overflow-hidden">
         {/* ヘッダー：取得済みなら実画面、未取得ならグラデーション＋アイコン */}
-        <div
-          className="product-card-visual relative overflow-hidden flex items-center justify-center"
+        <Link
+          href={app.detailHref ?? buildRepositoryUrl(siteConfig.githubUsername, app.repositories[0].name)}
+          aria-label={`${app.name}の${app.detailHref ? '紹介' : 'ソースコード'}を見る`}
+          data-motion-work
+          className="motion-work-surface product-card-visual relative overflow-hidden flex items-center justify-center"
         >
           {app.screenshotSrc ? (
             <>
@@ -121,6 +125,7 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
                 height={800}
                 loading="lazy"
                 decoding="async"
+                data-motion-parallax
                 className="product-card-screen transition-transform duration-700 ease-out group-hover:scale-[1.025]"
                 style={{ objectPosition: app.screenshotPosition ?? '50% 50%' }}
               />
@@ -144,6 +149,7 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
               height={112}
               loading="lazy"
               decoding="async"
+              data-motion-parallax
               className="relative z-10 h-28 w-28 rounded-[1.7rem] object-cover shadow-soft-lg ring-1 ring-white/60 group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
@@ -167,7 +173,8 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
           <span className="absolute top-4 right-4 px-2 py-0.5 rounded-full bg-white/90 dark:bg-night-soft/90 border border-soft dark:border-night-border text-xs font-mono text-subtle dark:text-night-subtle">
             {app.year}
           </span>
-        </div>
+          <span className="motion-surface-arrow" aria-hidden="true"><ArrowUpRight size={18} /></span>
+        </Link>
 
         <div className="flex flex-col flex-grow p-6">
           <h3 className="stagger-child text-lg font-semibold transition-colors">
@@ -181,7 +188,7 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
           <RepositoryLinks app={app} />
         </div>
       </article>
-    </div>
+    </SpotlightCard>
   );
 }
 
@@ -190,7 +197,7 @@ function CompactAppCard({ app }: { app: SwiftApp }) {
   const Icon = app.icon;
 
   return (
-    <div className="product-card h-full">
+    <SpotlightCard className="product-card h-full rounded-[1.75rem]">
       <article className="tile group h-full flex flex-col p-6 hover:border-ink/25 dark:hover:border-night-ink/25 hover:shadow-soft transition-all duration-300">
         <div className="flex items-start gap-4">
           <div
@@ -216,7 +223,7 @@ function CompactAppCard({ app }: { app: SwiftApp }) {
         <TagList tags={app.tags} />
         <RepositoryLinks app={app} />
       </article>
-    </div>
+    </SpotlightCard>
   );
 }
 
@@ -373,7 +380,7 @@ export function Projects() {
               <Reveal
                 key={`${activeFilterId}-${app.name}`}
                 delayMs={index * STAGGER_DELAY_MS}
-                variant={index % 2 === 0 ? 'left' : 'right'}
+                variant="scene"
                 className="h-full"
               >
                 <FeaturedAppCard app={app} />

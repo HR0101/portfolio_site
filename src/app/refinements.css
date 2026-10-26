@@ -8,8 +8,8 @@
 .dark .portfolio-hero { background: radial-gradient(ellipse at 50% 60%, #102333 0%, transparent 62%); }
 .portfolio-hero-copy { max-width: 980px; margin: auto; }
 .portfolio-hero h1 { margin: 26px 0; font-size: clamp(48px, 7vw, 88px); font-weight: 700; line-height: 1.17; letter-spacing: -.055em; }
-.portfolio-hero h1 span { color: #417fa9; }
-.dark .portfolio-hero h1 span { color: #93c8eb; }
+.portfolio-hero h1 .hero-accent { color: #417fa9; }
+.dark .portfolio-hero h1 .hero-accent { color: #93c8eb; }
 .portfolio-hero-lead { font-size: clamp(17px, 2vw, 23px); font-weight: 500; }
 .portfolio-hero-description { margin-top: 12px; font-size: 15px; color: var(--color-subtle); }
 .dark .portfolio-hero-description { color: #a1a1a6; }

@@ -18,7 +18,7 @@ interface ScrambleTextProps {
 }
 
 // 画面内に入ると，ランダムな文字から本来の文字へ順に「解読」されていく演出．
-// 読み上げには最終的な文字列だけを伝える．
+// 読み上げには最終的な文字列だけを伝える（視覚的に隠した元の文字列を置く）．
 export function ScrambleText({ text, className = '' }: ScrambleTextProps) {
   const { ref, isInView } = useInView<HTMLSpanElement>();
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -61,7 +61,8 @@ export function ScrambleText({ text, className = '' }: ScrambleTextProps) {
   }, [isInView, text, prefersReducedMotion]);
 
   return (
-    <span ref={ref} className={className} aria-label={text}>
+    <span ref={ref} className={className}>
+      <span className="sr-only">{text}</span>
       <span aria-hidden="true">{displayText}</span>
     </span>
   );

@@ -1,0 +1,1048 @@
+/* EkiHub 専用の配色．アイコンと同じ，濃紺の地にティール（輪）と青紫（軸）． */
+.page {
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --line: #e1e6ef;
+  --text: #121a2b;
+  --muted: #586276;
+  --navy: #0b1220;
+  --navy-soft: #121c31;
+  --navy-line: #24314d;
+  --teal: #2fd3b5;
+  --teal-ink: #0f8f7b;
+  --indigo: #7c8bff;
+  --indigo-ink: #4f5bd5;
+  background: var(--bg);
+  color: var(--text);
+  padding-top: 64px;
+  overflow: clip;
+}
+
+:global(.dark) .page {
+  --bg: #070b14;
+  --surface: #0f1729;
+  --line: #1e2a44;
+  --text: #eef2fb;
+  --muted: #9aa5bd;
+  --teal-ink: #2fd3b5;
+  --indigo-ink: #a3adff;
+}
+
+.page h2 {
+  font-size: clamp(28px, 4vw, 50px);
+  line-height: 1.4;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+}
+
+.page h2 span {
+  background: linear-gradient(90deg, var(--teal-ink), var(--indigo-ink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.page h3 {
+  font-weight: 650;
+}
+
+.page p {
+  line-height: 1.9;
+}
+
+.localNav {
+  max-width: 1160px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.localNav a {
+  padding-block: 10px;
+  color: var(--muted);
+}
+
+.localNav span {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.eyebrow,
+.eyebrowDark {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  font-weight: 650;
+  color: var(--teal);
+}
+
+.eyebrowDark {
+  color: var(--teal-ink);
+}
+
+/* ===== ヒーロー（濃紺の地に，線が集まる図） ===== */
+.hero {
+  position: relative;
+  margin: 28px auto 0;
+  max-width: 1200px;
+  border-radius: 36px;
+  background:
+    radial-gradient(80% 70% at 78% 40%, rgb(47 211 181 / 0.16), transparent 60%),
+    radial-gradient(60% 60% at 10% 100%, rgb(124 139 255 / 0.18), transparent 60%),
+    var(--navy);
+  color: #eef2fb;
+  overflow: hidden;
+}
+
+.heroGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(70% 70% at 60% 50%, #000, transparent);
+  animation: gridDrift 18s linear infinite;
+}
+
+@keyframes gridDrift {
+  to {
+    background-position: 44px 44px;
+  }
+}
+
+.heroInner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: clamp(40px, 7vw, 88px);
+}
+
+.heroCopy h1 {
+  margin-top: 22px;
+  white-space: nowrap;
+  font-size: clamp(34px, 4.6vw, 58px);
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+  font-weight: 750;
+}
+
+.heroCopy h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--teal), var(--indigo));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.appName {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.appName img {
+  border-radius: 11px;
+}
+
+.appName span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8f9bb6;
+  font-family: var(--font-mono);
+}
+
+.lead {
+  margin-top: 24px;
+  font-size: clamp(15px, 1.6vw, 18px);
+  color: #c4cce0;
+}
+
+.heroActions {
+  margin-top: 34px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.primaryLink,
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 13px 22px;
+  font-size: 14px;
+  font-weight: 650;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.primaryLink {
+  background: linear-gradient(90deg, var(--teal), #5ad8f0);
+  color: #062019;
+  box-shadow: 0 14px 30px -14px rgb(47 211 181 / 0.8);
+}
+
+.primaryLink:hover {
+  transform: translateY(-2px);
+}
+
+.secondaryLink {
+  border: 1px solid rgb(255 255 255 / 0.22);
+  color: inherit;
+}
+
+.secondaryLink:hover {
+  border-color: rgb(255 255 255 / 0.55);
+}
+
+.heroVisual {
+  width: 100%;
+  max-width: 520px;
+  justify-self: center;
+  overflow: visible;
+}
+
+.heroOrbit {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.08);
+  stroke-dasharray: 4 10;
+  transform-origin: 260px 220px;
+  animation: orbitSpin 40s linear infinite;
+}
+
+.heroOrbit + .heroOrbit {
+  animation-direction: reverse;
+  animation-duration: 60s;
+}
+
+@keyframes orbitSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.heroRoute {
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0.85;
+  animation: routeDraw 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes routeDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.heroMember {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+  animation: memberPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes memberPop {
+  to {
+    transform: scale(1);
+  }
+}
+
+.heroRing {
+  fill: var(--navy);
+  stroke: var(--teal);
+  stroke-width: 11;
+  opacity: 0;
+  animation: fadeIn 0.6s ease 1.5s forwards;
+}
+
+.heroStem {
+  stroke: var(--indigo);
+  stroke-width: 11;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: fadeIn 0.6s ease 1.65s forwards;
+}
+
+.heroPulse {
+  fill: rgb(47 211 181 / 0.25);
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: centerPulse 2.6s ease-out 2s infinite;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes centerPulse {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+/* ===== 共通の節 ===== */
+.problem,
+.demoSection,
+.howItWorks,
+.screens,
+.features,
+.stack,
+.closing {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: clamp(80px, 11vw, 140px) 28px 0;
+}
+
+.sectionIntro {
+  max-width: 720px;
+}
+
+.sectionIntro h2 {
+  margin-top: 14px;
+}
+
+.sectionIntro > p:last-child:not(:first-child) {
+  margin-top: 18px;
+  color: var(--muted);
+}
+
+/* ===== 地図の真ん中は海の上 ===== */
+.bayFigure {
+  margin: 48px auto 0;
+  max-width: 820px;
+}
+
+.bayFigure figure {
+  border-radius: 28px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 28px;
+}
+
+.bayFigure svg {
+  width: 100%;
+  height: auto;
+}
+
+.bayFigure figcaption {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.bayWater {
+  fill: rgb(124 139 255 / 0.13);
+}
+
+.bayRail {
+  fill: none;
+  stroke: var(--teal-ink);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+/* 図が画面に入ってから線路を引く */
+:global(.reveal-visible) .bayRail {
+  animation: routeDraw 2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
+}
+
+.bayStation {
+  fill: var(--text);
+}
+
+.bayLabel,
+.bayCentroid text,
+.bayHub text {
+  font-size: 14px;
+  font-weight: 650;
+  fill: var(--text);
+}
+
+.bayCentroid circle {
+  fill: none;
+  stroke: #e0607a;
+  stroke-width: 3;
+  stroke-dasharray: 4 4;
+}
+
+.bayCentroid text {
+  fill: #c2415d;
+  font-size: 12px;
+}
+
+.bayHub circle {
+  fill: var(--teal);
+  stroke: var(--surface);
+  stroke-width: 4;
+  animation: hubBreath 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.bayHub text {
+  fill: var(--teal-ink);
+  font-size: 13px;
+}
+
+@keyframes hubBreath {
+  50% {
+    transform: scale(1.18);
+  }
+}
+
+/* ===== デモ ===== */
+.demoSection .sectionIntro p:last-child {
+  color: var(--muted);
+}
+
+.demo {
+  margin-top: 44px;
+  border-radius: 32px;
+  background: var(--navy);
+  color: #e6ebf7;
+  padding: clamp(20px, 3.4vw, 40px);
+  box-shadow: 0 40px 80px -50px rgb(11 18 32 / 0.7);
+}
+
+.demoControls {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 28px;
+  align-items: end;
+}
+
+.demoControls fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.demoControls legend {
+  font-size: 13px;
+  font-weight: 650;
+  margin-bottom: 12px;
+}
+
+.demoControls legend span {
+  margin-left: 8px;
+  color: #8f9bb6;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.stationChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip,
+.chipSelected {
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid var(--navy-line);
+  background: var(--navy-soft);
+  color: #c4cce0;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.chip:hover {
+  border-color: #3a4a6c;
+  color: #fff;
+}
+
+.chipSelected {
+  background: var(--chip-color);
+  border-color: var(--chip-color);
+  color: #071018;
+  font-weight: 700;
+  transform: translateY(-1px);
+}
+
+.demoMessage {
+  min-height: 22px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #ffb547;
+}
+
+.weightControl {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 30px;
+}
+
+.weightControl span {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #c4cce0;
+}
+
+.weightControl input {
+  width: 100%;
+  accent-color: var(--teal);
+}
+
+.demoStage {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.demoMap {
+  width: 100%;
+  height: auto;
+  border-radius: 22px;
+  background:
+    radial-gradient(70% 70% at 50% 45%, rgb(47 211 181 / 0.08), transparent 70%),
+    var(--navy-soft);
+  border: 1px solid var(--navy-line);
+}
+
+.mapStation circle {
+  fill: #3b4a6b;
+}
+
+.mapStation text {
+  font-size: 9px;
+  fill: #6f7c99;
+}
+
+.mapRoute {
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0.9;
+  animation: routeDraw 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.mapMember circle {
+  stroke: var(--navy);
+  stroke-width: 3;
+}
+
+.mapMember text {
+  font-size: 11px;
+  font-weight: 800;
+  fill: #071018;
+}
+
+.mapMember .mapMemberName {
+  font-size: 11px;
+  font-weight: 650;
+  fill: #dfe6f5;
+  paint-order: stroke;
+  stroke: var(--navy-soft);
+  stroke-width: 4px;
+}
+
+.mapCenter text {
+  font-size: 15px;
+  font-weight: 800;
+  fill: #fff;
+  paint-order: stroke;
+  stroke: var(--navy);
+  stroke-width: 5px;
+}
+
+.mapCenterRing {
+  fill: var(--navy);
+  stroke: var(--teal);
+  stroke-width: 5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: memberPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.mapCenterPulse {
+  fill: rgb(47 211 181 / 0.3);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: centerPulse 2.2s ease-out 0.4s infinite;
+}
+
+.demoResult {
+  border-radius: 22px;
+  background: var(--navy-soft);
+  border: 1px solid var(--navy-line);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.resultLabel {
+  font-size: 12px;
+  color: #8f9bb6;
+}
+
+.resultStation {
+  margin-top: -14px;
+  font-size: clamp(34px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  animation: stationIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes stationIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(6px);
+  }
+}
+
+.resultStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.resultStats div {
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.04);
+  padding: 10px 14px;
+}
+
+.resultStats dt {
+  font-size: 11px;
+  color: #8f9bb6;
+}
+
+.resultStats dd {
+  margin: 2px 0 0;
+  font-size: 22px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeBars {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 12px;
+}
+
+.timeBars li {
+  display: grid;
+  grid-template-columns: 64px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+}
+
+.timeBars b {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeBarTrack {
+  height: 8px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.06);
+  overflow: hidden;
+}
+
+.timeBarFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.runnerUps {
+  border-top: 1px solid var(--navy-line);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.runnerUps li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.runnerUps li > span {
+  font-family: var(--font-mono);
+  color: #8f9bb6;
+}
+
+.runnerUps small {
+  margin-left: auto;
+  color: #8f9bb6;
+}
+
+.demoNote {
+  margin-top: 18px;
+  font-size: 12px;
+  color: #8f9bb6;
+}
+
+/* ===== 決め方の5段階 ===== */
+.pipeline {
+  position: relative;
+  margin-top: 48px;
+  padding-left: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.pipelineTrack {
+  position: absolute;
+  left: 21px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.pipelineTrack span {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(var(--teal-ink), var(--indigo-ink));
+  transform-origin: top;
+}
+
+.pipelineStep,
+.pipelineStepReached {
+  position: relative;
+  display: flex;
+  gap: 22px;
+  opacity: 0.4;
+  transition: opacity 0.5s ease;
+}
+
+.pipelineStepReached {
+  opacity: 1;
+}
+
+.pipelineIndex {
+  position: absolute;
+  left: -64px;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  color: var(--muted);
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, transform 0.4s ease;
+}
+
+.pipelineStepReached .pipelineIndex {
+  border-color: var(--teal-ink);
+  color: var(--teal-ink);
+  transform: scale(1.06);
+}
+
+.pipelineStep h3,
+.pipelineStepReached h3 {
+  font-size: 20px;
+  padding-top: 8px;
+}
+
+.pipelineStep p,
+.pipelineStepReached p {
+  margin-top: 6px;
+  max-width: 640px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* ===== 実際の画面 ===== */
+.screenPair {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 28px;
+  align-items: center;
+}
+
+.screenFrame {
+  border-radius: 26px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 60px -36px rgb(11 18 32 / 0.45);
+}
+
+.screenFrame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.screenFrame figcaption {
+  padding: 12px 18px;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+/* ===== 機能 ===== */
+.featureGrid {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.featureItem,
+.featureReveal {
+  display: flex;
+}
+
+.featureReveal {
+  width: 100%;
+}
+
+.featureCard {
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 22px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--teal-ink);
+}
+
+.featureCard svg {
+  color: var(--teal-ink);
+}
+
+.featureCard h3 {
+  margin-top: 14px;
+  font-size: 16px;
+}
+
+.featureCard p {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+
+/* ===== 技術 ===== */
+.stackTable {
+  margin-top: 40px;
+  border-top: 1px solid var(--line);
+}
+
+.stackRow {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 24px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.stackRow dt {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.stackRow dd {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stackRow b {
+  font-weight: 650;
+}
+
+.stackRow span {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ===== 締め ===== */
+.closing {
+  padding-bottom: 120px;
+  text-align: center;
+}
+
+.closing > div {
+  border-radius: 36px;
+  padding: clamp(48px, 7vw, 88px) 28px;
+  background:
+    radial-gradient(60% 80% at 50% 0%, rgb(47 211 181 / 0.18), transparent 70%),
+    var(--navy);
+  color: #eef2fb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.closingIcon {
+  color: var(--teal);
+}
+
+.closing h2 {
+  margin-top: 16px;
+}
+
+.closing p {
+  margin-top: 12px;
+  color: #c4cce0;
+}
+
+.closing .heroActions {
+  justify-content: center;
+}
+
+.backLink {
+  margin-top: 28px;
+  font-size: 13px;
+  color: #8f9bb6;
+}
+
+.backLink:hover {
+  color: #fff;
+}
+
+/* ===== 小さな画面 ===== */
+@media (max-width: 960px) {
+  .heroInner,
+  .demoControls,
+  .demoStage,
+  .screenPair {
+    grid-template-columns: 1fr;
+  }
+
+  .heroVisual {
+    max-width: 380px;
+  }
+
+  .featureGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .weightControl {
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .heroCopy h1 {
+    font-size: clamp(30px, 8.4vw, 40px);
+  }
+
+  .hero {
+    border-radius: 0;
+    margin-top: 0;
+  }
+
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .stackRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .pipeline {
+    padding-left: 56px;
+  }
+
+  .pipelineIndex {
+    left: -56px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .pipelineTrack {
+    left: 18px;
+  }
+}
+
+/* ===== 動きを減らす設定 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .heroGrid,
+  .heroOrbit,
+  .heroPulse,
+  .mapCenterPulse,
+  .bayHub circle {
+    animation: none;
+  }
+
+  .heroRoute,
+  .bayRail,
+  :global(.reveal-visible) .bayRail,
+  .mapRoute {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .heroMember,
+  .mapCenterRing {
+    animation: none;
+    transform: none;
+  }
+
+  .heroRing,
+  .heroStem {
+    animation: none;
+    opacity: 1;
+  }
+
+  .resultStation {
+    animation: none;
+  }
+
+  .timeBarFill,
+  .pipelineStep,
+  .pipelineStepReached,
+  .pipelineIndex,
+  .featureCard,
+  .chip,
+  .chipSelected {
+    transition: none;
+  }
+}

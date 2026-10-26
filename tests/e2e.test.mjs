@@ -250,7 +250,7 @@ describe('アプリ専用ページ', () => {
   });
 
   it('アプリ専用の OGP 画像が生成される', async () => {
-    for (const path of ['/apps/tsumugi', '/apps/subghost']) {
+    for (const path of ['/apps/tsumugi', '/apps/subghost', '/apps/ekihub']) {
       const response = await fetch(`${BASE_URL}${path}/opengraph-image`);
       assert.equal(response.status, 200, `${path} の OGP 画像が返りません`);
       assert.equal(response.headers.get('content-type'), 'image/png');
@@ -259,15 +259,58 @@ describe('アプリ専用ページ', () => {
 
   it('sitemap にすべてのアプリページが登録される', async () => {
     const xml = await (await fetch(`${BASE_URL}/sitemap.xml`)).text();
-    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost']) {
+    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost', '/apps/ekihub']) {
       assert.ok(xml.includes(path), `${path} が sitemap にありません`);
     }
   });
 
   it('トップページから各アプリページへ遷移できる', () => {
-    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost']) {
+    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost', '/apps/ekihub']) {
       assert.ok(homePageHtml.includes(path), `${path} へのリンクがありません`);
     }
+  });
+});
+
+describe('Web サービスとゲーム', () => {
+  let ekihubHtml = '';
+
+  before(async () => {
+    ekihubHtml = await (await fetch(`${BASE_URL}/apps/ekihub`)).text();
+  });
+
+  it('トップページに Web とゲームのセクションがある', () => {
+    assert.ok(homePageHtml.includes('id="works"'));
+    for (const name of ['EkiHub', 'ピッとマート', 'ふしぎなどうぶつえん']) {
+      assert.ok(homePageHtml.includes(name), `${name} が見つかりません`);
+    }
+  });
+
+  it('公開中のサービスとゲームへのリンクがある', () => {
+    for (const url of ['https://ekihub.jp/', 'https://games.hr0101.dev/', 'https://horror.hr0101.dev/']) {
+      assert.ok(homePageHtml.includes(url), `${url} へのリンクがありません`);
+    }
+  });
+
+  it('ゲームの実画面を WebP で読み込む', () => {
+    for (const shot of ['pittomart-softcream', 'curious-zoo-title']) {
+      assert.ok(homePageHtml.includes(`/projects/works/${shot}.webp`), `${shot}.webp が見つかりません`);
+    }
+  });
+
+  it('ホラーゲームに年齢の目安を添えている', () => {
+    assert.ok(homePageHtml.includes('15歳以上推奨'));
+  });
+
+  it('EkiHub の紹介ページが配信される', () => {
+    assert.match(ekihubHtml, /みんなの真ん中/);
+    assert.match(ekihubHtml, /海の上/);
+    assert.ok(ekihubHtml.includes('https://ekihub.jp/'));
+    assert.ok(ekihubHtml.includes('https://github.com/HR0101/EkiHub'));
+  });
+
+  it('EkiHub のデモが簡易版であることを明記している', () => {
+    assert.match(ekihubHtml, /直線距離から所要時間をおおまかに見積もった簡易版/);
+    assert.match(ekihubHtml, /aria-pressed="true"/);
   });
 });
 
