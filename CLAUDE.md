@@ -29,7 +29,7 @@ npm run check        # typecheck → lint → build → E2E をまとめて実�
 npm run build && npm test
 ```
 
-CI は `.github/workflows/ci.yml` で `typecheck → lint → build → test` を実行する．詳細は `TEST_INFRA.md`．
+CI は `.github/workflows/ci.yml` で `typecheck → lint → build → test` を実行する．詳細は `TEST_INFRA.md`．公開は Cloudflare Pages の Git 連携で，ビルドコマンドに同じ検証を含めているためテストが落ちると公開されない．レスポンスヘッダーは `public/_headers`（CSP は `next.config.mjs` とそろえる）．設定は `DEPLOY.md`．
 
 ## アーキテクチャ
 

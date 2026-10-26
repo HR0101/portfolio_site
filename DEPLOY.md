@@ -1,6 +1,35 @@
-# デプロイ手順（AWS）
+# デプロイ手順
 
-## 公開済みサイト（2026-10-08）
+## 公開：Cloudflare Pages（Git 連携）
+
+`main` に push すると，Cloudflare Pages が GitHub から取得してビルドし，https://hr0101.dev/ に公開します．ビルドコマンドの中で型・lint・本番ビルド・E2E・書き出し検証まで実行するので，**テストが落ちたら公開されません**．AWS のキーや Cloudflare の API トークンは使いません．
+
+AWS（S3 + CloudFront）から移した理由：AWS の無料プランのプロジェクトアカウントは，AWS 管理の SCP が `iam:*Provider*` を拒否するため GitHub の OIDC を作れず，キーなしの自動公開ができないため．
+
+### Cloudflare 側の設定
+
+| 項目 | 値 |
+| --- | --- |
+| Production branch | `main` |
+| Framework preset | None |
+| Build command | `npm run check && npm run build:static && npm run deploy:aws:check` |
+| Build output directory | `out` |
+| 環境変数 | `NODE_VERSION=22`，`NEXT_PUBLIC_SITE_URL=https://hr0101.dev`，`NEXT_TELEMETRY_DISABLED=1` |
+| カスタムドメイン | `hr0101.dev` |
+
+- セキュリティヘッダー・`_next/static/` の長期キャッシュ・拡張子のない OGP 画像の `Content-Type` は `public/_headers` で指定する（書き出し時に `out/_headers` へコピーされる）．CSP を変えるときは `next.config.mjs` と両方をそろえる．
+- `404.html` は Pages が自動で使う．`/apps/bustimeapp/` のような末尾スラッシュ付きの URL もそのまま配信される．
+- PR やブランチへの push ごとに `*.pages.dev` のプレビューが作られる（本番には影響しない）．
+- Cloudflare のビルドでは GitHub API が回数制限で拒否されやすく，その場合は `src/data/github-snapshot.json` を使う．GitHub セクションを更新するときは，ローカルで `GITHUB_TOKEN=... node scripts/fetch-github-snapshot.mjs` を実行してコミットする．
+- GitHub Actions（`.github/workflows/ci.yml`）は PR の確認用として同じ検証を実行する．
+
+---
+
+## 旧構成：AWS（S3 + CloudFront）
+
+以下は Cloudflare Pages へ移す前の記録です．S3・CloudFront のリソースは移行確認後に扱いを決めます．
+
+### 公開済みサイト（2026-10-08）
 
 - 公開URL: https://hr0101.dev/
 - CloudFront URL: https://d1ib5a7bh80gnd.cloudfront.net/
@@ -15,10 +44,6 @@
 今回のGitHub API取得はHTTP 403のため、既存の `src/data/github-snapshot.json`（2026-09-07生成）を使用しています。サイトは静的公開なので、GitHub情報の更新は再ビルド時に行います。
 
 AWSコンソールで無料プランの残高100ドル・期限2027-04-08の表示を確認しました。継続利用時はAWS Settingsでプラン・残高・期限を確認してください。有料プランへの変更は行っていません。独自ドメインはユーザーがCloudflareで購入しました。
-
-## 自動公開（S3 + CloudFront）
-
-GitHub ActionsのCI/CD構成とAWS接続の設定状況は [infra/aws/CI-CD.md](infra/aws/CI-CD.md) を参照してください。CIはPRとmainで実行します。CDはAWS組織ポリシーによるOIDC作成制限の解除と `AWS_DEPLOY_ROLE_ARN` の設定待ちです。
 
 ### Cloudflare独自ドメインの接続（完了）
 

@@ -1,0 +1,20 @@
+# Cloudflare Pages 用のレスポンスヘッダー（静的書き出しでは next.config.mjs の headers() が効かないため）
+# CSP は next.config.mjs の本番用の値と同じものにそろえる
+/*
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; connect-src 'self' https://api.github.com; font-src 'self' data:; form-action 'self' mailto:; frame-ancestors 'none'; img-src 'self' data: blob: https://ghchart.rshah.org; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'
+  Cross-Origin-Opener-Policy: same-origin
+  X-DNS-Prefetch-Control: off
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+
+# ファイル名にハッシュが付くので長期キャッシュしてよい
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 拡張子のない OGP 画像
+/opengraph-image
+  Content-Type: image/png
+/apps/*/opengraph-image
+  Content-Type: image/png
