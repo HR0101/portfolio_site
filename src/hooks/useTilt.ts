@@ -4,7 +4,7 @@ import { useCallback, useRef } from 'react';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
 // 傾きの最大角度（度）．控えめにして，やわらかい動きにしている
-const MAX_TILT_DEGREES = 4;
+const MAX_TILT_DEGREES = 8;
 
 export interface TiltHandlers {
   onMouseMove: (event: React.MouseEvent<HTMLElement>) => void;

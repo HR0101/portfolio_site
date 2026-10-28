@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   ArrowRight,
   Copy,
@@ -41,20 +41,73 @@ const SECTION_ITEMS = [
   { id: 'contact', label: 'お問い合わせへ移動', keywords: 'contact mail 連絡' },
 ];
 
+// 選択中の行の背後に敷く面の位置と高さ（一覧の上端から）
+interface HighlightBox {
+  top: number;
+  height: number;
+}
+
+// 開いた直後に候補を順に並べるとき，遅らせる行数の上限
+const MAX_STAGGERED_ITEMS = 8;
+// 閉じる動きにかける時間（ミリ秒）．この間はパネルを残し，縮みながら消えるところを見せる
+const CLOSE_ANIMATION_MS = 180;
+
 // macOS の Spotlight のように ⌘K で開く操作パネル．
 // キーボードだけでセクション移動・テーマ切替・連絡先のコピーができる．
 export function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
+  // 閉じる動きを再生している途中か
+  const [isClosing, setIsClosing] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
+  // キー操作の受け口から，いま開いているか（閉じかけを除く）を参照する
+  const isOpenRef = useRef(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const [highlight, setHighlight] = useState<HighlightBox | null>(null);
   const { theme, toggleTheme } = useTheme();
 
   const closePalette = useCallback(() => {
-    setIsOpen(false);
-    setQuery('');
-    setActiveIndex(0);
+    // すでに閉じかけているときは何もしない
+    if (closeTimerRef.current !== null) {
+      return;
+    }
+    const finishClosing = () => {
+      closeTimerRef.current = null;
+      setIsOpen(false);
+      setIsClosing(false);
+      setQuery('');
+      setActiveIndex(0);
+    };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finishClosing();
+      return;
+    }
+    setIsClosing(true);
+    closeTimerRef.current = window.setTimeout(finishClosing, CLOSE_ANIMATION_MS);
+  }, []);
+
+  const openPalette = useCallback(() => {
+    // 閉じかけていたら，閉じるのをやめて開き直す
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setIsClosing(false);
+    setIsOpen(true);
+  }, []);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen && !isClosing;
+  }, [isOpen, isClosing]);
+
+  // 閉じている途中で画面を離れても，タイマーを残さない
+  useEffect(() => () => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+    }
   }, []);
 
   // 指定セクションへスクロールする
@@ -149,16 +202,20 @@ export function CommandPalette() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        setIsOpen((previous) => !previous);
+        if (isOpenRef.current) {
+          closePalette();
+        } else {
+          openPalette();
+        }
         return;
       }
-      if (event.key === 'Escape') {
-        setIsOpen(false);
+      if (event.key === 'Escape' && isOpenRef.current) {
+        closePalette();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [closePalette, openPalette]);
 
   // 開いたら入力欄へフォーカスし，背面のスクロールを止める
   useEffect(() => {
@@ -172,6 +229,22 @@ export function CommandPalette() {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  // 選択中の行へ背後の面を滑らせ，一覧の外に出ていれば見える位置まで送る
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      setHighlight(null);
+      return;
+    }
+    const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-palette-item]');
+    const activeRow = rows?.[activeIndex];
+    if (!activeRow) {
+      setHighlight(null);
+      return;
+    }
+    setHighlight({ top: activeRow.offsetTop, height: activeRow.offsetHeight });
+    activeRow.scrollIntoView({ block: 'nearest' });
+  }, [isOpen, activeIndex, filteredActions]);
 
   // 一覧内のキーボード操作（↑↓ で移動，Enter で実行）
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -198,7 +271,7 @@ export function CommandPalette() {
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-[70] flex items-start justify-center pt-[18vh] px-4 bg-ink/25 dark:bg-black/50 backdrop-blur-sm"
+          className={`command-palette-backdrop ${isClosing ? 'is-closing' : ''} fixed inset-0 z-[70] flex items-start justify-center pt-[18vh] px-4 bg-ink/25 dark:bg-black/50 backdrop-blur-sm`}
           role="dialog"
           aria-modal="true"
           aria-label="コマンドパレット"
@@ -206,7 +279,7 @@ export function CommandPalette() {
           data-testid="command-palette"
         >
           <div
-            className="animate-pop-in w-full max-w-lg rounded-3xl bg-white dark:bg-night-soft border border-soft dark:border-night-border shadow-soft-lg overflow-hidden"
+            className="command-palette-panel animate-pop-in w-full max-w-lg rounded-3xl bg-white dark:bg-night-soft border border-soft dark:border-night-border shadow-soft-lg overflow-hidden"
             onClick={(event) => event.stopPropagation()}
           >
             {/* 検索欄 */}
@@ -223,7 +296,7 @@ export function CommandPalette() {
                 onKeyDown={handleInputKeyDown}
                 placeholder="セクション名や操作を入力…"
                 aria-label="コマンドを検索"
-                className="flex-grow bg-transparent text-sm outline-none placeholder:text-slate-500"
+                className="command-palette-input flex-grow bg-transparent text-sm placeholder:text-slate-500"
               />
               <kbd className="px-2 py-0.5 rounded-md text-xs font-mono bg-mist dark:bg-night text-slate-500">
                 esc
@@ -231,7 +304,16 @@ export function CommandPalette() {
             </div>
 
             {/* 候補一覧 */}
-            <ul className="max-h-96 overflow-y-auto py-2">
+            <ul ref={listRef} className="relative max-h-96 overflow-y-auto py-2">
+              {/* 選択中の行の背後を滑る面 */}
+              {highlight && (
+                <li
+                  aria-hidden="true"
+                  role="presentation"
+                  className="command-palette-highlight"
+                  style={{ transform: `translateY(${highlight.top}px)`, height: highlight.height }}
+                />
+              )}
               {filteredActions.length === 0 && (
                 <li className="px-5 py-6 text-sm text-slate-500 text-center">
                   一致する項目がありません．
@@ -241,17 +323,21 @@ export function CommandPalette() {
                 const Icon = action.icon;
                 const isActive = index === activeIndex;
                 return (
-                  <li key={action.id}>
+                  <li
+                    key={action.id}
+                    data-palette-item
+                    className="command-palette-item"
+                    style={{ '--item-index': Math.min(index, MAX_STAGGERED_ITEMS) } as CSSProperties}
+                  >
                     <button
                       type="button"
                       onMouseEnter={() => setActiveIndex(index)}
                       onClick={action.run}
-                      className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors ${
-                        isActive ? 'bg-mist dark:bg-night' : ''
-                      }`}
+                      data-active={isActive}
+                      className="relative w-full flex items-center gap-3 px-5 py-3 text-left"
                     >
                       <Icon
-                        className="w-4 h-4 shrink-0 text-subtle dark:text-night-subtle"
+                        className="command-palette-icon w-4 h-4 shrink-0 text-subtle dark:text-night-subtle"
                         aria-hidden="true"
                       />
                       <span className="text-sm flex-grow truncate">{action.label}</span>

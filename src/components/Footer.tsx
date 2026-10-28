@@ -1,24 +1,36 @@
 import { Mail } from 'lucide-react';
 import { GitHubIcon } from './icons/GitHubIcon';
 import { siteConfig } from '../config/site';
+import { FooterWordmark, JapanClock } from './FooterMotion';
+import './Footer.css';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-mist dark:bg-night-soft py-10">
-      <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="text-sm text-subtle dark:text-night-subtle text-center md:text-left">
-          <p>© {currentYear} {siteConfig.displayName}. Built with Next.js &amp; Tailwind CSS.</p>
-          {/* コマンドパレットの存在を知らせる小さなヒント */}
-          <p className="mt-1 text-xs">
-            <kbd className="px-1.5 py-0.5 rounded-md font-mono bg-mist dark:bg-night border border-soft dark:border-night-border">
-              ⌘K
-            </kbd>{' '}
-            でどこへでも移動できます．
-          </p>
+    <footer className="site-footer">
+      <div className="site-footer-inner">
+        <div className="site-footer-top">
+          <div className="site-footer-brand">
+            <a href="/#hero">{siteConfig.displayName}<span aria-hidden="true">.</span></a>
+            <p>アイデアを形に。使う人に、信頼を。</p>
+          </div>
+          <nav className="site-footer-nav" aria-label="フッターナビゲーション">
+            <a href="/#about">About</a>
+            <a href="/#skills">Skills</a>
+            <a href="/#projects">Apps</a>
+            <a href="/#works">Works</a>
+            <a href="/#contact">Contact</a>
+          </nav>
         </div>
-        <div className="flex items-center gap-1">
+        <FooterWordmark text={`${siteConfig.displayName}.`} />
+        <div className="site-footer-bottom">
+          <div className="site-footer-meta">
+            <p>© {currentYear} {siteConfig.displayName}. Built with Next.js &amp; Tailwind CSS.</p>
+            <p><kbd>⌘K</kbd> でどこへでも移動できます．</p>
+          </div>
+          <div className="site-footer-social">
+          <JapanClock />
           <a
             href={siteConfig.githubUrl}
             target="_blank"
@@ -35,6 +47,7 @@ export function Footer() {
           >
             <Mail className="w-5 h-5" />
           </a>
+          </div>
         </div>
       </div>
     </footer>

@@ -37,11 +37,14 @@ export function CopyEmailButton({ email }: CopyEmailButtonProps) {
         aria-label="メールアドレスをコピーする"
         className="press-effect inline-flex h-11 w-11 items-center justify-center rounded-full text-subtle dark:text-night-subtle hover:text-ink dark:hover:text-night-ink hover:bg-mist dark:hover:bg-night transition-colors"
       >
-        {hasCopied ? (
-          <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-        ) : (
-          <Copy className="w-4 h-4" aria-hidden="true" />
-        )}
+        {/* コピーできたら，回りながらチェックの印に入れ替わる */}
+        <span key={hasCopied ? 'copied' : 'idle'} className="icon-swap" aria-hidden="true">
+          {hasCopied ? (
+            <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          ) : (
+            <Copy className="w-4 h-4" />
+          )}
+        </span>
       </button>
       {/* コピー結果の吹き出し（読み上げにも伝える） */}
       <span role="status" aria-live="polite" className="sr-only">

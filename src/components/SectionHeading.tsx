@@ -10,9 +10,11 @@ interface SectionHeadingProps {
 }
 
 export function SectionHeading({ label, title, description }: SectionHeadingProps) {
+  const sectionNumber = label.match(/^(\d+)\./)?.[1];
   return (
     <Reveal className="portfolio-section-heading">
       <p className="portfolio-eyebrow">
+        {sectionNumber && <span className="portfolio-section-number" aria-hidden="true">{sectionNumber}</span>}
         <ScrambleText text={label.replace(/^\d+\.\s*/, '')} />
       </p>
       <h2>

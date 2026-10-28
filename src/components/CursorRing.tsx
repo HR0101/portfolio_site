@@ -44,8 +44,8 @@ export function CursorRing() {
         x += (tx - x) * alpha;
         y += (ty - y) * alpha;
         let moving = visible && Math.hypot(tx - x, ty - y) > .15;
-        const mx = bounds && magnet ? Math.max(-1, Math.min(1, (px - (bounds.left + bounds.width / 2 - magnet.x)) / (bounds.width / 2))) * 7 : 0;
-        const my = bounds && magnet ? Math.max(-1, Math.min(1, (py - (bounds.top + bounds.height / 2 - magnet.y)) / (bounds.height / 2))) * 7 : 0;
+        const mx = bounds && magnet ? Math.max(-1, Math.min(1, (px - (bounds.left + bounds.width / 2 - magnet.x)) / (bounds.width / 2))) * 12 : 0;
+        const my = bounds && magnet ? Math.max(-1, Math.min(1, (py - (bounds.top + bounds.height / 2 - magnet.y)) / (bounds.height / 2))) * 12 : 0;
         cursor!.style.transform = `translate3d(${x}px,${y}px,0)`;
         if (visible) cursor!.style.opacity = '1';
         magnets.forEach((item, element) => {
@@ -57,8 +57,8 @@ export function CursorRing() {
           element.style.transform = `translate3d(${item.x}px,${item.y}px,0)`;
         });
         if (card && imageBounds) {
-          card.style.setProperty('--motion-parallax-x', `${((px - imageBounds.left) / imageBounds.width - .5) * 13}px`);
-          card.style.setProperty('--motion-parallax-y', `${((py - imageBounds.top) / imageBounds.height - .5) * 13}px`);
+          card.style.setProperty('--motion-parallax-x', `${((px - imageBounds.left) / imageBounds.width - .5) * 28}px`);
+          card.style.setProperty('--motion-parallax-y', `${((py - imageBounds.top) / imageBounds.height - .5) * 28}px`);
         }
         if (moving) request();
         else previousTime = 0;

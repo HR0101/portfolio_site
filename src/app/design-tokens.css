@@ -1,0 +1,30 @@
+/* サイト共通の役割別トークン。作品固有の色は各作品内で定義する。 */
+:root {
+  --site-surface: #fff;
+  --site-surface-raised: #fff;
+  --site-surface-soft: #f5f5f7;
+  --site-ink: #1d1d1f;
+  --site-muted: #646a73;
+  --site-line: #dfe2e8;
+  --site-accent: #396da9;
+  --site-accent-soft: #e9f0fa;
+  --site-radius-card: 28px;
+  --site-radius-panel: 36px;
+  --site-shadow-card: 0 14px 40px -30px rgb(24 39 67 / 24%);
+  --site-shadow-raised: 0 22px 45px -28px rgb(24 39 67 / 30%);
+  --site-section-space: clamp(88px, 9vw, 144px);
+  --site-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+.dark {
+  --site-surface: #000;
+  --site-surface-raised: #1d1d1f;
+  --site-surface-soft: #141519;
+  --site-ink: #f5f5f7;
+  --site-muted: #b1b5be;
+  --site-line: #383b43;
+  --site-accent: #a9c8f0;
+  --site-accent-soft: #182d47;
+  --site-shadow-card: 0 14px 40px -30px rgb(0 0 0 / 65%);
+  --site-shadow-raised: 0 22px 45px -28px rgb(0 0 0 / 75%);
+}

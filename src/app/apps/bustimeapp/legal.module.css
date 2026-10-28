@@ -19,3 +19,27 @@
 .footer { margin-top: 48px; border-top: 1px solid var(--line); padding-top: 24px; font-size: 14px; line-height: 1.9; color: var(--muted); }
 .footer > a { display: inline-block; margin-top: 16px; }
 @media (max-width: 480px) { .page { padding-inline: 18px; } .header { padding-top: 32px; } .article { font-size: 15px; } }
+
+/* ===== 動き ===== */
+/* 見出しまわりは上から順に起き上がり，本文の各節は画面に入るところで浮かび上がる */
+.back, .header > *, .nav { animation: legalRise .8s cubic-bezier(.22, 1, .36, 1) both; }
+.header > :nth-child(1) { animation-delay: .08s; }
+.header > :nth-child(2) { animation-delay: .16s; }
+.header > :nth-child(3) { animation-delay: .24s; }
+.nav { animation-delay: .32s; }
+@supports (animation-timeline: view()) {
+  .article section, .footer { animation: legalRise linear both; animation-timeline: view(); animation-range: entry 0% entry 70%; }
+}
+/* リンクは下線が少し離れて，色が濃くなる */
+.page a { text-decoration-thickness: 1px; transition: text-underline-offset .3s cubic-bezier(.22, 1, .36, 1), text-decoration-thickness .3s, color .3s; }
+.page a:hover { text-underline-offset: 6px; text-decoration-thickness: 2px; }
+/* 戻るリンクは，矢印の向きへ少しだけ下がる（.page a より詳細度を上げて transition を上書きする） */
+.page .back { transition: translate .35s cubic-bezier(.22, 1, .36, 1), text-underline-offset .3s, text-decoration-thickness .3s; }
+.page .back:hover { translate: -4px 0; }
+/* 戻るリンクのホバーで使う translate とぶつからないよう，transform で動かす */
+@keyframes legalRise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .back, .header > *, .nav, .article section, .footer { animation: none; }
+  .page a, .page .back { transition: none; }
+  .page .back:hover { translate: none; }
+}

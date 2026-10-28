@@ -13,6 +13,7 @@ import { siteConfig } from '../../../config/site';
 import { DiagnosisGallery } from './diagnosis-gallery';
 import { HalfLifeChart } from './half-life-chart';
 import { WeaveLoom } from './weave-loom';
+import { ProductMotion } from '../../../components/ProductMotion';
 import styles from './product.module.css';
 
 const description =
@@ -96,6 +97,7 @@ const freshnessNotes = [
 export default function TsumugiPage() {
   return (
     <article className={styles.page}>
+      <ProductMotion />
       <nav className={styles.localNav} aria-label="Tsumugi ナビゲーション">
         <Link href="/#projects">← アプリ一覧</Link>
         <span>Tsumugi</span>
@@ -134,7 +136,7 @@ export default function TsumugiPage() {
           </p>
         </div>
         <figure className={styles.heroVisual}>
-          <div className={`${styles.phone} ${styles.heroPhone}`}>
+          <div className={`${styles.phone} ${styles.heroPhone}`} data-morph-target>
             <img
               src="/projects/tsumugi-screens/item-summary.webp"
               alt="Tsumugiの記事画面。上部の織り模様の下に、信頼度56点・鮮度0点と要約が並ぶ"
@@ -149,7 +151,7 @@ export default function TsumugiPage() {
 
       <section className={styles.intro} aria-labelledby="tsumugi-problem">
         <p className={styles.eyebrow}>COLLECTING IS THE EASY PART</p>
-        <h2 id="tsumugi-problem">
+        <h2 data-product-enter id="tsumugi-problem">
           集めるのは、簡単になった。
           <br />
           <span>見極めるのは、そのままだ。</span>
@@ -159,7 +161,7 @@ export default function TsumugiPage() {
         </p>
         <div className={styles.threeColumns}>
           {problems.map(({ icon: Icon, title, text }) => (
-            <div key={title}>
+            <div key={title} data-product-enter>
               <Icon size={27} aria-hidden="true" />
               <h3>{title}</h3>
               <p>{text}</p>
@@ -175,7 +177,7 @@ export default function TsumugiPage() {
             <small>TSUMUGI</small>
           </p>
           <div>
-            <h2 id="tsumugi-origin">名前は、織物から。</h2>
+            <h2 data-product-enter id="tsumugi-origin">名前は、織物から。</h2>
             <p>
               紬（つむぎ）は，真綿から引き出した糸を草木で染めて織る，素朴な絹布のこと．一本ずつは頼りない糸でも，経（たて）と緯（よこ）が組み合えば，一枚の布になります．集めた記事を織り上げていく道具として，この名前にしました．
             </p>
@@ -186,7 +188,7 @@ export default function TsumugiPage() {
       <section id="tsumugi-weave" className={styles.weaveSection} aria-labelledby="tsumugi-weave-heading">
         <div className={styles.sectionHeading}>
           <p className={styles.eyebrow}>ONE ARTICLE, ONE FABRIC</p>
-          <h2 id="tsumugi-weave-heading">
+          <h2 data-product-enter id="tsumugi-weave-heading">
             この記事だけの、
             <br />
             <span>一枚の織り。</span>
@@ -203,7 +205,7 @@ export default function TsumugiPage() {
       <section id="tsumugi-screens" className={styles.diagnosis} aria-labelledby="tsumugi-screens-heading">
         <div className={styles.sectionHeading}>
           <p className={styles.eyebrow}>SHOW THE REASONING</p>
-          <h2 id="tsumugi-screens-heading">
+          <h2 data-product-enter id="tsumugi-screens-heading">
             結論より、
             <br />
             <span>そこに至る道すじを。</span>
@@ -244,7 +246,7 @@ export default function TsumugiPage() {
 
       <section className={styles.halfLife} aria-labelledby="tsumugi-freshness-heading">
         <p className={styles.eyebrow}>HOW INFORMATION FADES</p>
-        <h2 id="tsumugi-freshness-heading">
+        <h2 data-product-enter id="tsumugi-freshness-heading">
           古びる速さは、
           <br />
           <span>話題ごとに違う。</span>
@@ -270,14 +272,14 @@ export default function TsumugiPage() {
 
       <section className={styles.craft} aria-labelledby="tsumugi-craft-heading">
         <p className={styles.eyebrow}>THOUGHTFUL, INSIDE AND OUT</p>
-        <h2 id="tsumugi-craft-heading">
+        <h2 data-product-enter id="tsumugi-craft-heading">
           判断を預けるアプリだから、
           <br />
           <span>つくり方まで見せる。</span>
         </h2>
         <div className={styles.craftGrid}>
           {craftPoints.map(({ number, icon: Icon, title, text, tech }) => (
-            <div key={number}>
+            <div key={number} data-product-enter>
               <span className={styles.number}>{number}</span>
               <h3>
                 <Icon size={22} aria-hidden="true" /> {title}
@@ -291,7 +293,7 @@ export default function TsumugiPage() {
 
       <section className={styles.closing} aria-labelledby="tsumugi-end-heading">
         <img src="/projects/tsumugi.webp" alt="" width={72} height={72} loading="lazy" />
-        <h2 id="tsumugi-end-heading">
+        <h2 data-product-enter id="tsumugi-end-heading">
           読み流した記事を、
           <br />
           手元に残る一枚に。

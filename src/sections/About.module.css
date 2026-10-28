@@ -1,17 +1,17 @@
-.section { --about-surface:#f5f5f7; --about-text:#24282e; --about-muted:#797f88; --about-ease:cubic-bezier(.16,1,.3,1); }
-:global(.dark) .section { --about-surface:#171e2a; --about-text:#edf1f6; --about-muted:#a5aebc; }
+.section { --about-surface:var(--site-surface-soft); --about-text:var(--site-ink); --about-muted:var(--site-muted); --about-ease:var(--site-ease); }
 .grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; perspective:1200px; }
 .entry { height:100%; }
-.card { position:relative; isolation:isolate; overflow:clip; height:100%; padding:28px; border:1px solid color-mix(in srgb,var(--about-accent) 12%,transparent); border-radius:28px; background:var(--about-surface); color:var(--about-text); transform:perspective(900px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)); transition:transform .55s var(--about-ease),box-shadow .55s,border-color .4s; }
+.card { position:relative; isolation:isolate; overflow:clip; min-height:255px; height:100%; padding:30px; border:1px solid color-mix(in srgb,var(--about-accent) 18%,transparent); border-radius:var(--site-radius-card); background:var(--about-surface); color:var(--about-text); box-shadow:var(--site-shadow-card); transform:perspective(900px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)); transition:transform .55s var(--about-ease),box-shadow .55s,border-color .4s; }
 .card::before { content:''; position:absolute; z-index:-1; inset:0; background:radial-gradient(circle at var(--glare-x,70%) var(--glare-y,25%),color-mix(in srgb,var(--about-accent) 15%,transparent),transparent 65%); opacity:.2; transition:opacity .5s; pointer-events:none; }
 .card::after { content:''; position:absolute; z-index:3; inset:-65%; pointer-events:none; background:linear-gradient(110deg,transparent 43%,#ffffff30 50%,transparent 57%); transform:translateX(-65%) rotate(-10deg); }
-.top { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.top { display:flex; align-items:center; justify-content:space-between; margin-bottom:46px; }
 .icon { width:48px; height:48px; border:1px solid color-mix(in srgb,var(--about-accent) 16%,transparent); border-radius:16px; display:grid; place-items:center; background:color-mix(in srgb,var(--about-accent) 9%,var(--about-surface)); color:var(--about-accent); transition:transform .6s var(--about-ease),box-shadow .5s; }
 .number { align-self:flex-start; color:var(--about-accent); opacity:.65; font:10px/1.5 var(--font-mono); letter-spacing:.08em; }
 .copy { position:relative; z-index:1; }
-.copy h3 { margin-bottom:9px; font-size:18px; font-weight:600; letter-spacing:-.02em; transition:translate .55s var(--about-ease); }
-.copy p { font-size:13px; line-height:1.85; color:var(--about-muted); }
-.motif { position:absolute; top:16px; right:50px; width:135px; height:95px; color:var(--about-accent); opacity:.45; stroke:currentColor; stroke-width:1.3; pointer-events:none; transition:opacity .5s,transform .7s var(--about-ease); }
+.label { display:block; margin-bottom:8px; color:var(--about-accent); font-size:9px; font-weight:650; letter-spacing:.12em; }
+.copy h3 { margin-bottom:9px; font-size:20px; font-weight:600; letter-spacing:-.02em; transition:translate .55s var(--about-ease); }
+.copy p { max-width:34em; font-size:13px; line-height:1.85; color:var(--about-muted); }
+.motif { position:absolute; top:15px; right:42px; width:180px; height:125px; color:var(--about-accent); opacity:.58; stroke:currentColor; stroke-width:1.3; pointer-events:none; transition:opacity .5s,transform .7s var(--about-ease); }
 .trace,.check { stroke-dasharray:1; stroke-dashoffset:1; transition:stroke-dashoffset 1.4s var(--about-ease); transition-delay:calc(var(--about-delay) + 200ms); }
 .entry:global(.reveal-visible) .trace,.entry:global(.reveal-visible) .check { stroke-dashoffset:0; }
 .node,.satellite { fill:currentColor; stroke:none; transform-box:fill-box; transform-origin:center; }
@@ -22,14 +22,22 @@
 .signal { opacity:0; stroke-width:2.5; stroke-linecap:round; stroke-dasharray:12 140; }
 .edge { position:absolute; bottom:0; left:28px; right:28px; height:2px; background:linear-gradient(90deg,var(--about-accent),transparent); transform:scaleX(0); transform-origin:left; transition:transform .7s var(--about-ease); }
 .entry:global(.reveal-visible) .icon svg { animation:about-icon-arrive .85s var(--about-ease) both; animation-delay:calc(var(--about-delay) + 100ms); }
+.entry:global(.reveal-visible) .motif { animation:about-motif-arrive 1.1s var(--about-ease) backwards; animation-delay:calc(var(--about-delay) + 100ms); }
+.entry:global(.reveal-visible) .node { animation:about-node-arrive .85s var(--about-ease) backwards; animation-delay:calc(var(--about-delay) + 450ms); }
+@media(prefers-reduced-motion:no-preference) {
+  .entry:global(.reveal-visible) .signal { opacity:.9; animation:about-signal 3s ease-in-out infinite; }
+  .entry:global(.reveal-visible) .scan { animation:about-scan 3.2s ease-in-out infinite alternate; }
+  .entry:global(.reveal-visible) .satellite { animation:about-satellite 3s ease-in-out infinite alternate; }
+  .entry:global(.reveal-visible) .ripple { animation:about-ripple 3s ease-out infinite; }
+}
 @media(hover:hover) and (pointer:fine) {
-  .card:hover { translate:0 -5px; border-color:color-mix(in srgb,var(--about-accent) 35%,transparent); box-shadow:0 18px 35px -20px color-mix(in srgb,var(--about-accent) 45%,transparent); }
+  .card:hover { translate:0 -12px; border-color:color-mix(in srgb,var(--about-accent) 50%,transparent); box-shadow:0 26px 48px -20px color-mix(in srgb,var(--about-accent) 55%,transparent); }
   .card { transition:transform .55s var(--about-ease),translate .55s var(--about-ease),box-shadow .55s,border-color .4s; }
   .card:hover::before { opacity:1; }
   .card:hover::after { animation:about-shine .95s var(--about-ease); }
-  .card:hover .icon { transform:translateY(-3px) rotate(-8deg); box-shadow:0 8px 18px color-mix(in srgb,var(--about-accent) 14%,transparent); }
-  .card:hover .copy h3 { translate:0 -2px; }
-  .card:hover .motif { opacity:.8; transform:translateY(-3px); }
+  .card:hover .icon { transform:translateY(-6px) rotate(-15deg) scale(1.1); box-shadow:0 12px 22px color-mix(in srgb,var(--about-accent) 25%,transparent); }
+  .card:hover .copy h3 { translate:0 -5px; }
+  .card:hover .motif { opacity:1; transform:translate(-8px,-8px) rotate(-8deg) scale(1.13); }
   .card:hover .edge { transform:scaleX(1); }
   .card:hover .satellite { animation:about-satellite 1.8s ease-in-out infinite alternate; }
   .card:hover .scan { animation:about-scan 1.8s ease-in-out infinite alternate; }
@@ -37,6 +45,8 @@
   .card:hover .ripple { animation:about-ripple 2s ease-out infinite; }
 }
 @keyframes about-icon-arrive { from { opacity:0; transform:translateY(12px) rotate(-22deg) scale(.65); } to { opacity:1; transform:none; } }
+@keyframes about-motif-arrive { from { opacity:0; translate:35px 18px; rotate:18deg; scale:.6; } to { opacity:.58; translate:0 0; rotate:0deg; scale:1; } }
+@keyframes about-node-arrive { from { opacity:0; transform:scale(.1); } to { opacity:1; transform:scale(1); } }
 @keyframes about-shine { from { transform:translateX(-65%) rotate(-10deg); } to { transform:translateX(65%) rotate(-10deg); } }
 @keyframes about-satellite { to { transform:translate(-12px,12px) scale(1.25); } }
 @keyframes about-scan { from { transform:translateY(-8px); } to { transform:translateY(17px); } }
@@ -44,8 +54,9 @@
 @keyframes about-ripple { from { transform:scale(.8); opacity:.5; } to { transform:scale(1.2); opacity:0; } }
 @media(max-width:767px) {
   .grid { grid-template-columns:1fr; gap:18px; }
-  .card { padding:24px; transform:none; }
-  .motif { width:115px; right:42px; opacity:.4; }
+  .card { min-height:235px; padding:24px; transform:none; }
+  .top { margin-bottom:40px; }
+  .motif { width:145px; height:105px; right:35px; opacity:.55; }
   .copy p { font-size:13px; }
 }
 @media(prefers-reduced-motion:reduce) {

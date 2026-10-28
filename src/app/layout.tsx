@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import './design-tokens.css';
 import './refinements.css';
 import './motion.css';
 import { ThemeProvider } from '../components/ThemeProvider';
@@ -9,6 +10,8 @@ import { Footer } from '../components/Footer';
 import { ScrollProgressBar } from '../components/ScrollProgressBar';
 import { BackToTopButton } from '../components/BackToTopButton';
 import { CommandPalette } from '../components/CommandPalette';
+import { ProductMorphSource } from '../components/ProductMorph';
+import { ImageReveal } from '../components/ImageReveal';
 import { siteConfig } from '../config/site';
 
 
@@ -111,6 +114,10 @@ export default function RootLayout({
           <CommandPalette />
           <Navbar />
           <CursorRing />
+          {/* 紹介ページへ移るとき，押したカードの画面を移動先の画面へ変形させる */}
+          <ProductMorphSource />
+          {/* 遅延読み込みの画像を，読み込み終わったところでふわりと現す */}
+          <ImageReveal />
           <main id="main-content" className="relative z-10 flex-grow">
             {children}
           </main>

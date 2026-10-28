@@ -1,0 +1,55 @@
+.site-footer { background:var(--site-surface-soft); color:var(--site-ink); padding:64px 24px 30px; }
+.site-footer-inner { max-width:1120px; margin:auto; }
+.site-footer-top { display:flex; justify-content:space-between; align-items:start; gap:36px; padding-bottom:48px; }
+.site-footer-brand > a { display:inline-block; font-size:24px; font-weight:700; letter-spacing:-.055em; }
+.site-footer-brand > a span { display:inline-block; color:var(--site-accent); transition:translate .45s cubic-bezier(.34, 1.56, .64, 1); }
+/* 名前にホバーすると，最後の点だけが小さく跳ねる */
+.site-footer-brand > a:is(:hover, :focus-visible) span { translate:0 -5px; }
+.site-footer-brand p { margin-top:10px; color:var(--site-muted); font-size:13px; }
+.site-footer-nav { display:flex; flex-wrap:wrap; gap:12px 24px; padding-top:8px; }
+.site-footer-nav a { color:var(--site-muted); font-size:12px; transition:color .25s, translate .35s var(--site-ease); }
+.site-footer-nav a:is(:hover, :focus-visible) { color:var(--site-ink); translate:0 -2px; }
+.site-footer-bottom { display:flex; align-items:end; justify-content:space-between; gap:24px; padding-top:24px; border-top:1px solid var(--site-line); }
+.site-footer-meta { color:var(--site-muted); font-size:11px; line-height:1.8; }
+.site-footer-meta p + p { margin-top:5px; }
+.site-footer-meta kbd { padding:2px 5px; border:1px solid var(--site-line); border-radius:5px; font:inherit; }
+.site-footer-social { display:flex; align-items:center; gap:2px; }
+/* 上の段（名前・ひとこと・リンク）は，画面に入るところで順に浮かび上がる */
+@supports (animation-timeline: view()) {
+  .site-footer-brand > *, .site-footer-nav a { animation:footer-rise linear both; animation-timeline:view(); animation-range:entry 10% entry 90%; }
+}
+/* ホバーで使う translate とぶつからないよう，transform で動かす */
+@keyframes footer-rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+/* 大きな名前：画面に入ると1文字ずつ下から起き上がり，ホバーした文字だけ少し浮く */
+.footer-wordmark { display:flex; overflow:hidden; margin:0 0 28px -.04em; padding-bottom:.09em; color:var(--site-ink); font-size:clamp(56px, 18vw, 246px); font-weight:700; line-height:.92; letter-spacing:-.07em; white-space:nowrap; user-select:none; }
+.footer-wordmark-char { display:inline-block; translate:0 108%; rotate:8deg; transform-origin:0 100%; transition:translate 1.1s var(--site-ease), rotate 1.1s var(--site-ease), color .35s; transition-delay:calc(var(--char-index) * 42ms), calc(var(--char-index) * 42ms), 0s; }
+.footer-wordmark.is-visible .footer-wordmark-char { translate:0 0; rotate:0deg; }
+.footer-wordmark-char.is-accent { color:var(--site-accent); }
+@media (hover:hover) and (pointer:fine) {
+  .footer-wordmark.is-visible .footer-wordmark-char:hover { translate:0 -.07em; color:var(--site-accent); transition-delay:0s; transition-duration:.45s; }
+}
+/* 日本時間の時計：コロンが静かに瞬き，分が変わると数字が下から差し替わる */
+.footer-clock { display:inline-flex; align-items:baseline; gap:8px; margin-right:12px; color:var(--site-muted); font-size:11px; white-space:nowrap; }
+.footer-clock-time { display:inline-flex; color:var(--site-ink); font:500 12px/1 var(--font-mono); font-variant-numeric:tabular-nums; }
+.footer-clock-digits { display:inline-block; animation:footer-clock-tick .6s var(--site-ease) both; }
+.footer-clock-colon { animation:footer-clock-blink 2s steps(1, end) infinite; }
+@keyframes footer-clock-tick { from { opacity:0; translate:0 60%; } to { opacity:1; translate:0 0; } }
+@keyframes footer-clock-blink { 50% { opacity:.25; } }
+@media (max-width:600px) {
+  .site-footer { padding-top:48px; }
+  .site-footer-top { flex-direction:column; gap:28px; padding-bottom:32px; }
+  .site-footer-nav { gap:12px 20px; }
+  /* 右下に固定した「先頭へ戻る」ボタンと重ならないよう，下に余白を取る */
+  .site-footer { padding-bottom:96px; }
+  .site-footer-bottom { flex-direction:column-reverse; align-items:start; gap:14px; }
+  .footer-wordmark { margin-bottom:20px; }
+  .footer-clock { margin-right:4px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .site-footer-nav a { transition:none; }
+  .site-footer-nav a:is(:hover, :focus-visible) { translate:none; }
+  .footer-wordmark-char, .footer-wordmark.is-visible .footer-wordmark-char:hover { translate:none; rotate:none; transition:none; }
+  .footer-clock-digits, .footer-clock-colon, .site-footer-brand > *, .site-footer-nav a { animation:none; }
+  .site-footer-brand > a span { transition:none; }
+  .site-footer-brand > a:is(:hover, :focus-visible) span { translate:none; }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -137,6 +137,21 @@ export function Navbar() {
     setIsMenuOpen(false);
   };
 
+  // いま読んでいるセクションの項目の下へ，小さな印を滑らせる（Hero にいる間は隠す）
+  const [sectionMarker, setSectionMarker] = useState({ left: 0, width: 0, isVisible: false });
+  useLayoutEffect(() => {
+    const activeTrigger = isHome ? triggerRefs.current[activeSectionId] : null;
+    if (!activeTrigger) {
+      setSectionMarker((current) => ({ ...current, isVisible: false }));
+      return;
+    }
+    const measure = () => setSectionMarker({ left: activeTrigger.offsetLeft, width: activeTrigger.offsetWidth, isVisible: true });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(activeTrigger);
+    return () => observer.disconnect();
+  }, [activeSectionId, isHome]);
+
   useEffect(() => subscribeToScroll(() => setIsScrolled(window.scrollY > 16)), []);
   useEffect(() => () => { if (closeTimer.current) clearTimeout(closeTimer.current); }, []);
   useEffect(() => {
@@ -200,7 +215,13 @@ export function Navbar() {
         <Link href="/#hero" data-magnetic onClick={closeMenu} aria-label="ホームへ戻る" className="inline-flex min-h-11 items-center font-semibold text-lg tracking-tight text-ink dark:text-night-ink">
           {siteConfig.displayName}<span className="text-subtle">.</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-1" aria-label="メインナビゲーション">
+        <nav className="relative hidden md:flex items-center gap-1" aria-label="メインナビゲーション">
+          <span
+            className="nav-section-marker"
+            data-visible={sectionMarker.isVisible}
+            style={{ '--marker-left': `${sectionMarker.left}px`, '--marker-width': `${sectionMarker.width}px` } as CSSProperties}
+            aria-hidden="true"
+          />
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
@@ -233,12 +254,15 @@ export function Navbar() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <a href={siteConfig.githubUrl} target="_blank" rel="noopener noreferrer" aria-label="GitHub プロフィールを開く" className="inline-flex h-11 w-11 items-center justify-center rounded-full text-subtle dark:text-night-subtle hover:bg-mist dark:hover:bg-night-soft transition-colors">
-            <GitHubIcon className="w-5 h-5" />
+          <a href={siteConfig.githubUrl} target="_blank" rel="noopener noreferrer" aria-label="GitHub プロフィールを開く" className="group inline-flex h-11 w-11 items-center justify-center rounded-full text-subtle dark:text-night-subtle hover:bg-mist dark:hover:bg-night-soft transition-colors">
+            <GitHubIcon className="w-5 h-5 transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110" />
           </a>
           <ThemeToggle />
           <button ref={menuButtonRef} type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-full text-subtle dark:text-night-subtle md:hidden" aria-label={isMenuOpen ? 'メニューを閉じる' : 'メニューを開く'} aria-expanded={isMenuOpen} aria-controls="mobile-navigation" onClick={() => { setIsMenuOpen((value) => !value); setOpenId(null); }}>
-            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            {/* 開閉が変わるたびに作り直し，回りながら三本線と×が入れ替わる */}
+            <span key={isMenuOpen ? 'close' : 'open'} className="icon-swap" aria-hidden="true">
+              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </span>
           </button>
         </div>
       </div>

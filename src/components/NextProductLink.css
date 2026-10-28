@@ -1,0 +1,31 @@
+/* 紹介ページの最後に置く「次のプロダクト」への導線 */
+.next-product { background:var(--site-surface); color:var(--site-ink); padding:clamp(56px, 7vw, 96px) 24px; border-top:1px solid var(--site-line); }
+.next-product-inner { max-width:1120px; margin:auto; }
+.next-product-link { position:relative; display:flex; flex-direction:column; gap:18px; padding:28px 0 8px; }
+/* 上辺の線：ホバーで左からアクセントの色が伸びる */
+.next-product-link::before { content:''; position:absolute; inset:0 0 auto; height:1px; background:var(--site-accent); transform:scaleX(0); transform-origin:right; transition:transform .7s var(--site-ease); }
+.next-product-link:is(:hover, :focus-visible)::before { transform:scaleX(1); transform-origin:left; }
+.next-product-eyebrow { display:flex; justify-content:space-between; color:var(--site-muted); font:10px/1.5 var(--font-mono); letter-spacing:.14em; text-transform:uppercase; }
+.next-product-row { display:flex; align-items:center; gap:clamp(16px, 2.4vw, 28px); }
+.next-product-icon { width:clamp(44px, 5.4vw, 64px); height:auto; aspect-ratio:1; border-radius:23%; box-shadow:0 14px 26px -16px #203b5b80, inset 0 0 0 1px #0001; transition:transform .6s var(--site-ease); }
+.next-product-link:is(:hover, :focus-visible) .next-product-icon { transform:rotate(-8deg) scale(1.06); }
+/* RollLabel の窓の高さと行の高さをそろえ，裏側の文字がのぞかないようにする（下がりのある字が欠けない高さ） */
+.next-product-name { height:1.2em; font-size:clamp(40px, 8vw, 104px); font-weight:700; line-height:1.2em; letter-spacing:-.055em; }
+/* 矢印の丸：ホバーで塗りが満ち，矢印が一度抜けて戻ってくる */
+.next-product-arrow { position:relative; display:grid; place-items:center; flex:none; width:clamp(48px, 5.6vw, 72px); aspect-ratio:1; margin-left:auto; overflow:hidden; border:1px solid var(--site-line); border-radius:50%; color:var(--site-ink); transition:color .45s, border-color .45s; }
+.next-product-arrow::before { content:''; position:absolute; inset:0; border-radius:inherit; background:var(--site-accent); transform:scale(0); transition:transform .55s var(--site-ease); }
+.next-product-arrow svg { position:relative; }
+.next-product-link:is(:hover, :focus-visible) .next-product-arrow { color:var(--site-surface); border-color:transparent; }
+.next-product-link:is(:hover, :focus-visible) .next-product-arrow::before { transform:scale(1); }
+.next-product-link:is(:hover, :focus-visible) .next-product-arrow svg { animation:next-product-arrow .6s var(--site-ease); }
+.next-product-tagline { max-width:620px; color:var(--site-muted); font-size:15px; line-height:1.8; }
+@keyframes next-product-arrow { 45% { translate:120% 0; opacity:0; } 46% { translate:-120% 0; opacity:0; } 100% { translate:0 0; opacity:1; } }
+@media (max-width:600px) {
+  .next-product-link { gap:14px; }
+  .next-product-tagline { font-size:13px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .next-product-link::before, .next-product-icon, .next-product-arrow, .next-product-arrow::before { transition:none; }
+  .next-product-link:is(:hover, :focus-visible) .next-product-icon { transform:none; }
+  .next-product-link:is(:hover, :focus-visible) .next-product-arrow svg { animation:none; }
+}

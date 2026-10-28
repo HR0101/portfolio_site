@@ -104,31 +104,36 @@ function RepositoryLinks({ app }: { app: SwiftApp }) {
 // 注目アプリ用の大きなカード（グラデーションヘッダー付き）
 function FeaturedAppCard({ app }: { app: SwiftApp }) {
   const Icon = app.icon;
+  const isPhoneScreen = app.name === 'BusTimeApp' || app.name === 'Tsumugi';
+  const tones: Record<string, string> = {
+    Subghost: 'violet', BusTimeApp: 'blue', Fomura: 'green',
+    'AllServerForMac × VideoPlayer': 'amber', TeleDeck: 'indigo', Tsumugi: 'mint',
+  };
 
   return (
     <SpotlightCard className="h-full rounded-[1.75rem]">
-      <article className="product-card tile group h-full flex flex-col overflow-hidden">
+      <article className="product-card tile group h-full flex flex-col overflow-hidden" data-morph-scope>
         {/* ヘッダー：取得済みなら実画面、未取得ならグラデーション＋アイコン */}
         <Link
           href={app.detailHref ?? buildRepositoryUrl(siteConfig.githubUsername, app.repositories[0].name)}
           aria-label={`${app.name}の${app.detailHref ? '紹介' : 'ソースコード'}を見る`}
           data-motion-work
+          data-tone={tones[app.name] ?? 'blue'}
           className="motion-work-surface product-card-visual relative overflow-hidden flex items-center justify-center"
         >
           {app.screenshotSrc ? (
             <>
-              <img
-                src={app.screenshotSrc}
-                alt={app.screenshotAlt ?? `${app.name}のアプリ画面`}
-                // 枠いっぱいに敷く画像だが，比率を宣言して読み込み前のずれを防ぐ
-                width={1280}
-                height={800}
-                loading="lazy"
-                decoding="async"
-                data-motion-parallax
-                className="product-card-screen transition-transform duration-700 ease-out group-hover:scale-[1.025]"
-                style={{ objectPosition: app.screenshotPosition ?? '50% 50%' }}
-              />
+              <span className={`product-screen-frame ${isPhoneScreen ? 'is-phone' : 'is-wide'}`} data-motion-parallax data-morph-source>
+                <img
+                  src={app.screenshotSrc}
+                  alt={app.screenshotAlt ?? `${app.name}のアプリ画面`}
+                  width={isPhoneScreen ? 840 : 1280}
+                  height={isPhoneScreen ? 1826 : 960}
+                  loading="lazy"
+                  decoding="async"
+                  className="product-card-screen"
+                />
+              </span>
               {app.imageSrc && (
                 <img
                   src={app.imageSrc}
@@ -150,6 +155,7 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
               loading="lazy"
               decoding="async"
               data-motion-parallax
+              data-morph-source
               className="relative z-10 h-28 w-28 rounded-[1.7rem] object-cover shadow-soft-lg ring-1 ring-white/60 group-hover:scale-105 transition-transform duration-300"
             />
           ) : (

@@ -61,8 +61,8 @@ export function Hero() {
             <div className={styles.titleScroll} data-hero-title>
               <h1 aria-label="信頼を、コードで築く。"><AssembledLine text="信頼を、" /><AssembledLine text="コードで築く。" accent /></h1>
             </div>
-            <p className={styles.lead} data-hero-intro>日々のアイデアを、<RotatingWords words={['アプリ', 'Webサービス', 'ゲーム']} />に。</p>
-            <p className={styles.description} data-hero-intro>iPhoneとMacのために。<br />企画からデザイン、Swift / SwiftUIでの実装まで。</p>
+            <p className={styles.lead} data-hero-intro>日々のアイデアから、<RotatingWords words={['アプリ', 'Webサービス', 'ゲーム']} />をつくる。</p>
+            <p className={styles.description} data-hero-intro>使う人の毎日に寄り添うものを。<br />企画からデザイン、実装まで一つひとつ形にしています。</p>
             <div className={styles.terminalWrap} data-hero-intro>
               <TypingTerminal
                 lines={TERMINAL_LINES}
@@ -82,10 +82,12 @@ export function Hero() {
             {spotlightApps.map((app, index) => (
               <div className={styles.orbit} data-orbit-depth={[1, -1, .6, -.5][index]} key={app.name}>
                 <div data-orbit-intro>
-                  <Link href={app.detailHref ?? '#projects'} className={styles.app}>
-                    <Image src={app.imageSrc!} alt="" width={112} height={112} priority={index < 2} />
-                    <span>{app.name}</span>
-                  </Link>
+                  <div className={styles.appFloat} style={{ animationDelay: `${index * -0.9}s` }}>
+                    <Link href={app.detailHref ?? '#projects'} className={styles.app}>
+                      <Image src={app.imageSrc!} alt="" width={112} height={112} priority={index < 2} />
+                      <span>{app.name}</span>
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

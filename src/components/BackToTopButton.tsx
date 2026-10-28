@@ -34,7 +34,7 @@ export function BackToTopButton() {
       tabIndex={isVisible ? 0 : -1}
       aria-hidden={!isVisible}
       data-testid="back-to-top"
-      className={`fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50 w-12 h-12 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border shadow-soft flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-ink dark:hover:border-night-ink ${
+      className={`group fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50 w-12 h-12 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border shadow-soft flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-ink dark:hover:border-night-ink ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
       }`}
     >
@@ -61,7 +61,7 @@ export function BackToTopButton() {
         />
       </svg>
       <ArrowUp
-        className="relative w-4 h-4 text-ink dark:text-night-ink"
+        className="relative w-4 h-4 text-ink dark:text-night-ink transition-transform duration-300 group-hover:-translate-y-0.5"
         aria-hidden="true"
       />
     </button>

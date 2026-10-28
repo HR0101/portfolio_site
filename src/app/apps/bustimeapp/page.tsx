@@ -6,6 +6,7 @@ import { DemoScene } from './demo-scene';
 import { SkyGallery } from './sky-gallery';
 import { AppIconCube } from './app-icon-cube';
 import { FeatureGallery } from './feature-gallery';
+import { ProductMotion } from '../../../components/ProductMotion';
 import styles from './product.module.css';
 
 const description = '次に乗れる便を、迷わず確認。BusTimeAppの経路判断、時刻や天気で変わるドット絵の風景、通知・ウィジェットへのこだわりを紹介します。';
@@ -27,6 +28,7 @@ const weatherDetails = [
 export default function BusTimeAppPage() {
   return (
     <article className={styles.page}>
+      <ProductMotion />
       <nav className={styles.localNav} aria-label="BusTimeApp ナビゲーション">
         <Link href="/#projects">← アプリ一覧</Link>
         <span>BusTimeApp</span>
@@ -46,7 +48,7 @@ export default function BusTimeAppPage() {
         <div className={styles.heroProducts}>
           <AppIconCube />
           <figure className={styles.heroScreen}>
-            <div className={styles.phone}>
+            <div className={styles.phone} data-morph-target>
               <img src="/projects/bustimeapp-screens/morning.webp" alt="BusTimeAppの朝のホーム画面。経路、検索条件、次の便まであと8分と表示" width={840} height={1826} fetchPriority="high" />
             </div>
             <figcaption>実際のアプリ画面</figcaption>
@@ -56,10 +58,10 @@ export default function BusTimeAppPage() {
 
       <section className={styles.intro} aria-labelledby="bustime-purpose">
         <p className={styles.eyebrow}>LESS SEARCHING. MORE GOING.</p>
-        <h2 id="bustime-purpose">知りたいのは、時刻表の全部じゃない。<br /><span>「次に、どれに乗れるか。」</span></h2>
+        <h2 data-product-enter id="bustime-purpose">知りたいのは、時刻表の全部じゃない。<br /><span>「次に、どれに乗れるか。」</span></h2>
         <p>行き先を選び直し、曜日を調べ、時刻表を目で追う。その小さな手間を減らすために、経路を選ぶところから設計しました。</p>
         <div className={styles.threeColumns}>
-          {[{ icon: LocateFixed, title: '経路を、先回り。', text: '現在地・時間帯・前回の行き先を手がかりに、いま見るべき経路を提案。必要なら自分で切り替えられます。' }, { icon: Layers, title: '日付の境目まで、丁寧に。', text: '土日祝や当日の残り便を考慮。午前4時の運行日境界も扱い、日付だけでは判断できない時間帯に備えます。' }, { icon: Bell, title: '確認の、その先へ。', text: '通知、Live Activity、ウィジェット、Siriへ。アプリを開いていないときの確認方法も用意しました。' }].map(({ icon: Icon, title, text }) => <div key={title}><Icon size={27} aria-hidden="true" /><h3>{title}</h3><p>{text}</p></div>)}
+          {[{ icon: LocateFixed, title: '経路を、先回り。', text: '現在地・時間帯・前回の行き先を手がかりに、いま見るべき経路を提案。必要なら自分で切り替えられます。' }, { icon: Layers, title: '日付の境目まで、丁寧に。', text: '土日祝や当日の残り便を考慮。午前4時の運行日境界も扱い、日付だけでは判断できない時間帯に備えます。' }, { icon: Bell, title: '確認の、その先へ。', text: '通知、Live Activity、ウィジェット、Siriへ。アプリを開いていないときの確認方法も用意しました。' }].map(({ icon: Icon, title, text }) => <div key={title} data-product-enter><Icon size={27} aria-hidden="true" /><h3>{title}</h3><p>{text}</p></div>)}
         </div>
       </section>
 
@@ -68,30 +70,30 @@ export default function BusTimeAppPage() {
       </section>
 
       <section className={styles.featureSection} aria-labelledby="bustime-features-heading">
-        <div className={styles.sectionHeading}><p className={styles.eyebrow}>MADE FOR THE WAY YOU GO</p><h2 id="bustime-features-heading">確かめる。備える。<br /><span>いつもの移動を、自分のペースで。</span></h2><p>時刻表から、出発前の通知まで。<br />実際の画面で、使い心地を見てみよう。</p></div>
+        <div className={styles.sectionHeading}><p className={styles.eyebrow}>MADE FOR THE WAY YOU GO</p><h2 data-product-enter id="bustime-features-heading">確かめる。備える。<br /><span>いつもの移動を、自分のペースで。</span></h2><p>時刻表から、出発前の通知まで。<br />実際の画面で、使い心地を見てみよう。</p></div>
         <FeatureGallery />
       </section>
 
       <section className={styles.skySection} aria-labelledby="bustime-sky-heading">
-        <div className={styles.sectionHeading}><p className={styles.eyebrow}>A LITTLE WORLD, ALWAYS CHANGING</p><h2 id="bustime-sky-heading">いつもの道に、<br /><span>今日だけの空。</span></h2><p>朝焼けから、星が見える夜へ。<br />時計と天気に呼応する、ドット絵の小さな海辺。</p></div>
+        <div className={styles.sectionHeading}><p className={styles.eyebrow}>A LITTLE WORLD, ALWAYS CHANGING</p><h2 data-product-enter id="bustime-sky-heading">いつもの道に、<br /><span>今日だけの空。</span></h2><p>朝焼けから、星が見える夜へ。<br />時計と天気に呼応する、ドット絵の小さな海辺。</p></div>
         <SkyGallery />
-        <div className={styles.weatherGrid}>{weatherDetails.map(({ icon: Icon, title, text }) => <div key={title}><Icon size={25} aria-hidden="true" /><h3>{title}</h3><p>{text}</p></div>)}</div>
+        <div className={styles.weatherGrid}>{weatherDetails.map(({ icon: Icon, title, text }) => <div key={title} data-product-enter><Icon size={25} aria-hidden="true" /><h3>{title}</h3><p>{text}</p></div>)}</div>
         <p className={styles.finePrint}>天気は海浜幕張駅付近のOpen-Meteoデータを使用。月齢・潮位・天体の動きは背景演出のための近似で、天文・潮汐予報ではありません。</p>
       </section>
 
       <section className={styles.craft} aria-labelledby="bustime-craft-heading">
         <p className={styles.eyebrow}>THOUGHTFUL, INSIDE AND OUT</p>
-        <h2 id="bustime-craft-heading">見えないところにも、<br /><span>使い続けられる理由を。</span></h2>
+        <h2 data-product-enter id="bustime-craft-heading">見えないところにも、<br /><span>使い続けられる理由を。</span></h2>
         <div className={styles.craftGrid}>
-          <div><span className={styles.number}>01 / CONSISTENCY</span><h3>どの入口からも、同じ判断。</h3><p>アプリ・通知・Live Activity・ウィジェット・Siriが、同じ時刻表と経路判断を共有。入口が増えても、判断の根拠が分かれない構成です。</p><span className={styles.tech}>WidgetKit · ActivityKit · App Intents</span></div>
-          <div><span className={styles.number}>02 / READABILITY</span><h3>風景が変わっても、読みやすく。</h3><p>空の明るさに合わせ、文字やカードの配色も調整。夕方に文字と背景が似た明るさになることを避け、必要な情報が埋もれないようにしています。</p><span className={styles.tech}>SwiftUI · 時刻連動パレット</span></div>
-          <div><span className={styles.number}>03 / COMFORT</span><h3>動きを減らしても、伝わる。</h3><p>「視差効果を減らす」に対応。波や星のアニメーションを静止させ、雨や雪は静止した表現として残します。見た目の楽しさと負担の少なさを両立させます。</p><span className={styles.tech}>Canvas · アクセシビリティ</span></div>
+          <div data-product-enter><span className={styles.number}>01 / CONSISTENCY</span><h3>どの入口からも、同じ判断。</h3><p>アプリ・通知・Live Activity・ウィジェット・Siriが、同じ時刻表と経路判断を共有。入口が増えても、判断の根拠が分かれない構成です。</p><span className={styles.tech}>WidgetKit · ActivityKit · App Intents</span></div>
+          <div data-product-enter><span className={styles.number}>02 / READABILITY</span><h3>風景が変わっても、読みやすく。</h3><p>空の明るさに合わせ、文字やカードの配色も調整。夕方に文字と背景が似た明るさになることを避け、必要な情報が埋もれないようにしています。</p><span className={styles.tech}>SwiftUI · 時刻連動パレット</span></div>
+          <div data-product-enter><span className={styles.number}>03 / COMFORT</span><h3>動きを減らしても、伝わる。</h3><p>「視差効果を減らす」に対応。波や星のアニメーションを静止させ、雨や雪は静止した表現として残します。見た目の楽しさと負担の少なさを両立させます。</p><span className={styles.tech}>Canvas · アクセシビリティ</span></div>
         </div>
       </section>
 
       <section className={styles.closing} aria-labelledby="bustime-end-heading">
         <img src="/projects/bustimeapp.webp" alt="" width={72} height={72} loading="lazy" />
-        <h2 id="bustime-end-heading">毎日の「乗れるかな」を、<br />小さな安心に。</h2><p>BusTimeAppの設計と実装を、ソースコードで公開しています。</p>
+        <h2 data-product-enter id="bustime-end-heading">毎日の「乗れるかな」を、<br />小さな安心に。</h2><p>BusTimeAppの設計と実装を、ソースコードで公開しています。</p>
         <a className={styles.primaryLink} href={`${siteConfig.githubUrl}/BusTimeApp`} target="_blank" rel="noopener noreferrer">GitHubでソースを見る <ArrowUpRight size={17} aria-hidden="true" /></a>
         <nav className={styles.legalLinks} aria-label="規約・ポリシー">
           <Link href="/apps/bustimeapp/privacy/">プライバシーポリシー</Link>

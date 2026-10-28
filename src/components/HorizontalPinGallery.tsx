@@ -76,8 +76,8 @@ export function HorizontalPinGallery({ panels, label, className = '' }: Horizont
                 key={index}
                 className="shrink-0 w-[min(80vw,1040px)] h-[min(72vh,620px)] transition-[opacity,transform] duration-500"
                 style={{
-                  opacity: index === activeIndex ? 1 : 0.55,
-                  transform: index === activeIndex ? 'scale(1)' : 'scale(0.96)',
+                  opacity: index === activeIndex ? 1 : 0.65,
+                  transform: index === activeIndex ? 'scale(1)' : 'scale(0.9)',
                 }}
               >
                 {panel}

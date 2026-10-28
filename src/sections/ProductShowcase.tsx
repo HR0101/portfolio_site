@@ -44,7 +44,24 @@ const STORIES = [
 export function ProductShowcase() {
   const [active, setActive] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const tabList = useRef<HTMLDivElement | null>(null);
   const track = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const container = tabList.current;
+    const selected = tabs.current[active];
+    if (!container || !selected) return;
+    const measure = () => {
+      container.style.setProperty('--tab-left', `${selected.offsetLeft}px`);
+      container.style.setProperty('--tab-width', `${selected.offsetWidth}px`);
+      container.setAttribute('data-tab-ready', '');
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    observer.observe(selected);
+    return () => observer.disconnect();
+  }, [active]);
 
   useEffect(() => {
     const element = track.current;
@@ -104,7 +121,8 @@ export function ProductShowcase() {
         </a>
       </div>
 
-      <div className="showcase-tabs" role="tablist" aria-label="注目アプリを選択">
+      <div ref={tabList} className="showcase-tabs" role="tablist" aria-label="注目アプリを選択">
+        <span className="showcase-tab-indicator" aria-hidden="true" />
         {STORIES.map((story, index) => (
           <button
             key={story.name}
@@ -136,6 +154,7 @@ export function ProductShowcase() {
             hidden={active !== index}
             tabIndex={0}
             className={`showcase-panel showcase-tone-${story.tone}`}
+            data-morph-scope
           >
             <div className="showcase-copy">
               <div className="showcase-app-name">
@@ -166,7 +185,7 @@ export function ProductShowcase() {
             </div>
             <figure className={`showcase-visual showcase-visual-${story.device}`}>
               <div className="showcase-ambient" aria-hidden="true" />
-              <div className={`showcase-device showcase-device-${story.device}`}>
+              <div className={`showcase-device showcase-device-${story.device}`} data-morph-source>
                 <img
                   src={app.screenshotSrc}
                   alt={app.screenshotAlt ?? `${app.name}の画面`}

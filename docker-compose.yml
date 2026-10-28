@@ -1,0 +1,37 @@
+name: portfolio-site
+
+services:
+  web:
+    build:
+      context: .
+      target: development
+    init: true
+    volumes:
+      - .:/app
+      - node-modules:/app/node_modules
+      - next-dev:/app/.next
+    ports:
+      - "127.0.0.1:${PORTFOLIO_PORT:-3002}:3001"
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 6
+
+  test:
+    profiles: ["test"]
+    build:
+      context: .
+      target: test
+    init: true
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+      CI: "true"
+
+volumes:
+  node-modules:
+  next-dev:

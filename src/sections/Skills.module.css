@@ -1,11 +1,10 @@
-.section { --skill-ink: #22262c; --skill-muted: #777b83; --skill-surface: #fff; --skill-line: #262b3910; color: var(--skill-ink); }
-:global(.dark) .section { --skill-ink: #edf1f6; --skill-muted: #a1a9b7; --skill-surface: #171e2a; --skill-line: #e7ebff12; }
+.section { --skill-ink: var(--site-ink); --skill-muted: var(--site-muted); --skill-surface: var(--site-surface-raised); --skill-line: var(--site-line); color: var(--skill-ink); }
 .sectionLabel { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 18px; color: var(--skill-muted); font-size: 10px; letter-spacing: .12em; }
 .sectionLabel span:last-child { letter-spacing: .02em; }
 .grid { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 18px; }
 .nativeSlot { grid-row: span 2; }
 .webSlot { grid-column: span 2; }
-.card { --skill-accent: #537fd3; position: relative; isolation: isolate; height: 100%; padding: 26px; overflow: hidden; border: 1px solid var(--skill-line); border-radius: 26px; background: var(--skill-surface); transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform .45s var(--portfolio-ease), box-shadow .45s, border-color .35s; }
+.card { --skill-accent: #537fd3; position: relative; isolation: isolate; height: 100%; padding: 26px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--skill-line) 75%, transparent); border-radius: var(--site-radius-card); background: var(--skill-surface); box-shadow:var(--site-shadow-card); transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform .45s var(--portfolio-ease), box-shadow .45s, border-color .35s; }
 .card::before { content: ''; position: absolute; z-index: -1; pointer-events: none; inset: 0; opacity: 0; background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), color-mix(in srgb, var(--skill-accent) 10%, transparent), transparent 65%); transition: opacity .4s; }
 .card:hover::before { opacity: 1; }
 .card:hover { box-shadow: 0 16px 40px #14253f0a; border-color: color-mix(in srgb, var(--skill-accent) 25%, transparent); }
@@ -66,13 +65,16 @@
 .python { --skill-accent: #628b6c; }
 .pipeline { display: flex; align-items: center; gap: 7px; margin-top: 20px; color: var(--skill-accent); }
 .pipeline span { font: 9px monospace; background: #628b6c0d; border: 1px solid #628b6c1a; padding: 7px 9px; border-radius: 6px; }
-.pipeline svg { opacity: .5; }
+.dataLink { position: relative; flex: 0 0 22px; height: 1px; color: var(--skill-accent); background: color-mix(in srgb, currentColor 32%, transparent); }
+.dataLink::before { content: ''; position: absolute; left: 0; top: -2px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0; }
+.dataLink::after { content: ''; position: absolute; right: 0; top: -2px; width: 5px; height: 5px; border-top: 1px solid currentColor; border-right: 1px solid currentColor; transform: rotate(45deg); opacity: .6; }
 .hardware { --skill-accent: #9880b5; }
 .hardware h3 { font-size: 25px; }
 .circuit { display: flex; align-items: center; gap: 6px; margin-top: 18px; height: 37px; color: var(--skill-accent); }
 .circuit span { flex: 1; height: 1px; background: #9880b540; position: relative; }
 .circuit span::after { content: ''; width: 4px; height: 4px; border: 1px solid #9880b580; border-radius: 50%; position: absolute; top: -1.5px; }
 .circuit span:nth-last-child(-n+2)::after { right: 0; }
+.circuit span::before { content: ''; position: absolute; left: 0; top: -2px; width: 100%; height: 5px; background: radial-gradient(circle at 3px 50%, currentColor 0 2px, transparent 2.5px); opacity: 0; pointer-events: none; }
 .toolbox { display: grid; grid-template-columns: 1.2fr 1.2fr .7fr; gap: 24px; margin-top: 30px; padding: 26px 4px 0; border-top: 1px solid var(--skill-line); }
 .toolGroup h3 { display: flex; align-items: center; gap: 7px; margin-bottom: 14px; font-size: 11px; font-weight: 500; color: var(--skill-muted); }
 .toolGroup ul { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; padding: 0; }
@@ -104,7 +106,7 @@
   .toolbox { grid-template-columns: 1fr; gap: 22px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .section *, .section *::before { animation: none !important; transition: none !important; }
+  .section *, .section *::before, .section *::after { animation: none !important; transition: none !important; }
   .card, .browserVisual, .web:hover .browserVisual, .app:is(:hover, :focus-visible) img, .card:hover .icon { transform: none; }
   .toolGroup li:hover { translate: none; }
 }
@@ -114,4 +116,36 @@
 :global(.dark) .python { --skill-accent: #a2cba6; }
 :global(.dark) .hardware { --skill-accent: #c5afe5; }
 .nativeSlot:global(.reveal-visible) .app { animation: skill-app-arrive .8s var(--portfolio-ease) both; animation-delay: calc(150ms + var(--app-index, 0) * 90ms); }
-@keyframes skill-app-arrive { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
+@keyframes skill-app-arrive { from { opacity: 0; translate: 0 32px; rotate: -12deg; scale: .75; } to { opacity: 1; translate: 0 0; rotate: 0deg; scale: 1; } }
+
+/* スキルごとの小さな図が、表示された順に組み上がる。 */
+:global(.reveal-visible) .code > span,
+:global(.reveal-visible) .browserPreview > span,
+:global(.reveal-visible) .pipeline > *,
+:global(.reveal-visible) .circuit > *,
+:global(.reveal-visible) .toolGroup li { animation: skill-detail-arrive .7s cubic-bezier(.22, 1, .36, 1) backwards; }
+:global(.reveal-visible) .code > :nth-child(2), :global(.reveal-visible) .pipeline > :nth-child(2), :global(.reveal-visible) .circuit > :nth-child(2), :global(.reveal-visible) .toolGroup li:nth-child(2) { animation-delay: 80ms; }
+:global(.reveal-visible) .code > :nth-child(3), :global(.reveal-visible) .pipeline > :nth-child(3), :global(.reveal-visible) .circuit > :nth-child(3), :global(.reveal-visible) .toolGroup li:nth-child(3) { animation-delay: 160ms; }
+:global(.reveal-visible) .code > :nth-child(4), :global(.reveal-visible) .pipeline > :nth-child(4), :global(.reveal-visible) .circuit > :nth-child(4), :global(.reveal-visible) .toolGroup li:nth-child(4) { animation-delay: 240ms; }
+:global(.reveal-visible) .pipeline > :nth-child(5), :global(.reveal-visible) .circuit > :nth-child(5), :global(.reveal-visible) .toolGroup li:nth-child(n+5) { animation-delay: 320ms; }
+:global(.reveal-visible) .browserPreview > :nth-child(1) { animation-delay: 300ms; }
+:global(.reveal-visible) .browserPreview > :nth-child(2) { animation-delay: 380ms; }
+:global(.reveal-visible) .browserPreview > :nth-child(3) { animation-delay: 460ms; }
+@keyframes skill-detail-arrive { from { opacity: 0; translate: 0 20px; scale: .82; } to { opacity: 1; translate: 0 0; scale: 1; } }
+/* 小さなパケットが処理と回路を順番に通過する。 */
+@media (prefers-reduced-motion: no-preference) {
+  :global(.reveal-visible) .dataLink::before { animation: skill-packet 3s cubic-bezier(.45, 0, .55, 1) infinite; }
+  :global(.reveal-visible) .dataLink:nth-of-type(2)::before { animation-delay: 1.15s; }
+  :global(.reveal-visible) .circuit span::before { animation: skill-circuit-packet 3.4s cubic-bezier(.45, 0, .55, 1) infinite; }
+  :global(.reveal-visible) .circuit span:nth-child(2)::before { animation-delay: .45s; }
+  :global(.reveal-visible) .circuit span:nth-child(4)::before { animation-delay: .9s; }
+  :global(.reveal-visible) .circuit span:nth-child(5)::before { animation-delay: 1.35s; }
+}
+@keyframes skill-packet { 0%, 8% { opacity: 0; transform: translateX(0); } 15%, 42% { opacity: 1; } 50%, 100% { opacity: 0; transform: translateX(18px); } }
+@keyframes skill-circuit-packet { 0%, 8% { opacity: 0; transform: translateX(0); } 14%, 40% { opacity: 1; } 50%, 100% { opacity: 0; transform: translateX(calc(100% - 5px)); } }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .native:hover .orbit::before { animation: skill-orbit 5s ease-in-out infinite alternate; }
+  .hardware:hover .circuit > svg { animation: skill-chip 1.3s ease-in-out infinite alternate; }
+}
+@keyframes skill-orbit { to { rotate: 35deg; } }
+@keyframes skill-chip { to { scale: 1.2; filter: drop-shadow(0 0 8px currentColor); } }

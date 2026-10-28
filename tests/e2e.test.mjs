@@ -269,6 +269,17 @@ describe('アプリ専用ページ', () => {
       assert.ok(homePageHtml.includes(path), `${path} へのリンクがありません`);
     }
   });
+
+  it('紹介ページの末尾から次の紹介ページへ進める', () => {
+    // Subghost → BusTimeApp → Tsumugi の順に並ぶ（apps.ts の掲載順）
+    assert.match(subghostHtml, /aria-label="次のプロダクト"[\s\S]*?href="\/apps\/bustimeapp"/);
+    assert.match(busTimeHtml, /aria-label="次のプロダクト"[\s\S]*?href="\/apps\/tsumugi"/);
+  });
+
+  it('利用規約のページには次の紹介ページへの導線を出さない', async () => {
+    const termsHtml = await (await fetch(`${BASE_URL}/apps/bustimeapp/terms`)).text();
+    assert.ok(!termsHtml.includes('aria-label="次のプロダクト"'));
+  });
 });
 
 describe('Web サービスとゲーム', () => {
@@ -308,9 +319,13 @@ describe('Web サービスとゲーム', () => {
     assert.ok(ekihubHtml.includes('https://github.com/HR0101/EkiHub'));
   });
 
-  it('EkiHub のデモが簡易版であることを明記している', () => {
-    assert.match(ekihubHtml, /直線距離から所要時間をおおまかに見積もった簡易版/);
-    assert.match(ekihubHtml, /aria-pressed="true"/);
+  it('EkiHub の紹介ページは実際の画面を WebP で見せる', () => {
+    for (const shot of ['mob-result', 'bay-result', 'input', 'result', 'theme-glass']) {
+      assert.ok(ekihubHtml.includes(`/projects/ekihub-screens/${shot}.webp`), `${shot}.webp が見つかりません`);
+    }
+    // 画面の切り替えは WAI-ARIA のタブパターン
+    assert.match(ekihubHtml, /role="tablist"/);
+    assert.match(ekihubHtml, /role="tabpanel"/);
   });
 });
 
@@ -400,7 +415,10 @@ describe('エラー処理とセキュリティ', () => {
   it('存在しないページで専用の 404 を返す', async () => {
     const response = await fetch(`${BASE_URL}/no-such-page`);
     assert.equal(response.status, 404);
-    assert.ok((await response.text()).includes('ページが見つかりません'));
+    const html = await response.text();
+    assert.ok(html.includes('ページが見つかりません'));
+    // 迷子を表すターミナルは実在のコマンドの出力にそろえる
+    assert.ok(html.includes('cd ./this-page'));
   });
 
   it('セキュリティヘッダーが付与されている', async () => {

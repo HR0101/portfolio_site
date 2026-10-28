@@ -5,6 +5,7 @@ import { Cpu, GraduationCap, HeartHandshake, Smartphone } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { SectionHeading } from '../components/SectionHeading';
 import { useTilt } from '../hooks/useTilt';
+import { SWIFT_APPS } from '../data/apps';
 import styles from './About.module.css';
 
 type AboutKind = 'learn' | 'apps' | 'hardware' | 'trust';
@@ -14,6 +15,7 @@ interface AboutCardData {
   description: string;
   accent: string;
   kind: AboutKind;
+  label: string;
 }
 
 const ABOUT_CARDS: AboutCardData[] = [
@@ -21,25 +23,25 @@ const ABOUT_CARDS: AboutCardData[] = [
     icon: GraduationCap,
     title: '情報系の学生',
     description: '大学で情報工学を学びながら，授業の枠を超えて日々新しい技術を吸収しています．',
-    accent: '#7297c9', kind: 'learn',
+    accent: '#7297c9', kind: 'learn', label: 'LEARNING',
   },
   {
     icon: Smartphone,
     title: 'iOS / macOSアプリ開発',
-    description: '2025年6月から，Swift / SwiftUI で iPhone・Mac 両方のアプリを17本つくり，すべてソースコードごと公開しています．',
-    accent: '#9a86c5', kind: 'apps',
+    description: `2025年6月から，Swift / SwiftUI で iPhone・Mac のアプリを${SWIFT_APPS.length}本つくり，ソースコードを公開しています．`,
+    accent: '#9a86c5', kind: 'apps', label: 'APP DEVELOPMENT',
   },
   {
     icon: Cpu,
     title: '組込み・電子工作',
     description: 'C / Arduino を使ったハードウェア寄りの開発も好きで，ソフトとハードの両面から物事を考えます．',
-    accent: '#69a797', kind: 'hardware',
+    accent: '#69a797', kind: 'hardware', label: 'HARDWARE',
   },
   {
     icon: HeartHandshake,
     title: '「Trust」を軸に',
     description: '「信頼されるソフトウェア」を目標に，使う人の体験を最優先した設計と丁寧な実装を心がけています．',
-    accent: '#c79479', kind: 'trust',
+    accent: '#c79479', kind: 'trust', label: 'GUIDING PRINCIPLE',
   },
 ];
 
@@ -83,6 +85,7 @@ function AboutCard({ card, index }: { card: AboutCardData; index: number }) {
         </div>
         <CardMotif kind={card.kind} />
         <div className={styles.copy}>
+          <span className={styles.label} aria-hidden="true">{card.label}</span>
           <h3>{card.title}</h3>
           <p>{card.description}</p>
         </div>
