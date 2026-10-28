@@ -74,9 +74,11 @@ interface NotchStageProps {
   // 'timeline' はフック受信から完了までを再生する．'panel' は一覧を開いた状態で静止する
   variant?: 'timeline' | 'panel';
   caption: string;
+  // トップのカードから移ってきたとき，カードの画面がこの舞台へ変形する（ページに1つだけ）
+  isMorphTarget?: boolean;
 }
 
-export function NotchStage({ variant = 'timeline', caption }: NotchStageProps) {
+export function NotchStage({ variant = 'timeline', caption, isMorphTarget = false }: NotchStageProps) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -115,7 +117,7 @@ export function NotchStage({ variant = 'timeline', caption }: NotchStageProps) {
     : [];
 
   return (
-    <figure className={styles.stage}>
+    <figure className={styles.stage} data-morph-target={isMorphTarget || undefined}>
       <div className={styles.display}>
         <div className={styles.wallpaper} aria-hidden="true" />
 

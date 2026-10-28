@@ -216,3 +216,12 @@
   .sceneCopy { min-height: 205px; }
 }
 @media (prefers-reduced-motion: reduce) { .featureScreens, .sceneImage { animation: none; }.zoomHint { transition: none; } }
+
+/* ページ上部の小さなナビゲーション：戻るリンクは左へ，下へ進むリンクは下へ少しだけ動く */
+.localNav a { transition: color .25s, translate .35s cubic-bezier(.22, 1, .36, 1); }
+.localNav a:first-child:hover { translate: -4px 0; }
+.localNav a:last-child:hover { translate: 0 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .localNav a { transition: none; }
+  .localNav a:first-child:hover, .localNav a:last-child:hover { translate: none; }
+}

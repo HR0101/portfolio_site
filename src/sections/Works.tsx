@@ -97,7 +97,7 @@ function WorkLinks({ work }: { work: Work }) {
 // 実際の画面を，ブラウザの枠に収めて見せる
 function BrowserFrame({ work, priority = false }: { work: Work; priority?: boolean }) {
   return (
-    <figure className="works-browser">
+    <figure className="works-browser" data-morph-source>
       <div className="works-browser-bar" aria-hidden="true">
         <span />
         <span />
@@ -243,7 +243,7 @@ export function Works() {
           className="works-web-card rounded-3xl border border-soft dark:border-night-border bg-white dark:bg-night-soft shadow-soft overflow-hidden"
           color="rgb(47 211 181 / 0.14)"
         >
-          <div className="grid lg:grid-cols-[1fr_1.05fr] gap-10 p-7 md:p-12 items-center">
+          <div className="grid lg:grid-cols-[1fr_1.05fr] gap-10 p-7 md:p-12 items-center" data-morph-scope>
             <Reveal variant="left">
               <p className="inline-flex items-center gap-2 text-xs tracking-[0.2em] text-subtle dark:text-night-subtle">
                 <Globe size={15} aria-hidden="true" />

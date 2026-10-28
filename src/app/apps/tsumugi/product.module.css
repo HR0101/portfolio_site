@@ -453,3 +453,24 @@
 .stripPhone img { display: block; width: 100%; height: auto; border-radius: 21px; }
 .stripItem figcaption { margin-top: 16px; font-size: 12px; color: var(--muted); line-height: 1.75; }
 .stripItem strong { display: block; color: var(--text); font-size: 14px; margin-bottom: 5px; font-weight: 650; }
+
+/* ページ上部の小さなナビゲーション：戻るリンクは左へ，下へ進むリンクは下へ少しだけ動く */
+.localNav a { transition: color .25s, translate .35s cubic-bezier(.22, 1, .36, 1); }
+.localNav a:first-child:hover { translate: -4px 0; }
+.localNav a:last-child:hover { translate: 0 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .localNav a { transition: none; }
+  .localNav a:first-child:hover, .localNav a:last-child:hover { translate: none; }
+}
+
+/* 診断の画面を切り替えたら，説明が上から順に浮かび，画面は横から滑り込む */
+.diagPanel:not([hidden]) .diagCopy > *,
+.diagPanel:not([hidden]) .diagPoints li { animation: diagCopyIn .6s cubic-bezier(.22, 1, .36, 1) both; }
+.diagPanel:not([hidden]) .diagCopy > :nth-child(2) { animation-delay: .06s; }
+.diagPanel:not([hidden]) .diagCopy > :nth-child(3) { animation-delay: .12s; }
+.diagPanel:not([hidden]) .diagPoints li:nth-child(1) { animation-delay: .2s; }
+.diagPanel:not([hidden]) .diagPoints li:nth-child(2) { animation-delay: .28s; }
+.diagPanel:not([hidden]) .diagPoints li:nth-child(3) { animation-delay: .36s; }
+.diagPanel:not([hidden]) .diagShot .phone { animation: diagPhoneIn .8s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes diagCopyIn { from { opacity: 0; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
+@keyframes diagPhoneIn { from { opacity: 0; translate: 36px 0; rotate: 4deg; } to { opacity: 1; translate: 0 0; rotate: 0deg; } }

@@ -18,6 +18,7 @@ import { siteConfig } from '../../../config/site';
 import { HookFlow } from './hook-flow';
 import { NotchStage } from './notch-stage';
 import { PixelGhost } from './pixel-ghost';
+import { ProductMotion } from '../../../components/ProductMotion';
 import styles from './product.module.css';
 
 const description =
@@ -108,6 +109,7 @@ const privacyPoints = [
 export default function SubghostPage() {
   return (
     <article className={styles.page}>
+      <ProductMotion />
       <nav className={styles.localNav} aria-label="Subghost ナビゲーション">
         <Link href="/#projects">← アプリ一覧</Link>
         <span>Subghost</span>
@@ -145,13 +147,14 @@ export default function SubghostPage() {
         </div>
         <NotchStage
           variant="timeline"
+          isMorphTarget
           caption="フックを受け取ってから完了を知らせるまでの流れ（このページ上での再現です）"
         />
       </header>
 
       <section className={styles.intro} aria-labelledby="subghost-problem">
         <p className={styles.eyebrow}>THE COST OF CHECKING</p>
-        <h2 id="subghost-problem">
+        <h2 data-product-enter id="subghost-problem">
           「終わったかな」を、
           <br />
           <span>何度も確かめている。</span>
@@ -161,7 +164,7 @@ export default function SubghostPage() {
         </p>
         <div className={styles.threeColumns}>
           {problems.map(({ icon: Icon, title, text }) => (
-            <div key={title}>
+            <div key={title} data-product-enter>
               <Icon size={27} aria-hidden="true" />
               <h3>{title}</h3>
               <p>{text}</p>
@@ -174,7 +177,7 @@ export default function SubghostPage() {
         <div className={styles.panelGrid}>
           <div>
             <p className={styles.eyebrow}>ONE GLANCE, EVERY SESSION</p>
-            <h2 id="subghost-panel-heading">
+            <h2 data-product-enter id="subghost-panel-heading">
               ひと押しで、
               <br />
               <span>いま動いている全部。</span>
@@ -213,7 +216,7 @@ export default function SubghostPage() {
       <section id="subghost-flow" className={styles.flowSection} aria-labelledby="subghost-flow-heading">
         <div className={styles.sectionHeading}>
           <p className={styles.eyebrow}>IT READS EVENTS, NOT SCREENS</p>
-          <h2 id="subghost-flow-heading">
+          <h2 data-product-enter id="subghost-flow-heading">
             見ているのは、
             <br />
             <span>画面ではない。</span>
@@ -233,7 +236,7 @@ export default function SubghostPage() {
 
       <section className={styles.stateSection} aria-labelledby="subghost-state-heading">
         <p className={styles.eyebrow}>TWO STATES. NO MORE.</p>
-        <h2 id="subghost-state-heading">
+        <h2 data-product-enter id="subghost-state-heading">
           Working と Done、
           <br />
           <span>ふたつだけ。</span>
@@ -279,7 +282,7 @@ export default function SubghostPage() {
 
       <section className={styles.boundary} aria-labelledby="subghost-boundary-heading">
         <p className={styles.eyebrow}>A LINE THAT DOES NOT MOVE</p>
-        <h2 id="subghost-boundary-heading">
+        <h2 data-product-enter id="subghost-boundary-heading">
           できないことを、
           <br />
           <span>決めてある。</span>
@@ -289,7 +292,7 @@ export default function SubghostPage() {
         </p>
         <div className={styles.boundaryGrid}>
           {boundaries.map(({ title, text }) => (
-            <div className={styles.boundaryItem} key={title}>
+            <div className={styles.boundaryItem} key={title} data-product-enter>
               <Ban size={20} aria-hidden="true" />
               <div>
                 <h3>{title}</h3>
@@ -307,7 +310,7 @@ export default function SubghostPage() {
       <section className={styles.privacy} aria-labelledby="subghost-privacy-heading">
         <div className={styles.sectionHeading}>
           <p className={styles.eyebrow}>OFF BY DEFAULT</p>
-          <h2 id="subghost-privacy-heading">
+          <h2 data-product-enter id="subghost-privacy-heading">
             読まない、が<span>既定。</span>
           </h2>
           <p style={{ color: 'var(--muted)', marginTop: 24 }}>
@@ -316,7 +319,7 @@ export default function SubghostPage() {
         </div>
         <div className={styles.privacyGrid}>
           {privacyPoints.map(({ icon: Icon, title, text }) => (
-            <div key={title}>
+            <div key={title} data-product-enter>
               <Icon size={25} aria-hidden="true" />
               <h3>{title}</h3>
               <p>{text}</p>
@@ -327,13 +330,13 @@ export default function SubghostPage() {
 
       <section className={styles.craft} aria-labelledby="subghost-craft-heading">
         <p className={styles.eyebrow}>THOUGHTFUL, INSIDE AND OUT</p>
-        <h2 id="subghost-craft-heading">
+        <h2 data-product-enter id="subghost-craft-heading">
           そばに置き続けるものは、
           <br />
           <span>邪魔をしないことが先。</span>
         </h2>
         <div className={styles.craftGrid}>
-          <div>
+          <div data-product-enter>
             <span className={styles.number}>01 / RESILIENCE</span>
             <h3>
               <Zap size={22} aria-hidden="true" /> 落ちていても、CLIを止めない。
@@ -344,7 +347,7 @@ export default function SubghostPage() {
             <code className={styles.craftCode}>{`[ -S "$SOCK" ] || exit 0
 curl -s -m "$TIMEOUT" --unix-socket "$SOCK" …`}</code>
           </div>
-          <div>
+          <div data-product-enter>
             <span className={styles.number}>02 / PRECISION</span>
             <h3>
               <Crosshair size={22} aria-hidden="true" /> どの端末かを、祖先まで遡って。
@@ -356,7 +359,7 @@ curl -s -m "$TIMEOUT" --unix-socket "$SOCK" …`}</code>
   ps -o ppid=,tty= -p "$cur"  # tty が "??" なら親へ
 done`}</code>
           </div>
-          <div>
+          <div data-product-enter>
             <span className={styles.number}>03 / RECOVERY</span>
             <h3>
               <LifeBuoy size={22} aria-hidden="true" /> 見失っても、戻れる。
@@ -373,7 +376,7 @@ done`}</code>
         <span className={styles.closingGhost}>
           <PixelGhost size={64} idPrefix="closing" />
         </span>
-        <h2 id="subghost-end-heading">
+        <h2 data-product-enter id="subghost-end-heading">
           確かめに戻る時間を、
           <br />
           手放すために。

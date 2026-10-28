@@ -593,3 +593,21 @@
   .flowTrack { display: none; }
   .flowResult { flex-direction: column; gap: 12px; }
 }
+
+/* ページ上部の小さなナビゲーション：戻るリンクは左へ，下へ進むリンクは下へ少しだけ動く */
+.localNav a { transition: color .25s, translate .35s cubic-bezier(.22, 1, .36, 1); }
+.localNav a:first-child:hover { translate: -4px 0; }
+.localNav a:last-child:hover { translate: 0 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .localNav a { transition: none; }
+  .localNav a:first-child:hover, .localNav a:last-child:hover { translate: none; }
+}
+
+/* 状態の表：行は画面に入るところで左から並び，カーソルを重ねた行は淡く灯る．Working の点はノッチと同じく脈打つ */
+.stateTable tbody tr { transition: background-color .25s; }
+.stateTable tbody tr:hover { background: color-mix(in srgb, var(--cyan) 6%, transparent); }
+.badge[data-state='working'] .statusDot { animation: subghostPulse 1.1s ease-in-out infinite; }
+@supports (animation-timeline: view()) {
+  .stateTable tbody tr { animation: stateRowIn linear both; animation-timeline: view(); animation-range: entry 0% entry 90%; }
+}
+@keyframes stateRowIn { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
