@@ -2,15 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   ArrowUpRight,
-  CalendarClock,
   Coins,
+  Filter,
   Globe2,
   History,
   Languages,
   MapPin,
   Palette,
-  Printer,
   QrCode,
+  Scale,
   TrainFront,
   Users,
 } from 'lucide-react';
@@ -21,12 +21,12 @@ import { ScrollZoom } from '../../../components/ScrollZoom';
 import { GitHubIcon } from '../../../components/icons/GitHubIcon';
 import { siteConfig } from '../../../config/site';
 import { buildRepositoryUrl } from '../../../data/apps';
-import { CenterDemo } from './center-demo';
 import { PipelineSteps } from './pipeline-steps';
+import { ScreenTour } from './screen-tour';
 import styles from './product.module.css';
 
 const description =
-  '複数人の最寄駅から，鉄道網に沿った移動時間の公平さで集合駅を提案する Web サービス EkiHub。全国約8,200駅、運賃の概算、共有URL、出発時刻の逆算までを紹介します。';
+  '複数人の最寄駅から，鉄道網に沿った移動時間の公平さで集合駅を提案する Web サービス EkiHub。実際の画面で，入力から候補駅の比較，共有，周辺スポットまでを紹介します。';
 
 export const metadata: Metadata = {
   title: 'EkiHub — 地図の真ん中より、みんなの真ん中。',
@@ -42,26 +42,33 @@ export const metadata: Metadata = {
 
 const EKIHUB_URL = 'https://ekihub.jp/';
 
-// ヒーローの中で中心へ集まってくるメンバーの駅
-const HERO_MEMBERS = [
-  { x: 60, y: 80, color: '#2fd3b5' },
-  { x: 420, y: 70, color: '#7c8bff' },
-  { x: 470, y: 330, color: '#ffb547' },
-  { x: 90, y: 360, color: '#ff7a9a' },
+// 実際の画面（public/projects/ekihub-screens/）の画像名と寸法
+const SCREEN_DIR = '/projects/ekihub-screens';
+
+// 8つのテーマ（ekihub.jp はページを開くたびにランダムで1つ選ぶ）
+const themes = [
+  { id: 'glass', name: 'GLASS / AURORA' },
+  { id: 'violet', name: 'VIOLET / SOFT POP' },
+  { id: 'clay', name: 'CLAY / TOY' },
+  { id: 'mobile', name: 'MOBILE / FRIENDLY' },
+  { id: 'soft', name: 'SOFT / NEUMORPHIC' },
+  { id: 'retro', name: 'RETRO / DESKTOP' },
+  { id: 'terminal', name: 'TERMINAL / MONO' },
+  { id: 'y2k', name: 'Y2K / CHROME' },
 ];
 
-// 結果画面のまわりに置いた機能（README の機能モジュール一覧から）
+// 画面にある機能（2026年10月の ekihub.jp で確認したもの）
 const features = [
-  { icon: Users, title: 'メンバー名・人数', text: '駅ごとに名前と人数を入れると，人数で重心と平均に重みが付きます．' },
-  { icon: Coins, title: '運賃の概算', text: '距離から普通運賃を見積もり，「運賃をどれだけ重視するか」も調整できます．' },
-  { icon: QrCode, title: '共有URL・QR', text: '入力と条件を URL にして共有．開いた人の画面で自動的に復元されます．' },
-  { icon: CalendarClock, title: '出発時刻の逆算', text: '集合時刻から各メンバーの出発時刻を逆算し，.ics でカレンダーに入れられます．' },
-  { icon: MapPin, title: '周辺スポット', text: '集合駅のまわりのカフェ・居酒屋・カラオケを OpenStreetMap から取り出します．' },
+  { icon: Users, title: '人数で重み付け', text: '同じ駅から何人来るかを選ぶと，その人数ぶん重みを付けて中心を考えます．' },
+  { icon: Scale, title: '重視ポイント', text: '「近さ重視」「公平さ重視」「バランス」に加え，運賃をどれだけ重く見るかも選べます．' },
+  { icon: Filter, title: '候補の範囲', text: '乗降客の多い「主要駅だけ」か，規模を問わない「すべての駅」から探すかを切り替えられます．' },
+  { icon: Coins, title: '運賃の目安', text: 'メンバーごとの片道の運賃と，全員の平均を並べます．' },
+  { icon: QrCode, title: '共有とコピー', text: 'URL・共有・QR・結果のテキストコピー・印刷から，連絡の手段に合わせて渡せます．' },
+  { icon: MapPin, title: '周辺スポット', text: 'カテゴリを選んで，集合駅の近くのお店や公園を Google マップで探せます．' },
   { icon: TrainFront, title: '鉄道運行情報', text: '首都圏の ODPT 提供路線について，最新の運行情報をその場で確かめられます．' },
   { icon: Languages, title: '4言語', text: '日本語・英語・中国語・韓国語を切り替えられます．' },
-  { icon: Palette, title: '7つのテーマ', text: 'ダーク・ライト・自動に加え，サクラや紅葉など7種類の配色を選べます．' },
-  { icon: History, title: '履歴とお気に入り', text: '過去の検索をそのまま再実行．よく集まる組み合わせは保存しておけます．' },
-  { icon: Printer, title: '印刷・コピー', text: '結果を印刷用のレイアウトや，チャットに貼れるテキストで書き出せます．' },
+  { icon: Palette, title: '8つのテーマ', text: '開くたびにランダムで選ばれ，メニューから好きなものに切り替えられます．' },
+  { icon: History, title: '履歴とマイグループ', text: '過去の検索をそのまま再実行．よく集まる顔ぶれはグループとして保存できます．' },
 ];
 
 // 使っている技術と，選んだ理由
@@ -79,7 +86,7 @@ export default function EkiHubPage() {
       <nav className={styles.localNav} aria-label="EkiHub ナビゲーション">
         <Link href="/#works">← Web とゲームの一覧</Link>
         <span>EkiHub</span>
-        <a href="#ekihub-demo">試してみる ↓</a>
+        <a href="#ekihub-screens">画面を見る ↓</a>
       </nav>
 
       <header className={styles.hero}>
@@ -108,90 +115,80 @@ export default function EkiHubPage() {
                 EkiHub をひらく <ArrowUpRight size={17} aria-hidden="true" />
                 <span className="sr-only">（新しいタブで開きます）</span>
               </a>
-              <a className={styles.secondaryLink} href="#ekihub-demo">
-                このページで試す <span aria-hidden="true">↓</span>
+              <a className={styles.secondaryLink} href="#ekihub-screens">
+                画面を見る <span aria-hidden="true">↓</span>
               </a>
             </div>
           </div>
 
-          {/* 4人の駅から，線が1つの駅へ集まっていく */}
-          <svg className={styles.heroVisual} viewBox="0 0 520 440" aria-hidden="true">
-            <circle className={styles.heroOrbit} cx="260" cy="220" r="150" />
-            <circle className={styles.heroOrbit} cx="260" cy="220" r="205" />
-            {HERO_MEMBERS.map((member, index) => (
-              <g key={index}>
-                <line
-                  className={styles.heroRoute}
-                  x1={member.x}
-                  y1={member.y}
-                  x2="260"
-                  y2="220"
-                  stroke={member.color}
-                  pathLength={1}
-                  style={{ animationDelay: `${0.5 + index * 0.18}s` }}
-                />
-                <circle
-                  className={styles.heroMember}
-                  cx={member.x}
-                  cy={member.y}
-                  r="13"
-                  fill={member.color}
-                  style={{ animationDelay: `${0.2 + index * 0.18}s` }}
-                />
-              </g>
-            ))}
-            <circle className={styles.heroPulse} cx="260" cy="220" r="34" />
-            <circle className={styles.heroRing} cx="260" cy="220" r="30" />
-            <path className={styles.heroStem} d="M260 252 v 46" />
-          </svg>
+          {/* スマホで検索した実際の結果画面と，所要時間のカード */}
+          <figure className={styles.heroScreens}>
+            <div className={styles.heroPhone} data-morph-target>
+              <img
+                src={`${SCREEN_DIR}/mob-result.webp`}
+                alt="スマホで見た EkiHub の結果画面．提案された中心駅は新木場．平均所要時間42分，時間のばらつき±17.2"
+                width={840}
+                height={1818}
+                loading="eager"
+                fetchPriority="high"
+              />
+            </div>
+            <div className={styles.heroFloat}>
+              <img
+                src={`${SCREEN_DIR}/times.webp`}
+                alt="各最寄駅からの所要時間．東京20分，川崎62分，船橋45分"
+                width={840}
+                height={243}
+              />
+            </div>
+            <figcaption>実際の画面（東京・川崎・船橋で検索）</figcaption>
+          </figure>
         </div>
       </header>
 
       <section className={styles.problem}>
-        <Reveal className={styles.sectionIntro}>
-          <p className={styles.eyebrowDark}>WHY NOT THE MIDPOINT</p>
-          <h2>
-            地図の真ん中は，<span>海の上</span>かもしれない．
-          </h2>
-          <p>
-            横浜と千葉の真ん中は，東京湾の上です．地図上の重心は，線路がつながっているかを知りません．EkiHub は「全員が何分かかるか」で考え，いちばん遠い人が遠すぎない駅を選びます．
-          </p>
-        </Reveal>
-
-        <Reveal variant="scale" className={styles.bayFigure}>
-          <figure>
-            <svg viewBox="0 0 560 300" role="img" aria-label="横浜と千葉の地理的な重心は東京湾の上にあり，線路に沿って回り込むと錦糸町や新木場あたりが中心になる様子">
-              <path className={styles.bayWater} d="M150 300 C 170 210, 230 170, 300 175 C 360 180, 400 210, 420 300 Z" />
-              <path className={styles.bayRail} d="M70 250 C 110 160, 170 90, 280 80 C 390 72, 460 140, 500 210" pathLength={1} />
-              <circle className={styles.bayStation} cx="70" cy="250" r="9" />
-              <text className={styles.bayLabel} x="70" y="282" textAnchor="middle">横浜</text>
-              <circle className={styles.bayStation} cx="500" cy="210" r="9" />
-              <text className={styles.bayLabel} x="500" y="242" textAnchor="middle">千葉</text>
-              <g className={styles.bayCentroid}>
-                <circle cx="285" cy="232" r="8" />
-                <text x="285" y="262" textAnchor="middle">地図上の重心（海の上）</text>
-              </g>
-              <g className={styles.bayHub}>
-                <circle cx="300" cy="80" r="12" />
-                <text x="300" y="52" textAnchor="middle">線路でたどった中心</text>
-              </g>
-            </svg>
-            <figcaption>図はイメージです．EkiHub は駅どうしを結ぶ距離を12kmまでに制限しているため，海を渡る近道がそもそも生まれません．</figcaption>
-          </figure>
-        </Reveal>
+        <div className={styles.problemGrid}>
+          <Reveal className={styles.sectionIntro}>
+            <p className={styles.eyebrowDark}>WHY NOT THE MIDPOINT</p>
+            <h2>
+              地図の真ん中は，<span>海の上</span>かもしれない．
+            </h2>
+            <p>
+              横浜と千葉の真ん中は，東京湾の上です．地図上の重心は，線路がつながっているかを知りません．
+            </p>
+            <p>
+              実際に2駅を入れると，EkiHub の答えは<strong>豊洲</strong>でした．重心からは14.3km離れていますが，線路でたどったときの2人の所要時間のばらつきは<strong>±1.5分</strong>に収まります．距離の真ん中ではなく，時間の真ん中を選ぶからです．
+            </p>
+          </Reveal>
+          <ScrollZoom className={styles.problemShot} fromScale={0.88} fromTiltDeg={10}>
+            <figure className={styles.screenFrame}>
+              <img
+                src={`${SCREEN_DIR}/bay-result.webp`}
+                alt="横浜と千葉で検索した EkiHub の結果．提案された中心駅は豊洲．時間のばらつき±1.5，重心までの距離14.3km"
+                width={840}
+                height={1412}
+                loading="lazy"
+              />
+              <figcaption>横浜・千葉で検索した実際の画面</figcaption>
+            </figure>
+          </ScrollZoom>
+        </div>
       </section>
 
-      <section id="ekihub-demo" className={styles.demoSection}>
+      <section id="ekihub-screens" className={styles.tourSection}>
         <Reveal className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>TRY IT HERE</p>
+          <p className={styles.eyebrowDark}>THE REAL SCREENS</p>
           <h2>
-            駅を選ぶと，<span>中心が動く．</span>
+            入れて，選んで，<span>そのまま決める．</span>
           </h2>
           <p>
-            首都圏の25駅で試せる小さな再現です．最寄駅を2〜5つ選び，「近さ」と「公平さ」のどちらを重く見るかを動かしてみてください．
+            ekihub.jp で「東京・川崎・船橋」の3人の集合場所を探したときの画面です．入力から，答え，比較，お店探し，運行情報まで，実際の順番で並べています．
           </p>
         </Reveal>
-        <CenterDemo />
+        <ScreenTour />
+        <p className={styles.mapNote}>
+          地図の欄は，背景地図の配信元が API キーを求めるようになり，撮影時点で「API KEY REQUIRED」の透かしが出ていたため，ここでは写していません．
+        </p>
       </section>
 
       <section className={styles.howItWorks}>
@@ -204,39 +201,68 @@ export default function EkiHubPage() {
         <PipelineSteps />
       </section>
 
-      <section className={styles.screens}>
+      <section className={styles.themes}>
         <Reveal className={styles.sectionIntro}>
-          <p className={styles.eyebrowDark}>THE REAL THING</p>
+          <p className={styles.eyebrowDark}>EIGHT THEMES</p>
           <h2>
-            結果は，<span>ひと目で決められる形で．</span>
+            同じ画面を，<span>8つの表情で．</span>
           </h2>
-          <p>中心駅のカード，平均とばらつき，運賃の概算，地図．集まる場所を決めるのに要る数字だけを並べています．</p>
+          <p>ekihub.jp はページを開くたびにテーマをランダムで選びます．どれも同じ機能のまま，見た目だけが着替わります．</p>
         </Reveal>
-        <div className={styles.screenPair}>
-          <ScrollZoom className={styles.screenMain}>
-            <figure className={styles.screenFrame}>
-              <img
-                src="/projects/works/ekihub-result.webp"
-                alt="東京・川崎・船橋の3駅から，中心駅として新木場が提案された EkiHub の結果画面"
-                width={450}
-                height={505}
-                loading="lazy"
-              />
-              <figcaption>東京・川崎・船橋で探した結果（実際の画面）</figcaption>
-            </figure>
-          </ScrollZoom>
-          <ScrollZoom className={styles.screenSub} fromScale={0.9} fromTiltDeg={8}>
-            <figure className={styles.screenFrame}>
-              <img
-                src="/projects/works/ekihub-hero.webp"
-                alt="EkiHub のトップ画面．「みんなの中心駅を探す」という見出しと言語・テーマの切り替え"
-                width={840}
-                height={266}
-                loading="lazy"
-              />
-              <figcaption>トップ画面．テーマは「クレイ」を選んだ状態です</figcaption>
-            </figure>
-          </ScrollZoom>
+        <ul className={styles.themeGrid}>
+          {themes.map((theme, index) => (
+            <li key={theme.id}>
+              <Reveal delayMs={(index % 2) * 90} variant="up" className={styles.themeCard}>
+                <img
+                  src={`${SCREEN_DIR}/theme-${theme.id}.webp`}
+                  alt={`テーマ ${theme.name} で表示した EkiHub のトップ画面`}
+                  width={840}
+                  height={233}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span>{theme.name}</span>
+              </Reveal>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className={styles.mobile}>
+        <div className={styles.mobileGrid}>
+          <Reveal className={styles.sectionIntro}>
+            <p className={styles.eyebrowDark}>ON THE GO</p>
+            <h2>
+              スマホでも，<span>そのまま．</span>
+            </h2>
+            <p>
+              集合場所を決めるのは，たいてい移動中かグループの連絡の途中です．画面幅に合わせて入力と結果を縦に並べ直し，片手でも操作できるようにしています．
+            </p>
+          </Reveal>
+          <div className={styles.mobilePhones}>
+            <ScrollZoom className={styles.mobilePhone} fromScale={0.9} fromTiltDeg={12}>
+              <div className={styles.phoneFrame}>
+                <img
+                  src={`${SCREEN_DIR}/mob-top.webp`}
+                  alt="スマホで開いた EkiHub のトップ画面．見出しの下に最寄駅の入力欄"
+                  width={840}
+                  height={1818}
+                  loading="lazy"
+                />
+              </div>
+            </ScrollZoom>
+            <ScrollZoom className={`${styles.mobilePhone} ${styles.mobilePhoneLower}`} fromScale={0.9} fromTiltDeg={18}>
+              <div className={styles.phoneFrame}>
+                <img
+                  src={`${SCREEN_DIR}/mob-result.webp`}
+                  alt="スマホで見た EkiHub の結果画面．提案された中心駅は新木場"
+                  width={840}
+                  height={1818}
+                  loading="lazy"
+                />
+              </div>
+            </ScrollZoom>
+          </div>
         </div>
       </section>
 
