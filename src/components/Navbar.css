@@ -6,6 +6,8 @@
   color: var(--nav-text);
   border-bottom: 1px solid transparent;
   transition: background-color 200ms, border-color 200ms, box-shadow 200ms;
+  /* ページを移る演出の間も，ナビゲーションだけはその場に留める（globals.css） */
+  view-transition-name: site-navbar;
 }
 .dark .site-navbar {
   --nav-bg: 14 20 32;
@@ -96,7 +98,7 @@
 }
 
 /* Opening and closing share the same layout, so the panel also eases shut. */
-.site-navbar { --nav-ease: cubic-bezier(.22, 1, .36, 1); }
+.site-navbar { --nav-ease: var(--site-ease); }
 .navbar-bar { animation: nav-bar-arrive 650ms var(--nav-ease) both; }
 .navbar-bar > a { transition: transform 280ms var(--nav-ease); }
 .navbar-bar > a:hover { transform: translateY(-2px); }
@@ -104,6 +106,22 @@
 .mega-trigger:active { transform: scale(.95); }
 .mega-trigger svg { transition: transform 380ms var(--nav-ease), opacity 220ms; }
 .mega-trigger.is-open svg { opacity: 1; }
+/* いま読んでいるセクションの項目の下を滑る短い線．文字（矢印を除いた部分）の中央に置く */
+.nav-section-marker {
+  position: absolute;
+  left: 0;
+  bottom: 3px;
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-accent-strong);
+  pointer-events: none;
+  translate: calc(var(--marker-left) + var(--marker-width) / 2 - 16.5px) 0;
+  scale: 0 1;
+  transition: translate 520ms var(--nav-ease), scale 360ms var(--nav-ease);
+}
+.nav-section-marker[data-visible='true'] { scale: 1 1; }
+.dark .nav-section-marker { background: var(--color-accent-dark); }
 .nav-collapse {
   display: grid;
   grid-template-rows: 0fr;

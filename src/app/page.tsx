@@ -8,6 +8,8 @@ import { GitHubActivity } from '../sections/GitHubActivity';
 import { Contact } from '../sections/Contact';
 import { ScrollHighlightText } from '../components/ScrollHighlightText';
 import { VelocityMarquee } from '../components/VelocityMarquee';
+import { Reveal } from '../components/Reveal';
+import { ParallaxLayer } from '../components/ParallaxLayer';
 import { siteConfig } from '../config/site';
 import { buildRepositoryUrl, PLATFORM_LABELS, SWIFT_APPS } from '../data/apps';
 
@@ -72,7 +74,6 @@ function buildStructuredData() {
 export default function HomePage() {
   return (
     <>
-      {/* 構造化データ（検索結果でアプリ一覧として認識されやすくする） */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(buildStructuredData()) }}
@@ -80,17 +81,20 @@ export default function HomePage() {
       <Hero />
       <ProductShowcase />
       <About />
-
-      {/* スクロールに合わせて1語ずつ明るくなる一文 */}
-      <section className="py-24 md:py-32" aria-label="制作の姿勢">
-        <div className="max-w-4xl mx-auto px-6">
+      <section className="principle-section" aria-label="制作の姿勢">
+        <div className="principle-inner">
+          {/* 見出しが現れると，上の罫線が左から引かれる */}
+          <Reveal className="principle-heading"><span aria-hidden="true">THE WAY I BUILD</span><span aria-hidden="true">DESIGN / CODE / CARE</span></Reveal>
+          {/* 背後の大きな文字は，スクロールに合わせて横へゆっくり流れる */}
+          <ParallaxLayer className="principle-watermark" distancePx={0} horizontalDistancePx={-160}><span aria-hidden="true">TRUST</span></ParallaxLayer>
           <ScrollHighlightText
             text={'「あったらいいな」を，/自分の手で形にする．/使う人が迷わない導線と，/こわれにくい実装で，/小さな信頼を積み上げていく．'}
-            className="text-2xl md:text-4xl font-semibold leading-[1.7] tracking-tight"
+            className="principle-copy"
           />
+          {/* 罫線が引かれたあと，アイデアから信頼までの流れが左から順に灯る */}
+          <Reveal className="principle-footer"><span aria-hidden="true">IDEA</span><span aria-hidden="true">→</span><span aria-hidden="true">DESIGN</span><span aria-hidden="true">→</span><span aria-hidden="true">BUILD</span><span aria-hidden="true">→</span><span aria-hidden="true">TRUST</span></Reveal>
         </div>
       </section>
-
       <Skills />
       <Projects />
       <VelocityMarquee words={['Swift', 'SwiftUI', 'Next.js', 'TypeScript', 'Three.js', 'Canvas']} />

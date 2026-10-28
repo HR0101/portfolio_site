@@ -4,16 +4,17 @@
 .motion-work-surface::after { content:''; position:absolute; inset:-50%; z-index:3; pointer-events:none; background:linear-gradient(110deg,transparent 40%,#fff5 50%,transparent 60%); transform:translateX(-65%) rotate(-15deg); transition:transform 1s cubic-bezier(.16,1,.3,1); }
 .motion-work-surface:is(:hover,:focus-visible)::after { transform:translateX(65%) rotate(-15deg); }
 .motion-work-surface [data-motion-parallax] { translate:var(--motion-parallax-x,0px) var(--motion-parallax-y,0px); transition:translate .55s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1); }
-.motion-work-surface:is(:hover,:focus-visible) [data-motion-parallax] { transform:scale(1.045); }
+.motion-work-surface:is(:hover,:focus-visible) [data-motion-parallax] { transform:scale(1.1) rotate(-2deg); }
 .motion-work-surface:focus-visible { outline:2px solid var(--color-accent); outline-offset:-4px; }
-.product-card:has(.motion-work-surface:hover) h3, .product-card:has(.motion-work-surface:focus-visible) h3 { translate:0 -3px; }
+.product-card:has(.motion-work-surface:hover) h3, .product-card:has(.motion-work-surface:focus-visible) h3 { translate:0 -6px; }
 .product-card h3 { transition:translate .5s cubic-bezier(.16,1,.3,1); }
 .product-card .product-card-visual { display:flex; }
 .works-game-shot.motion-work-surface { display:flex; }
 .works-browser.motion-work-surface { display:block; }
 .motion-surface-arrow { position:absolute; bottom:17px; right:17px; z-index:4; display:grid; place-items:center; width:35px; height:35px; border-radius:50%; background:#ffffffd9; color:#344966; transition:transform .5s cubic-bezier(.16,1,.3,1); }
-.motion-work-surface:is(:hover,:focus-visible) .motion-surface-arrow { transform:rotate(45deg); }
+.motion-work-surface:is(:hover,:focus-visible) .motion-surface-arrow { transform:rotate(45deg) scale(1.25); }
 @media(prefers-reduced-motion:reduce) {
+  .scroll-zoom-inner { transform:none!important; }
   .motion-work-surface, .motion-work-surface::after, .motion-work-surface [data-motion-parallax], .motion-surface-arrow, .product-card h3 { transition:none!important; }
   .motion-work-surface::after { display:none; }
   .motion-work-surface:is(:hover,:focus-visible) [data-motion-parallax], .motion-work-surface:is(:hover,:focus-visible) .motion-surface-arrow { transform:none; }
@@ -21,10 +22,21 @@
 }
 @media(max-width:760px) { #showcase { margin-top:-24px; border-radius:26px 26px 0 0; } }
 
-.reveal-scene { transform:perspective(1100px) translateY(55px) rotateX(9deg); transform-origin:50% 100%; transition-duration:.95s; transition-timing-function:cubic-bezier(.16,1,.3,1); }
+.reveal-scene { transform:perspective(1000px) translateY(95px) rotateX(16deg) scale(.92); transform-origin:50% 100%; transition-duration:1.1s; transition-timing-function:cubic-bezier(.16,1,.3,1); }
 .reveal-scene.reveal-visible { transform:none; }
 @media(prefers-reduced-motion:reduce) { .reveal-scene { opacity:1; transform:none; transition:none; } }
 @media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
   .product-card-visual.motion-work-surface, .works-game-shot.motion-work-surface { transition:border-radius .65s cubic-bezier(.16,1,.3,1); }
-  .product-card-visual.motion-work-surface:is(:hover,:focus-visible), .works-game-shot.motion-work-surface:is(:hover,:focus-visible) { border-radius:38px 20px 38px 20px; }
+  .product-card-visual.motion-work-surface:is(:hover,:focus-visible), .works-game-shot.motion-work-surface:is(:hover,:focus-visible) { border-radius:52px 18px 52px 18px; }
 }
+
+/* スマホでは奥行きの強い回転を避け、縦スクロールとタップに合わせる。 */
+@media(max-width:760px) and (prefers-reduced-motion:no-preference) {
+  .reveal-scene { transform:translateY(32px) scale(.98); transform-origin:50% 100%; transition-duration:.75s; }
+  .reveal-scene.reveal-visible { transform:none; }
+  .scroll-zoom-inner { transform:none!important; }
+  .reveal-visible .motion-work-surface [data-motion-parallax] { animation:mobile-work-arrive .9s cubic-bezier(.22,1,.36,1) backwards; }
+  .motion-work-surface:active [data-motion-parallax] { transform:scale(1.04); }
+  .motion-work-surface:active .motion-surface-arrow { transform:scale(.9); }
+}
+@keyframes mobile-work-arrive { from { opacity:.65; transform:scale(1.08) translateY(12px); } to { opacity:1; transform:none; } }

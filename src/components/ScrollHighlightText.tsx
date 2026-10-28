@@ -32,7 +32,7 @@ export function ScrollHighlightText({ text, className = '' }: ScrollHighlightTex
             key={`${word}-${index}`}
             aria-hidden="true"
             className="text-ink dark:text-night-ink"
-            style={{ opacity: 0.3 + illumination * 0.7 }}
+            style={{ opacity: 0.62 + illumination * 0.38 }}
           >
             {word}
           </span>

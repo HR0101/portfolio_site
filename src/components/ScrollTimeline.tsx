@@ -1,6 +1,7 @@
 "use client";
 
 import { useScrollLinked } from '../hooks/useScrollLinked';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { TIMELINE_MILESTONES } from '../data/timeline';
 
 // 節目が「通過した」と判定される位置（項目の中ほど）
@@ -9,6 +10,8 @@ const MILESTONE_ACTIVATION_OFFSET = 0.5;
 // スクロールに合わせて縦線が伸び，通過した節目が点灯していく年表
 export function ScrollTimeline() {
   const { ref, progress } = useScrollLinked<HTMLDivElement>('fill');
+  const reducedMotion = usePrefersReducedMotion();
+  const visibleProgress = reducedMotion ? 1 : progress;
   const milestoneCount = TIMELINE_MILESTONES.length;
 
   return (
@@ -20,8 +23,8 @@ export function ScrollTimeline() {
       />
       {/* スクロール量に応じて伸びる線 */}
       <div
-        className="absolute left-3 md:left-5 top-2 w-px bg-ink dark:bg-night-ink"
-        style={{ height: `calc(${(progress * 100).toFixed(2)}% - 1rem)` }}
+        className="absolute left-3 md:left-5 top-2 bottom-2 w-px bg-ink dark:bg-night-ink origin-top"
+        style={{ transform: `scaleY(${visibleProgress})` }}
         aria-hidden="true"
       />
       {/* 線の先端で光る点 */}
@@ -29,7 +32,7 @@ export function ScrollTimeline() {
         className="absolute left-3 md:left-5 w-2 h-2 -translate-x-1/2 rounded-full bg-ink dark:bg-night-ink shadow-[0_0_14px_4px_rgba(29,29,31,0.18)] transition-opacity duration-300"
         style={{
           top: `calc(${(progress * 100).toFixed(2)}% - 1rem)`,
-          opacity: progress > 0.02 && progress < 0.99 ? 1 : 0,
+          opacity: !reducedMotion && progress > 0.02 && progress < 0.99 ? 1 : 0,
         }}
         aria-hidden="true"
       />
@@ -38,7 +41,7 @@ export function ScrollTimeline() {
         {TIMELINE_MILESTONES.map((milestone, index) => {
           // 線が自分の位置を追い越したら点灯する
           const activationPoint = (index + MILESTONE_ACTIVATION_OFFSET) / milestoneCount;
-          const isReached = progress >= activationPoint;
+          const isReached = visibleProgress >= activationPoint;
 
           return (
             <li key={milestone.period} className="relative">

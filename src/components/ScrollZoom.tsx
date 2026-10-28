@@ -15,7 +15,7 @@ interface ScrollZoomProps {
 
 // 画面に入るにつれて，奥から手前へ起き上がりながら等倍に近づく．
 // 計測用の外側と変形用の内側を分け，自分の変形が計測値を揺らさないようにしている．
-export function ScrollZoom({ children, fromScale = 0.86, fromTiltDeg = 14, className = '' }: ScrollZoomProps) {
+export function ScrollZoom({ children, fromScale = 0.76, fromTiltDeg = 20, className = '' }: ScrollZoomProps) {
   const { ref, progress } = useScrollLinked<HTMLDivElement>('enter');
   const prefersReducedMotion = usePrefersReducedMotion();
 
@@ -27,7 +27,7 @@ export function ScrollZoom({ children, fromScale = 0.86, fromTiltDeg = 14, class
   return (
     <div ref={ref} className={className} style={{ perspective: '1400px' }}>
       <div
-        className="w-full h-full will-change-transform"
+        className="scroll-zoom-inner w-full h-full will-change-transform"
         style={{
           transform: `rotateX(${tilt.toFixed(2)}deg) scale(${scale.toFixed(3)})`,
           transformOrigin: '50% 100%',

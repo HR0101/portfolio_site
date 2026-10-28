@@ -7,6 +7,7 @@ import { SectionHeading } from '../components/SectionHeading';
 import { GitHubIcon } from '../components/icons/GitHubIcon';
 import { CopyEmailButton } from '../components/CopyEmailButton';
 import { siteConfig } from '../config/site';
+import './ContactMotion.css';
 
 // フォーム入力値の型
 interface ContactFormValues {
@@ -65,6 +66,8 @@ export function Contact() {
   const [formErrors, setFormErrors] = useState<ContactFormErrors>({});
   // 送信操作の結果（読み上げ用に aria-live 領域へ出す）
   const [statusMessage, setStatusMessage] = useState('');
+  // メールソフトを開いた回数．変わるたびにボタンの紙飛行機が飛び立つ
+  const [sendCount, setSendCount] = useState(0);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -97,6 +100,7 @@ export function Contact() {
       `お名前: ${formValues.name}\nメールアドレス: ${formValues.email}\n\n${formValues.message}`,
     );
     window.location.href = `mailto:${siteConfig.email}?subject=${subject}&body=${body}`;
+    setSendCount((count) => count + 1);
     setStatusMessage(
       'メールソフトを起動しました．内容をご確認のうえ送信してください．起動しない場合は，左のメールアドレス宛に直接ご連絡ください．',
     );
@@ -115,15 +119,15 @@ export function Contact() {
     <section id="contact" data-testid="contact-section" className="scroll-mt-24 py-24 md:py-32">
       <div className="max-w-6xl mx-auto px-6">
         <SectionHeading
-          label="05. Contact"
+          label="06. Contact"
           title="お問い合わせ"
           description="お仕事のご相談・ご質問など，お気軽にご連絡ください．入力内容を反映したメールをお使いのメールソフトで開きます．"
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* 左カラム：直接の連絡先リンク */}
+          {/* 左カラム：直接の連絡先リンク（大きな画面ではフォームを読み進める間も横に留まる） */}
           <Reveal variant="left">
-            <div className="space-y-6">
+            <div className="contact-links space-y-6 lg:sticky lg:top-28">
               <p className="text-subtle dark:text-night-subtle leading-relaxed">
                 フォームからのお問い合わせのほか，メールや GitHub から
                 直接ご連絡いただくことも可能です．
@@ -172,8 +176,8 @@ export function Contact() {
 
           {/* 右カラム：問い合わせフォーム */}
           <Reveal delayMs={150} variant="right">
-            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-              <div>
+            <form onSubmit={handleSubmit} className="contact-form space-y-5" noValidate>
+              <div className="contact-field">
                 <label htmlFor="contact-name" className="block text-sm font-medium mb-2">
                   お名前
                 </label>
@@ -192,12 +196,12 @@ export function Contact() {
                   required
                 />
                 {formErrors.name && (
-                  <p id="contact-name-error" className="mt-2 text-sm text-red-600 dark:text-red-400">
+                  <p id="contact-name-error" className="contact-field-error mt-2 text-sm text-red-600 dark:text-red-400">
                     {formErrors.name}
                   </p>
                 )}
               </div>
-              <div>
+              <div className="contact-field">
                 <label htmlFor="contact-email" className="block text-sm font-medium mb-2">
                   メールアドレス
                 </label>
@@ -217,12 +221,12 @@ export function Contact() {
                   required
                 />
                 {formErrors.email && (
-                  <p id="contact-email-error" className="mt-2 text-sm text-red-600 dark:text-red-400">
+                  <p id="contact-email-error" className="contact-field-error mt-2 text-sm text-red-600 dark:text-red-400">
                     {formErrors.email}
                   </p>
                 )}
               </div>
-              <div>
+              <div className="contact-field">
                 <label htmlFor="contact-message" className="block text-sm font-medium mb-2">
                   メッセージ
                 </label>
@@ -249,8 +253,11 @@ export function Contact() {
                 >
                   {MIN_MESSAGE_LENGTH}〜{MAX_MESSAGE_LENGTH}文字（現在{formValues.message.length}文字）
                 </p>
+                <div className="contact-progress" aria-hidden="true">
+                  <span style={{ transform: `scaleX(${Math.min(formValues.message.trim().length / MIN_MESSAGE_LENGTH, 1)})` }} />
+                </div>
                 {formErrors.message && (
-                  <p id="contact-message-error" className="mt-2 text-sm text-red-600 dark:text-red-400">
+                  <p id="contact-message-error" className="contact-field-error mt-2 text-sm text-red-600 dark:text-red-400">
                     {formErrors.message}
                   </p>
                 )}
@@ -266,16 +273,24 @@ export function Contact() {
                     : 'text-emerald-700 dark:text-emerald-400'
                 }`}
               >
-                {statusMessage}
+                {/* 文言が変わるたびに作り直し，下から静かに浮かべる（読み上げの領域そのものは作り直さない） */}
+                {statusMessage && (
+                  <span key={statusMessage} className="contact-status-text">
+                    {statusMessage}
+                  </span>
+                )}
               </p>
 
               <button
                 type="submit"
-                className="press-effect group relative overflow-hidden inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-accent-strong hover:bg-accent-hover shadow-soft hover:shadow-soft-lg hover:scale-105 transition-all duration-300"
+                className="contact-submit press-effect group relative overflow-hidden inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-accent-strong hover:bg-accent-hover shadow-soft hover:shadow-soft-lg hover:scale-105 transition-all duration-300"
               >
                 <span className="shimmer-sweep absolute inset-0 overflow-hidden rounded-full" aria-hidden="true" />
                 <span className="relative">メールソフトで確認する</span>
-                <Send className="relative w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                {/* 送るたびに作り直し，右上へ飛び去ってから左下から戻ってくる */}
+                <span key={sendCount} className={`relative inline-flex ${sendCount > 0 ? 'contact-send-flight' : ''}`} aria-hidden="true">
+                  <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                </span>
               </button>
             </form>
           </Reveal>

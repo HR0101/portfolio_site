@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from 'react';
-import { RefreshCw, Home } from 'lucide-react';
+import { RefreshCw, Home, CloudOff } from 'lucide-react';
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -20,30 +20,34 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
     <section className="min-h-[70vh] flex items-center justify-center px-6 py-24">
       <div className="max-w-md text-center">
-        <p className="text-sm font-semibold tracking-widest text-subtle dark:text-night-subtle uppercase">
+        {/* つながりが途切れた雲が，ふわりと漂う */}
+        <span className="error-cloud" aria-hidden="true">
+          <CloudOff strokeWidth={1.5} />
+        </span>
+        <p className="hero-enter mt-8 text-sm font-semibold tracking-widest text-subtle dark:text-night-subtle uppercase" style={{ animationDelay: '0.2s' }}>
           Something went wrong
         </p>
-        <h1 className="mt-4 text-3xl md:text-4xl font-semibold tracking-tight">
+        <h1 className="hero-enter mt-4 text-3xl md:text-4xl font-semibold tracking-tight" style={{ animationDelay: '0.3s' }}>
           問題が発生しました
         </h1>
-        <p className="mt-4 text-subtle dark:text-night-subtle leading-relaxed">
+        <p className="hero-enter mt-4 text-subtle dark:text-night-subtle leading-relaxed" style={{ animationDelay: '0.4s' }}>
           一時的な不具合の可能性があります．再読み込みをお試しください．
           解消しない場合は，お手数ですがメールでご連絡ください．
         </p>
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="hero-enter mt-8 flex flex-col sm:flex-row items-center justify-center gap-3" style={{ animationDelay: '0.5s' }}>
           <button
             type="button"
             onClick={reset}
-            className="press-effect inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-accent-strong shadow-soft hover:shadow-soft-lg transition-all duration-300"
+            className="group press-effect inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-accent-strong shadow-soft hover:shadow-soft-lg transition-all duration-300"
           >
-            <RefreshCw className="w-4 h-4" aria-hidden="true" />
+            <RefreshCw className="w-4 h-4 transition-transform duration-700 group-hover:rotate-180" aria-hidden="true" />
             もう一度読み込む
           </button>
           <a
             href="/"
-            className="press-effect inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold border border-soft dark:border-night-border text-ink dark:text-night-ink hover:border-ink dark:hover:border-night-ink hover:text-ink dark:hover:text-night-ink transition-colors duration-300"
+            className="group press-effect inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold border border-soft dark:border-night-border text-ink dark:text-night-ink hover:border-ink dark:hover:border-night-ink hover:text-ink dark:hover:text-night-ink transition-colors duration-300"
           >
-            <Home className="w-4 h-4" aria-hidden="true" />
+            <Home className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-0.5" aria-hidden="true" />
             トップへ戻る
           </a>
         </div>

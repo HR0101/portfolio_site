@@ -1,6 +1,6 @@
 .product-showcase {
   padding: clamp(64px, 8vw, 112px) max(24px, calc((100% - 1120px) / 2));
-  background: var(--color-mist);
+  background: var(--site-surface-soft);
 }
 
 .showcase-heading-row {
@@ -13,7 +13,7 @@
 
 .showcase-eyebrow {
   margin-bottom: 12px;
-  color: var(--color-subtle);
+  color: var(--site-muted);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: .12em;
@@ -41,6 +41,7 @@
 .showcase-catalog-link:hover { text-decoration: underline; }
 
 .showcase-tabs {
+  position: relative;
   display: flex;
   width: fit-content;
   max-width: 100%;
@@ -51,6 +52,8 @@
 }
 
 .showcase-tabs button {
+  position: relative;
+  z-index: 1;
   min-height: 44px;
   padding: 9px 24px;
   border-radius: 24px;
@@ -60,6 +63,12 @@
   cursor: pointer;
   transition: background .25s, color .25s, box-shadow .25s;
 }
+
+.showcase-tab-indicator { position: absolute; top: 5px; bottom: 5px; left: 0; width: var(--tab-width, 0px); border-radius: 24px; background: white; box-shadow: 0 2px 8px #0000000c; transform: translateX(var(--tab-left, 0px)); opacity: 0; transition: transform .55s cubic-bezier(.22, 1, .36, 1), width .55s cubic-bezier(.22, 1, .36, 1), opacity .2s; }
+.showcase-tabs[data-tab-ready] .showcase-tab-indicator { opacity: 1; }
+.showcase-tabs[data-tab-ready] button[aria-selected='true'] { background: transparent; box-shadow: none; }
+.dark .showcase-tab-indicator { background: #48484a; }
+.dark .showcase-tabs[data-tab-ready] button[aria-selected='true'] { background: transparent; }
 
 .showcase-tabs button[aria-selected='true'] {
   color: var(--color-ink);
@@ -72,9 +81,9 @@
   grid-template-columns: 1fr 1fr;
   min-height: 620px;
   overflow: hidden;
-  border-radius: 32px;
-  background: white;
-  color: var(--color-ink);
+  border-radius: var(--site-radius-panel);
+  background: var(--site-surface-raised);
+  color: var(--site-ink);
 }
 
 .showcase-panel[hidden] { display: none; }
@@ -231,9 +240,10 @@
   [data-scroll-story] .showcase-visual { perspective: 1100px; }
   [data-scroll-story] .showcase-device {
     animation: none;
-    transform: translate3d(0, calc((1 - var(--story-progress)) * 18px), 0)
-      rotateY(calc((1 - var(--story-progress)) * -9deg))
-      scale(calc(.94 + var(--story-progress) * .08));
+    transform: translate3d(0, calc((1 - var(--story-progress)) * 45px), 0)
+      rotateY(calc((1 - var(--story-progress)) * -18deg))
+      rotateX(calc((1 - var(--story-progress)) * 9deg))
+      scale(calc(.85 + var(--story-progress) * .17));
   }
   [data-scroll-story] .showcase-ambient {
     opacity: calc(.15 + var(--story-progress) * .65);
@@ -252,12 +262,12 @@
   [data-scroll-story] .showcase-part-0 {
     left: 16px;
     bottom: 145px;
-    transform: translate3d(calc((1 - var(--story-progress)) * -55px), calc((1 - var(--story-progress)) * 40px), 0);
+    transform: translate3d(calc((1 - var(--story-progress)) * -90px), calc((1 - var(--story-progress)) * 65px), 0) rotate(calc((1 - var(--story-progress)) * -10deg));
   }
   [data-scroll-story] .showcase-part-1 {
     right: 16px;
     top: 120px;
-    transform: translate3d(calc((1 - var(--story-progress)) * 55px), calc((1 - var(--story-progress)) * -40px), 0);
+    transform: translate3d(calc((1 - var(--story-progress)) * 90px), calc((1 - var(--story-progress)) * -65px), 0) rotate(calc((1 - var(--story-progress)) * 10deg));
   }
   [data-scroll-story] .showcase-visual-tablet .showcase-part-0 { bottom: 150px; }
   [data-scroll-story] .showcase-visual-tablet .showcase-part-1 { top: 150px; }
@@ -266,3 +276,25 @@
 @media (prefers-reduced-motion: reduce) {
   .showcase-glass { display: none; }
 }
+
+/* 見出しと機能カードを順に立ち上げ、選択したアプリへの視線をつなぐ。 */
+@media (prefers-reduced-motion: no-preference) {
+  .showcase-panel:not([hidden]) .showcase-app-name,
+  .showcase-panel:not([hidden]) .showcase-copy h3,
+  .showcase-panel:not([hidden]) .showcase-copy > p,
+  .showcase-panel:not([hidden]) .showcase-source-link,
+  .showcase-panel:not([hidden]) .showcase-detail,
+  .showcase-panel:not([hidden]) .showcase-part {
+    animation: showcase-detail-arrive .7s cubic-bezier(.22, 1, .36, 1) backwards;
+  }
+  .showcase-panel:not([hidden]) .showcase-copy h3 { animation-delay: 70ms; }
+  .showcase-panel:not([hidden]) .showcase-copy > p { animation-delay: 140ms; }
+  .showcase-panel:not([hidden]) .showcase-source-link { animation-delay: 210ms; }
+  .showcase-panel:not([hidden]) .showcase-detail { animation-delay: 280ms; }
+  .showcase-panel:not([hidden]) .showcase-part-0 { animation-delay: 250ms; }
+  .showcase-panel:not([hidden]) .showcase-part-1 { animation-delay: 340ms; }
+  .showcase-source-link svg, .showcase-catalog-link svg { transition: translate .4s cubic-bezier(.22, 1, .36, 1); }
+  .showcase-source-link:is(:hover, :focus-visible) svg, .showcase-catalog-link:is(:hover, :focus-visible) svg { translate: 4px 0; }
+}
+@keyframes showcase-detail-arrive { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .showcase-tab-indicator { transition: none; } }

@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ArrowUpRight, Code2, Cpu, Globe2, Layers3, Terminal } from 'lucide-react';
+import { ArrowUpRight, Code2, Cpu, Globe2, Layers3, Terminal } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { SectionHeading } from '../components/SectionHeading';
 import { AnimatedCounter } from '../components/AnimatedCounter';
@@ -82,7 +82,7 @@ export function Skills() {
               <div className={styles.cardTop}><span className={styles.icon}><Terminal size={21} aria-hidden="true" /></span><span className={styles.category}>AUTOMATION</span></div>
               <h3>Python</h3>
               <p className={styles.description}>繰り返す作業に、仕組みを。</p>
-              <div className={styles.pipeline} aria-hidden="true"><span>Data</span><ArrowRight size={14} /><span>Script</span><ArrowRight size={14} /><span>Done</span></div>
+              <div className={styles.pipeline} aria-hidden="true"><span>Data</span><i className={styles.dataLink} /><span>Script</span><i className={styles.dataLink} /><span>Done</span></div>
               <p className={styles.evidence}>データ処理・自動化・機械学習</p>
               <a className={styles.textLink} href={`${siteConfig.githubUrl}?tab=repositories&language=python`}>AeroPath / FraTerm など <ArrowUpRight size={15} aria-hidden="true" /></a>
             </SkillCard>

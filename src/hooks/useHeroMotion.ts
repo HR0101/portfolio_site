@@ -29,15 +29,15 @@ export function useHeroMotion() {
         hasPlayed = true;
         hero.querySelectorAll('[data-hero-char]').forEach((element, index) => {
           play(element, [
-            { transform: `translate3d(${(index % 3 - 1) * 20}px,115%,0) rotateX(-75deg) rotateZ(${index % 2 ? 9 : -9}deg)`, opacity: .2 },
+            { transform: compact.matches ? 'translate3d(0,70%,0)' : `translate3d(${(index % 3 - 1) * 35}px,135%,0) rotateX(-85deg) rotateZ(${index % 2 ? 15 : -15}deg)`, opacity: .1 },
             { transform: 'none', opacity: 1 },
-          ], { duration: 1100, delay: 100 + index * 38, fill: 'backwards' });
+          ], { duration: compact.matches ? 750 : 1100, delay: 100 + index * 38, fill: 'backwards' });
         });
         hero.querySelectorAll('[data-hero-intro]').forEach((element, index) => {
-          play(element, [{ transform: 'translateY(18px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 850, delay: 350 + index * 100, fill: 'backwards' });
+          play(element, [{ transform: 'translateY(32px) scale(.97)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 1000, delay: 350 + index * 110, fill: 'backwards' });
         });
         hero.querySelectorAll('[data-orbit-intro]').forEach((element, index) => {
-          play(element, [{ transform: `translate(${index % 2 ? -90 : 70}px,${index > 1 ? -65 : 60}px) scale(.45) rotate(-22deg)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 1250, delay: 180 + index * 110, fill: 'backwards' });
+          play(element, [{ transform: compact.matches ? `translateY(${index % 2 ? 20 : 30}px) scale(.8)` : `translate(${index % 2 ? -135 : 115}px,${index > 1 ? -110 : 100}px) scale(.25) rotate(${index % 2 ? 40 : -40}deg)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: compact.matches ? 900 : 1450, delay: 180 + index * 120, fill: 'backwards' });
         });
         play(hero.querySelector('[data-hero-core]'), [{ transform: 'rotate(25deg) scale(.2)', opacity: 0 }, { transform: 'rotate(-14deg) scale(1)', opacity: 1 }], { duration: 1300 });
         play(hero.querySelector('[data-hero-rule]'), [{ transform: 'scaleX(0)', opacity: 1 }, { transform: 'scaleX(1)', opacity: 1, offset: .75 }, { transform: 'scaleX(1)', opacity: 0 }], { duration: 1100 });
@@ -57,14 +57,14 @@ export function useHeroMotion() {
         const dt = previousTime ? Math.min(now - previousTime, 48) : 16.67;
         previousTime = now;
         progress += (target - progress) * (1 - Math.exp(-dt / 75));
-        title.style.transform = `translate3d(0,${-progress * 70}px,0) rotateX(${progress * 10}deg)`;
-        universe.style.transform = `translate3d(0,${-progress * 100}px,0) rotateZ(${progress * 12}deg)`;
+        title.style.transform = `translate3d(0,${-progress * 100}px,0) rotateX(${progress * 15}deg)`;
+        universe.style.transform = `translate3d(0,${-progress * 150}px,0) rotateZ(${progress * 18}deg)`;
         blue.style.opacity = String(1 - progress * .7);
         peach.style.opacity = String(progress);
         cue.style.opacity = String(1 - progress);
         orbits.forEach(element => {
           const depth = Number(element.dataset.orbitDepth);
-          element.style.transform = `translate3d(${depth * progress * 35}px,${depth * progress * -85}px,0) rotate(${depth * progress * 18}deg)`;
+          element.style.transform = `translate3d(${depth * progress * 55}px,${depth * progress * -125}px,0) rotate(${depth * progress * 25}deg)`;
         });
         if (Math.abs(target - progress) > .0003) request();
         else previousTime = 0;
@@ -74,14 +74,21 @@ export function useHeroMotion() {
         target = compact.matches ? 0 : clamp(-rect.top / Math.max(1, rect.height - innerHeight));
         request();
       };
-      const unsubscribe = subscribeToScroll(update);
+      // スマホではスクロールによるヒーローの変形を使わないため、購読もしない。
+      const unsubscribe = compact.matches ? () => {} : subscribeToScroll(update);
+      const stageObserver = new IntersectionObserver(([entry]) => {
+        hero.toggleAttribute('data-hero-active', entry.isIntersecting);
+      });
+      stageObserver.observe(hero);
       const visibility = () => {
         if (document.hidden) { cancelAnimationFrame(frame); frame = 0; previousTime = 0; }
-        else update();
+        else if (!compact.matches) update();
       };
       document.addEventListener('visibilitychange', visibility);
       dispose = () => {
         unsubscribe();
+        stageObserver.disconnect();
+        hero.removeAttribute('data-hero-active');
         document.removeEventListener('visibilitychange', visibility);
         cancelAnimationFrame(frame);
         animations.forEach(animation => animation.cancel());

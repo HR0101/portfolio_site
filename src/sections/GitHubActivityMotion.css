@@ -1,0 +1,41 @@
+.github-repo::before { content: ''; position: absolute; inset: auto 20px 0; height: 2px; pointer-events: none; background: linear-gradient(90deg, var(--color-accent), transparent); transform: scaleX(0); transform-origin: left; transition: transform .55s cubic-bezier(.22, 1, .36, 1); }
+.github-repo:is(:hover, :focus-visible)::before { transform: scaleX(1); }
+.github-repo::after { content: ''; position: absolute; bottom: 0; left: 20px; width: 28px; height: 2px; pointer-events: none; opacity: 0; background: linear-gradient(90deg, transparent, var(--color-accent), transparent); }
+@media (prefers-reduced-motion: no-preference) {
+  .github-repo:is(:hover, :focus-visible)::after { animation: github-packet 1.3s cubic-bezier(.45, 0, .55, 1) infinite; }
+}
+@keyframes github-packet { 0% { opacity: 0; transform: translateX(0); } 20%, 65% { opacity: 1; } 100% { opacity: 0; transform: translateX(160px); } }
+.github-repo > div:first-child svg { transition: opacity .3s, translate .4s cubic-bezier(.22, 1, .36, 1); }
+.github-repo:is(:hover, :focus-visible) > div:first-child svg { opacity: 1; translate: 3px -3px; }
+.reveal-visible .github-events > li { animation: github-event-arrive .65s cubic-bezier(.22, 1, .36, 1) backwards; animation-delay: calc(var(--event-index, 0) * 70ms); }
+.github-events > li > span { transition: transform .45s cubic-bezier(.22, 1, .36, 1); }
+.github-events > li:hover > span { transform: scale(1.1) rotate(-8deg); }
+/* Contribution Graph の吹き出し：マスの上に現れ，隣のマスへは滑って移る */
+.contribution-tooltip { position: absolute; z-index: 5; pointer-events: none; translate: -50% calc(-100% - 10px); transition: left .18s cubic-bezier(.22, 1, .36, 1), top .18s cubic-bezier(.22, 1, .36, 1); animation: contribution-tooltip-in .28s cubic-bezier(.34, 1.56, .64, 1) both; }
+.contribution-tooltip::after { content: ''; position: absolute; left: 50%; bottom: -4px; width: 8px; height: 8px; background: var(--color-ink); rotate: 45deg; translate: -50% 0; border-radius: 1px; }
+.contribution-tooltip-body { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 1px; padding: 6px 10px; border-radius: 10px; background: var(--color-ink); color: #fff; font-size: 11px; line-height: 1.4; white-space: nowrap; box-shadow: 0 10px 24px -14px rgb(0 0 0 / 45%); }
+/* 日付が変わったら，吹き出しの面はそのままで文字だけを差し替える */
+.contribution-tooltip-body > * { animation: contribution-tooltip-swap .25s ease both; }
+.contribution-tooltip-body strong { font-weight: 600; }
+.contribution-tooltip-body span { color: #c9ced6; font-size: 10px; }
+.dark .contribution-tooltip::after, .dark .contribution-tooltip-body { background: #f5f5f7; }
+.dark .contribution-tooltip-body { color: #1d1d1f; }
+.dark .contribution-tooltip-body span { color: #5d636b; }
+/* 凡例の濃淡は，薄い順に1マスずつ弾んで並ぶ */
+.reveal-visible .contribution-legend > span { animation: contribution-legend-pop .45s cubic-bezier(.34, 1.56, .64, 1) backwards; }
+.reveal-visible .contribution-legend > span:nth-child(2) { animation-delay: .3s; }
+.reveal-visible .contribution-legend > span:nth-child(3) { animation-delay: .36s; }
+.reveal-visible .contribution-legend > span:nth-child(4) { animation-delay: .42s; }
+.reveal-visible .contribution-legend > span:nth-child(5) { animation-delay: .48s; }
+.reveal-visible .contribution-legend > span:nth-child(6) { animation-delay: .54s; }
+.reveal-visible .contribution-legend > span:nth-child(7) { animation-delay: .6s; }
+@keyframes contribution-legend-pop { from { opacity: 0; scale: .3; } to { opacity: 1; scale: 1; } }
+@keyframes contribution-tooltip-in { from { opacity: 0; scale: .8; } to { opacity: 1; scale: 1; } }
+@keyframes contribution-tooltip-swap { from { opacity: 0; translate: 0 3px; } to { opacity: 1; translate: 0 0; } }
+@keyframes github-event-arrive { from { opacity: 0; translate: -14px 0; } to { opacity: 1; translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .github-repo::before, .github-repo::after, .github-repo svg, .github-events > li, .github-events > li > span { animation: none !important; transition: none !important; }
+  .github-repo:is(:hover, :focus-visible) > div:first-child svg { translate: none; }
+  .github-events > li:hover > span { transform: none; }
+  .contribution-tooltip, .contribution-tooltip-body > *, .reveal-visible .contribution-legend > span { animation: none; transition: none; }
+}

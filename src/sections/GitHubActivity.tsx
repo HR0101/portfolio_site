@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -14,11 +14,14 @@ import {
 } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { AnimatedCounter } from '../components/AnimatedCounter';
+import { ContributionTooltip } from '../components/ContributionTooltip';
 import { useScrollLinked } from '../hooks/useScrollLinked';
 import { SectionHeading } from '../components/SectionHeading';
 import { siteConfig } from '../config/site';
 import { formatRelativeTime } from '../lib/format';
 import { findTaglineByRepository } from '../data/apps';
+import githubSnapshot from '../data/github-snapshot.json';
+import './GitHubActivityMotion.css';
 import {
   fetchActivity,
   fetchContributions,
@@ -80,6 +83,10 @@ const SKELETON_COUNT = 6;
 const STAGGER_DELAY_MS = 80;
 // 段階表示の遅延を適用する最大インデックス（全件表示時に遅延が長くなりすぎるのを防ぐ）
 const MAX_STAGGER_INDEX = 5;
+const STATIC_EXPORT = process.env.NEXT_PUBLIC_STATIC_EXPORT === '1';
+const snapshotDate = new Intl.DateTimeFormat('ja-JP', {
+  timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric',
+}).format(new Date(githubSnapshot.generatedAt));
 
 // 複数 API の状態から，利用者へ知らせるべき最も重大な状態を選ぶ
 function aggregateApiStatus(statuses: ApiStatus[]): ApiStatus {
@@ -149,6 +156,8 @@ export function GitHubActivity() {
   // Contribution Graph をスクロールに連動して現すための進捗
   const { ref: contributionRef, progress: contributionProgress } =
     useScrollLinked<HTMLDivElement>('enter');
+  // マスに重ねたときの吹き出しを置く枠
+  const contributionTileRef = useRef<HTMLDivElement | null>(null);
 
   const isLoading = apiStatus === 'loading';
   const isDegraded = apiStatus === 'offline' || apiStatus === 'rate_limited';
@@ -164,9 +173,11 @@ export function GitHubActivity() {
     >
       <div className="max-w-6xl mx-auto px-6">
         <SectionHeading
-          label="04. GitHub Integration"
+          label="05. GitHub Integration"
           title="GitHub アクティビティ"
-          description={`GitHub API から ${siteConfig.githubUsername} の最新の活動を動的に取得して表示しています．`}
+          description={STATIC_EXPORT
+            ? `GitHubで公開している開発の記録です．リポジトリと最近の活動は${snapshotDate}に取得した情報を表示しています．`
+            : `GitHub API から ${siteConfig.githubUsername} の公開リポジトリと最近の活動を取得して表示しています．`}
         />
 
         {/* API 接続状態の通知バナー */}
@@ -213,7 +224,7 @@ export function GitHubActivity() {
                       href={repo.htmlUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="tile group relative overflow-hidden h-full flex flex-col p-5 hover:border-ink/25 dark:hover:border-night-ink/25 hover:-translate-y-1 hover:shadow-soft transition-all duration-300"
+                      className="github-repo tile group relative overflow-hidden h-full flex flex-col p-5 hover:border-ink/25 dark:hover:border-night-ink/25 hover:-translate-y-1 hover:shadow-soft transition-all duration-300"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <h3 className="font-semibold truncate transition-colors">
@@ -283,7 +294,8 @@ export function GitHubActivity() {
             Contributions
           </h3>
           {calendar ? (
-            <div className="tile p-5">
+            <div ref={contributionTileRef} className="tile relative p-5">
+              <ContributionTooltip containerRef={contributionTileRef} />
               <p className="text-sm text-subtle dark:text-night-subtle mb-4">
                 直近1年間で{' '}
                 <AnimatedCounter
@@ -344,7 +356,8 @@ export function GitHubActivity() {
                           {week.map((day) => (
                             <div
                               key={day.date}
-                              title={`${day.date}: ${day.count} contributions`}
+                              data-contribution-date={day.date}
+                              data-contribution-count={day.count}
                               className={`w-[10px] h-[10px] rounded-[2px] hover:scale-150 hover:ring-1 hover:ring-emerald-500 transition-transform duration-150 contrib-${day.level}`}
                               aria-hidden="true"
                             />
@@ -356,7 +369,7 @@ export function GitHubActivity() {
                 </div>
 
                 {/* 凡例（本家と同じ Less → More） */}
-                <div className="flex items-center justify-end gap-1 mt-3 text-[11px] text-subtle dark:text-night-subtle">
+                <div className="contribution-legend flex items-center justify-end gap-1 mt-3 text-[11px] text-subtle dark:text-night-subtle">
                   <span className="mr-1">Less</span>
                   {[0, 1, 2, 3, 4].map((level) => (
                     <span
@@ -406,17 +419,18 @@ export function GitHubActivity() {
             <GitCommit className="w-4 h-4 text-ink dark:text-night-ink" />
             Recent Activity
           </h3>
-          <ul className="space-y-3">
+          <ul className="github-events space-y-3">
             {events.length === 0 && (
               <li className="tile p-4 text-sm text-subtle dark:text-night-subtle">
                 最近の公開アクティビティはありません．
               </li>
             )}
-            {events.map((event) => {
+            {events.map((event, index) => {
               const Icon = eventIcon(event.type);
               return (
                 <li
                   key={event.id}
+                  style={{ '--event-index': Math.min(index, 6) } as CSSProperties}
                   className="group flex items-center gap-4 tile p-4 hover:border-ink/25 dark:hover:border-night-ink/25 hover:translate-x-1 transition-all duration-300"
                 >
                   <span className="w-9 h-9 shrink-0 rounded-full bg-mist dark:bg-night flex items-center justify-center group-hover:scale-110 transition-transform">
