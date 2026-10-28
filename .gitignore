@@ -34,3 +34,7 @@ dist-ssr
 *.tsbuildinfo
 out/
 .api-parked/
+
+# Raw screenshot assets and design candidates
+BusTimeApp-screenshots/
+public/favicon-candidates/
