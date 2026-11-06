@@ -77,7 +77,7 @@ function AboutCard({ card, index }: { card: AboutCardData; index: number }) {
   const { ref, handlers } = useTilt<HTMLElement>();
   const Icon = card.icon;
   return (
-    <Reveal variant="scene" delayMs={index * 120} className={styles.entry}>
+    <Reveal variant="scene" cardDirection={index % 2 === 0 ? 'left' : 'right'} delayMs={index * 120} className={styles.entry}>
       <article ref={ref} {...handlers} className={styles.card} style={{ '--about-accent': card.accent, '--about-delay': `${index * 120}ms` } as CSSProperties}>
         <div className={styles.top}>
           <span className={styles.icon}><Icon size={24} aria-hidden="true" /></span>

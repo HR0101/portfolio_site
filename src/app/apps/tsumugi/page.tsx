@@ -109,8 +109,8 @@ export default function TsumugiPage() {
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>SAVE, THEN UNDERSTAND</p>
-          <div className={styles.appName}>
-            <img src="/projects/tsumugi.webp" alt="" width={36} height={36} loading="eager" />
+          <div className={styles.appName} data-morph-title>
+            <img data-morph-icon src="/projects/tsumugi.webp" alt="" width={36} height={36} loading="eager" />
             Tsumugi <span>for iPhone</span>
           </div>
           <h1>
@@ -135,7 +135,7 @@ export default function TsumugiPage() {
             企画・デザイン・Swift / SwiftUI実装：{siteConfig.displayName}
           </p>
         </div>
-        <figure className={styles.heroVisual}>
+        <figure className={styles.heroVisual} data-morph-surface>
           <div className={`${styles.phone} ${styles.heroPhone}`} data-morph-target>
             <img
               src="/projects/tsumugi-screens/item-summary.webp"

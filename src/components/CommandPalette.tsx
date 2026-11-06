@@ -15,6 +15,8 @@ import { useTheme } from '../hooks/useTheme';
 import { siteConfig } from '../config/site';
 import { SWIFT_APPS } from '../data/apps';
 import { ALL_WORKS } from '../data/works';
+import { navigateToSection } from '../lib/sectionNavigation';
+import { navigateToPage } from '../lib/transitionEffects';
 
 // 専用の紹介ページを持つアプリ（apps.ts に detailHref を足せば，ここにも自動で並ぶ）
 const DETAIL_PAGE_APPS = [...SWIFT_APPS, ...ALL_WORKS].filter((app) => app.detailHref);
@@ -113,10 +115,8 @@ export function CommandPalette() {
   // 指定セクションへスクロールする
   const scrollToSection = useCallback(
     (sectionId: string) => {
-      const section = document.getElementById(sectionId);
-      if (section) section.scrollIntoView({ behavior: 'smooth' });
-      else window.location.assign(`/#${sectionId}`);
       closePalette();
+      if (!navigateToSection(sectionId, CLOSE_ANIMATION_MS)) window.location.assign(`/#${sectionId}`);
     },
     [closePalette],
   );
@@ -139,8 +139,8 @@ export function CommandPalette() {
       icon: Sparkles,
       keywords: `${app.name} ${app.tagline} app アプリ 詳細`,
       run: () => {
-        window.location.assign(app.detailHref ?? '/#projects');
         closePalette();
+        window.setTimeout(() => navigateToPage(app.detailHref ?? '/#projects', 'wipe'), CLOSE_ANIMATION_MS);
       },
     }));
 

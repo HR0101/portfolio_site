@@ -395,6 +395,7 @@ export function Projects() {
               <Reveal
                 key={app.name}
                 layoutKey={app.name}
+                cardDirection={index % 2 === 0 ? 'left' : 'right'}
                 delayMs={index * STAGGER_DELAY_MS}
                 variant="scene"
                 className="h-full"
@@ -421,6 +422,7 @@ export function Projects() {
                 <Reveal
                   key={app.name}
                   layoutKey={app.name}
+                  cardDirection={index % 3 === 0 ? 'left' : index % 3 === 2 ? 'right' : undefined}
                   delayMs={index * STAGGER_DELAY_MS}
                   variant={pickRevealVariant(index)}
                   className="h-full"

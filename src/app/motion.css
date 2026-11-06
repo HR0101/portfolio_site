@@ -160,3 +160,134 @@
 @media (prefers-reduced-motion: reduce) {
   .motion-tabs > .motion-tab-line[data-ready], .motion-disclosure { transition: none; }
 }
+
+/* Section-to-section navigation: the fixed header remains a spatial anchor,
+   while the viewport changes in the direction of travel. */
+html.is-section-switching { --section-travel: 54px; }
+html.is-section-switching[data-section-direction='up'] { --section-travel: -54px; }
+html.is-section-switching .site-navbar .nav-collapse { transition: none !important; }
+html.is-section-switching [data-section-scene] { animation: none !important; }
+html.is-section-switching [data-section-landing] .reveal:not([data-card-reveal]) {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  transition: none;
+}
+html.is-section-switching [data-section-landing] .reveal[data-card-reveal] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: none;
+}
+html.is-section-switching [data-section-landing] .portfolio-section-heading h2 [aria-hidden] > span,
+html.is-section-switching [data-section-landing] .phrase-reveal,
+html.is-section-switching #hero[data-section-landing] [data-hero-char],
+html.is-section-switching #hero[data-section-landing] [data-hero-intro] {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+html.is-section-switching #hero[data-section-landing] :is([data-hero-title], [data-hero-universe], [data-orbit-depth]) { transform: none !important; }
+html.is-section-switching #hero[data-section-landing] :is([data-hero-blue], [data-hero-cue]) { opacity: 1 !important; }
+html.is-section-switching #hero[data-section-landing] [data-hero-peach] { opacity: 0 !important; }
+html.is-section-switching::view-transition-old(root) {
+  animation: section-viewport-out .36s cubic-bezier(.4, 0, 1, 1) both;
+}
+html.is-section-switching::view-transition-new(root) {
+  animation: section-viewport-in .72s cubic-bezier(.22, 1, .36, 1) .08s both;
+}
+html.is-section-switching::view-transition-group(root) { animation: none; }
+@keyframes section-viewport-out {
+  to { opacity: 0; transform: translateY(calc(var(--section-travel) * -.6)) scale(.985); }
+}
+@keyframes section-viewport-in {
+  from { opacity: 0; transform: translateY(var(--section-travel)) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+/* The surface enters as one scene, so section backgrounds and content travel
+   together. Progress follows the scroll position, including when scrolling up. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-section-scene] {
+      animation: section-surface-enter auto linear both;
+      animation-timeline: view(block);
+      animation-range: entry 0% entry 45%;
+      transform-origin: 50% 0;
+    }
+  }
+}
+@keyframes section-surface-enter {
+  from { opacity: .3; translate: 0 48px; scale: .985; }
+  to { opacity: 1; translate: 0 0; scale: 1; }
+}
+@media (max-width: 760px) {
+  html.is-section-switching { --section-travel: 28px; }
+  html.is-section-switching[data-section-direction='up'] { --section-travel: -28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.is-section-switching::view-transition-old(root),
+  html.is-section-switching::view-transition-new(root) { animation: none; }
+}
+
+/* Cards approach from either side without introducing a horizontal scrollbar.
+   clip keeps sticky sections attached to the document's scroll container. */
+#main-content { overflow-x: clip; }
+@media (prefers-reduced-motion: no-preference) {
+  .reveal[data-card-reveal] {
+    --card-travel: -420px;
+    --card-turn: -2deg;
+    opacity: .85;
+    transform: translateX(var(--card-travel)) rotate(var(--card-turn)) scale(.985);
+    transition: transform 1.2s cubic-bezier(.22, .65, .2, 1.045), opacity .35s ease-out;
+  }
+  .reveal[data-card-reveal='right'] { --card-travel: 420px; --card-turn: 2deg; }
+  .reveal.reveal-scene[data-card-reveal] { transform: translateX(var(--card-travel)) rotate(var(--card-turn)) scale(.985); transform-origin: 50% 50%; }
+  .reveal.reveal-visible[data-card-reveal] { opacity: 1; transform: none; }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .reveal[data-card-reveal] { --card-travel: -180px; --card-turn: -1deg; }
+  .reveal[data-card-reveal='right'] { --card-travel: 180px; --card-turn: 1deg; }
+}
+
+/* The controller selects fade / slide / scale / wipe / shared / morph for the
+   actual navigation. WAAPI owns their viewport keyframes and cancellation. */
+html.is-route-switching::view-transition-old(root),
+html.is-route-switching::view-transition-new(root),
+html.is-section-switching[data-section-effect]::view-transition-old(root),
+html.is-section-switching[data-section-effect]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.is-route-switching::view-transition-group(root) { animation: none; }
+html:is(.is-route-switching[data-route-effect='wipe'], .is-section-switching[data-section-effect='wipe'])::view-transition-group(root) {
+  background: var(--site-accent);
+}
+html.is-route-switching .site-navbar .nav-collapse { transition: none !important; }
+html.is-route-switching [data-section-scene] { animation: none !important; }
+html.is-route-switching #main-content :is(.reveal, .phrase-reveal, .kinetic-char, .animate-char-rise) {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  transition: none !important;
+}
+html.is-route-switching #main-content h1 [aria-hidden] > span { opacity: 1 !important; transform: none !important; filter: none !important; }
+[data-morph-icon] { border-radius: 22%; }
+::view-transition-group(product-morph),
+::view-transition-group(product-title),
+::view-transition-group(product-surface) {
+  animation-duration: 1.15s;
+  animation-timing-function: cubic-bezier(.22, 1, .36, 1);
+  overflow: clip;
+}
+::view-transition-group(product-morph) { z-index: 52; }
+::view-transition-group(product-title) { z-index: 53; }
+::view-transition-group(product-surface) { z-index: 51; }
+::view-transition-old(product-title), ::view-transition-old(product-surface) { animation: morphFadeOut .5s ease both; }
+::view-transition-new(product-title), ::view-transition-new(product-surface) { animation: morphFadeIn .65s .12s ease both; }
+
+/* Rounded screenshot thumbnails grow into the modal's full-size image and
+   return to exactly the same thumbnail when the modal is dismissed. */
+html.is-image-morphing::view-transition-old(root), html.is-image-morphing::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.is-image-morphing::view-transition-group(site-navbar) { opacity: 0; }
+html.is-image-morphing dialog[data-motion-dialog] { opacity: 1; translate: none; scale: none; transition: none !important; }
+html.is-image-morphing dialog[data-motion-dialog]::backdrop { opacity: 1; transition: none !important; }
+::view-transition-group(screenshot-morph) { z-index: 120; overflow: clip; animation-duration: .9s; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
+::view-transition-old(screenshot-morph), ::view-transition-new(screenshot-morph) { height: 100%; width: 100%; object-fit: contain; }

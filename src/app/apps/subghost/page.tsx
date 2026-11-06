@@ -119,8 +119,8 @@ export default function SubghostPage() {
       <header className={styles.hero}>
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>WATCHING, NEVER TOUCHING</p>
-          <div className={styles.appName}>
-            <img src="/projects/subghost.webp" alt="" width={36} height={36} loading="eager" />
+          <div className={styles.appName} data-morph-title>
+            <img data-morph-icon src="/projects/subghost.webp" alt="" width={36} height={36} loading="eager" />
             Subghost <span>for Mac</span>
           </div>
           <h1>

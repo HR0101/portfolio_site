@@ -10,8 +10,9 @@ import { Footer } from '../components/Footer';
 import { ScrollProgressBar } from '../components/ScrollProgressBar';
 import { BackToTopButton } from '../components/BackToTopButton';
 import { CommandPalette } from '../components/CommandPalette';
-import { ProductMorphSource } from '../components/ProductMorph';
+import { NavigationTransitions } from '../components/NavigationTransitions';
 import { ImageReveal } from '../components/ImageReveal';
+import { SectionTransitions } from '../components/SectionTransitions';
 import { siteConfig } from '../config/site';
 
 
@@ -115,9 +116,10 @@ export default function RootLayout({
           <Navbar />
           <CursorRing />
           {/* 紹介ページへ移るとき，押したカードの画面を移動先の画面へ変形させる */}
-          <ProductMorphSource />
+          <NavigationTransitions />
           {/* 遅延読み込みの画像を，読み込み終わったところでふわりと現す */}
           <ImageReveal />
+          <SectionTransitions />
           <main id="main-content" className="relative z-10 flex-grow">
             {children}
           </main>

@@ -38,7 +38,7 @@ export default function BusTimeAppPage() {
       <header className={styles.hero}>
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>BUILT FOR YOUR EVERYDAY</p>
-          <div className={styles.appName}>BusTimeApp <span>for iPhone</span></div>
+          <div className={styles.appName} data-morph-title><img src="/projects/bustimeapp.webp" width={36} height={36} alt="" data-morph-icon />BusTimeApp <span>for iPhone</span></div>
           <h1>次のバスへ。<br /><em>迷わず、まっすぐ。</em></h1>
           <p className={styles.lead}>時刻表を探す時間を、<br />出かける余裕に変えよう。</p>
           <p className={styles.bodyCopy}>現在地や時間帯から、いま必要な経路と便へ。<br />移ろう空とともに、毎日の移動に寄り添うアプリです。</p>
@@ -47,7 +47,7 @@ export default function BusTimeAppPage() {
         </div>
         <div className={styles.heroProducts}>
           <AppIconCube />
-          <figure className={styles.heroScreen}>
+          <figure className={styles.heroScreen} data-morph-surface>
             <div className={styles.phone} data-morph-target>
               <img src="/projects/bustimeapp-screens/morning.webp" alt="BusTimeAppの朝のホーム画面。経路、検索条件、次の便まであと8分と表示" width={840} height={1826} fetchPriority="high" />
             </div>

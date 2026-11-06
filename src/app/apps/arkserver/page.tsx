@@ -138,8 +138,8 @@ export default function ArkServerPage() {
           <div className={styles.heroInner}>
             <div className={styles.heroCopy}>
               <p className={styles.eyebrow}>自宅のメディアライブラリ</p>
-              <div className={styles.appName}>
-                <img src="/projects/arkserver.svg" alt="" width={44} height={44} />
+              <div className={styles.appName} data-morph-title>
+                <img data-morph-icon src="/projects/arkserver.svg" alt="" width={44} height={44} />
                 Ark Server <span>macOS</span>
               </div>
               <h1>
@@ -173,7 +173,7 @@ export default function ArkServerPage() {
             </div>
 
             {/* 海の情景に，配信側と閲覧側の実画面を重ねる */}
-            <figure className={styles.heroStage}>
+            <figure className={styles.heroStage} data-morph-surface>
               <div className={styles.libraryLabel}><span className={styles.connectionDot} aria-hidden="true" />Mac · 配信中（同じ Wi‑Fi 内）</div>
               <div className={styles.heroWindow} data-morph-target>
                 <img src={`${SCREEN_DIR}/dashboard.webp`} alt="Ark Server のホーム画面．接続先と QR コードはぼかしています" width={840} height={525} loading="eager" fetchPriority="high" />
