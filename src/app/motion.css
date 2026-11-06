@@ -5,6 +5,11 @@
 .motion-work-surface:is(:hover,:focus-visible)::after { transform:translateX(65%) rotate(-15deg); }
 .motion-work-surface [data-motion-parallax] { translate:var(--motion-parallax-x,0px) var(--motion-parallax-y,0px); transition:translate .55s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1); }
 .motion-work-surface:is(:hover,:focus-visible) [data-motion-parallax] { transform:scale(1.1) rotate(-2deg); }
+@media (hover:hover) and (pointer:fine) and (min-width:761px) and (prefers-reduced-motion:no-preference) {
+  /* Let the actual work respond in depth. Text and link hit areas stay still. */
+  .motion-work-surface [data-motion-parallax] { transition:translate .18s linear,transform .35s cubic-bezier(.22,1,.36,1); }
+  .motion-work-surface:hover [data-motion-parallax] { transform:perspective(850px) rotateX(var(--motion-tilt-x,0deg)) rotateY(var(--motion-tilt-y,0deg)) scale(1.07); }
+}
 .motion-work-surface:focus-visible { outline:2px solid var(--color-accent); outline-offset:-4px; }
 .product-card:has(.motion-work-surface:hover) h3, .product-card:has(.motion-work-surface:focus-visible) h3 { translate:0 -6px; }
 .product-card h3 { transition:translate .5s cubic-bezier(.16,1,.3,1); }

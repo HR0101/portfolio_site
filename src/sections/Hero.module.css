@@ -20,6 +20,8 @@
 .cta:hover svg { rotate:45deg; }
 .source { display:inline-flex; min-height:44px; align-items:center; gap:6px; color:var(--hero-muted); font-size:12px; }
 .universe { position:relative; width:100%; aspect-ratio:1; max-width:490px; justify-self:center; perspective:1000px; }
+.pointerCore { position:absolute; inset:0; pointer-events:none; transform-style:preserve-3d; }
+.pointerOrbit { transform-style:preserve-3d; }
 .core { position:absolute; inset:28%; border:1px solid #ffffffb0; border-radius:38%; display:grid; place-items:center; background:linear-gradient(135deg,#ffffffa0,#b5c8e430); box-shadow:inset 0 1px 25px #fff9,18px 35px 60px #556d9b15; overflow:hidden; transform:rotate(-14deg); }
 .core > div { position:absolute; inset:0; background:radial-gradient(circle at 30% 25%,#fff,transparent 65%); opacity:.6; }
 .core > span { font-size:clamp(30px,4vw,62px); font-weight:500; letter-spacing:-.08em; color:#4b6393aa; }
@@ -36,6 +38,9 @@
 .runway[data-hero-active] .orbitPath { animation:hero-orbit 9s ease-in-out infinite alternate; }
 .runway[data-hero-active] .orbitPath::after { animation:hero-satellite 5s ease-in-out infinite alternate; }
 .runway[data-hero-active] .core > div { animation:hero-light 5s ease-in-out infinite alternate; }
+/* On a mouse-equipped desktop the icons respond to the visitor instead of
+   continuously bobbing on their own. Scroll still owns the outer orbits. */
+.runway[data-pointer-ready] .appFloat { animation:none; }
 @keyframes hero-float { 0%,100% { translate:0 0; rotate:-3deg; } 50% { translate:0 -20px; rotate:5deg; } }
 @keyframes hero-orbit { from { transform:rotateX(40deg) rotateZ(-20deg) scale(.94); } to { transform:rotateX(58deg) rotateZ(25deg) scale(1.06); } }
 @keyframes hero-satellite { from { transform:rotate(-35deg); } to { transform:rotate(210deg); } }
