@@ -1,17 +1,17 @@
-.site-footer { background:var(--site-surface-soft); color:var(--site-ink); padding:64px 24px 30px; }
+.site-footer { background:var(--site-surface-soft); color:var(--site-ink); padding:64px 24px 32px; }
 .site-footer-inner { max-width:1120px; margin:auto; }
-.site-footer-top { display:flex; justify-content:space-between; align-items:start; gap:36px; padding-bottom:48px; }
+.site-footer-top { display:flex; justify-content:space-between; align-items:start; gap:32px; padding-bottom:48px; }
 .site-footer-brand > a { display:inline-block; font-size:24px; font-weight:700; letter-spacing:-.055em; }
 .site-footer-brand > a span { display:inline-block; color:var(--site-accent); transition:translate .45s cubic-bezier(.34, 1.56, .64, 1); }
 /* 名前にホバーすると，最後の点だけが小さく跳ねる */
 .site-footer-brand > a:is(:hover, :focus-visible) span { translate:0 -5px; }
-.site-footer-brand p { margin-top:10px; color:var(--site-muted); font-size:13px; }
+.site-footer-brand p { margin-top:12px; color:var(--site-muted); font-size:13px; }
 .site-footer-nav { display:flex; flex-wrap:wrap; gap:12px 24px; padding-top:8px; }
 .site-footer-nav a { color:var(--site-muted); font-size:12px; transition:color .25s, translate .35s var(--site-ease); }
 .site-footer-nav a:is(:hover, :focus-visible) { color:var(--site-ink); translate:0 -2px; }
 .site-footer-bottom { display:flex; align-items:end; justify-content:space-between; gap:24px; padding-top:24px; border-top:1px solid var(--site-line); }
 .site-footer-meta { color:var(--site-muted); font-size:11px; line-height:1.8; }
-.site-footer-meta p + p { margin-top:5px; }
+.site-footer-meta p + p { margin-top:4px; }
 .site-footer-meta kbd { padding:2px 5px; border:1px solid var(--site-line); border-radius:5px; font:inherit; }
 .site-footer-social { display:flex; align-items:center; gap:2px; }
 /* 上の段（名前・ひとこと・リンク）は，画面に入るところで順に浮かび上がる */
@@ -43,7 +43,7 @@
   .site-footer-nav { gap:12px 20px; }
   /* 右下に固定した「先頭へ戻る」ボタンと重ならないよう，下に余白を取る */
   .site-footer { padding-bottom:96px; }
-  .site-footer-bottom { flex-direction:column-reverse; align-items:start; gap:14px; }
+  .site-footer-bottom { flex-direction:column-reverse; align-items:start; gap:16px; }
   .footer-wordmark { margin-bottom:20px; }
   .footer-clock { margin-right:4px; }
 }

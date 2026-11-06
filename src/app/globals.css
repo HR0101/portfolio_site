@@ -1360,7 +1360,7 @@ html.is-theme-switching::view-transition-old(site-navbar) {
 /* VelocityMarquee：スクロールで流れ，速さで傾く大きな文字の帯 */
 .velocity-marquee {
   overflow: hidden;
-  padding: 18px 0;
+  padding: 16px 0;
   user-select: none;
 }
 

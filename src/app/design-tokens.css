@@ -12,7 +12,7 @@
   --site-radius-panel: 36px;
   --site-shadow-card: 0 14px 40px -30px rgb(24 39 67 / 24%);
   --site-shadow-raised: 0 22px 45px -28px rgb(24 39 67 / 30%);
-  --site-section-space: clamp(88px, 9vw, 144px);
+  --site-section-space: clamp(80px, 8vw, 112px);
   --site-ease: cubic-bezier(.22, 1, .36, 1);
 }
 
