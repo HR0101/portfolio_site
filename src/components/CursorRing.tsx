@@ -23,12 +23,16 @@ export function CursorRing() {
       const magnets = new Map<HTMLElement, Magnet>();
       let magnetic: HTMLElement | null = null;
       let card: HTMLElement | null = null;
+      let cardX = 0, cardY = 0;
       let px = 0, py = 0, x = 0, y = 0, visible = false;
       let frame = 0, previousTime = 0;
       const request = () => { if (!frame && !document.hidden) frame = requestAnimationFrame(tick); };
       const resetCard = () => {
         card?.style.removeProperty('--motion-parallax-x');
         card?.style.removeProperty('--motion-parallax-y');
+        card?.style.removeProperty('--motion-tilt-x');
+        card?.style.removeProperty('--motion-tilt-y');
+        cardX = 0; cardY = 0;
         card = null;
       };
       function tick(now: number) {
@@ -57,8 +61,15 @@ export function CursorRing() {
           element.style.transform = `translate3d(${item.x}px,${item.y}px,0)`;
         });
         if (card && imageBounds) {
-          card.style.setProperty('--motion-parallax-x', `${((px - imageBounds.left) / imageBounds.width - .5) * 28}px`);
-          card.style.setProperty('--motion-parallax-y', `${((py - imageBounds.top) / imageBounds.height - .5) * 28}px`);
+          const targetX = Math.max(-1, Math.min(1, ((px - imageBounds.left) / imageBounds.width - .5) * 2));
+          const targetY = Math.max(-1, Math.min(1, ((py - imageBounds.top) / imageBounds.height - .5) * 2));
+          cardX += (targetX - cardX) * alpha;
+          cardY += (targetY - cardY) * alpha;
+          moving ||= Math.abs(targetX - cardX) + Math.abs(targetY - cardY) > .002;
+          card.style.setProperty('--motion-parallax-x', `${cardX * 14}px`);
+          card.style.setProperty('--motion-parallax-y', `${cardY * 14}px`);
+          card.style.setProperty('--motion-tilt-x', `${-cardY * 7}deg`);
+          card.style.setProperty('--motion-tilt-y', `${cardX * 10}deg`);
         }
         if (moving) request();
         else previousTime = 0;

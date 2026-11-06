@@ -9,6 +9,7 @@ import { RollingNumber } from '../components/RollingNumber';
 import { TypingTerminal, type TerminalLine } from '../components/TypingTerminal';
 import { RotatingWords } from '../components/RotatingWords';
 import { useHeroMotion } from '../hooks/useHeroMotion';
+import { useHeroPointer } from '../hooks/useHeroPointer';
 import styles from './Hero.module.css';
 
 const TERMINAL_LINES: TerminalLine[] = [
@@ -49,9 +50,10 @@ function AssembledLine({ text, accent = false }: { text: string; accent?: boolea
 
 export function Hero() {
   const ref = useHeroMotion();
+  useHeroPointer(ref);
   return (
     <section ref={ref} id="hero" data-testid="hero-section" className={styles.runway}>
-      <div className={styles.stage}>
+      <div className={styles.stage} data-hero-stage>
         <div className={`${styles.wash} ${styles.blue}`} data-hero-blue aria-hidden="true" />
         <div className={`${styles.wash} ${styles.peach}`} data-hero-peach aria-hidden="true" />
         <div className={styles.rule} data-hero-rule aria-hidden="true" />
@@ -77,10 +79,11 @@ export function Hero() {
             </div>
           </div>
           <div className={styles.universe} data-hero-universe aria-label="注目のアプリ">
-            <div className={styles.core} data-hero-core aria-hidden="true"><div /><span>RH</span></div>
+            <div className={styles.pointerCore} data-hero-pointer-core aria-hidden="true"><div className={styles.core} data-hero-core><div /><span>RH</span></div></div>
             <div className={styles.orbitPath} aria-hidden="true" />
             {spotlightApps.map((app, index) => (
               <div className={styles.orbit} data-orbit-depth={[1, -1, .6, -.5][index]} key={app.name}>
+                <div className={styles.pointerOrbit} data-orbit-pointer>
                 <div data-orbit-intro>
                   <div className={styles.appFloat} style={{ animationDelay: `${index * -0.9}s` }}>
                     <Link href={app.detailHref ?? '#projects'} className={styles.app}>
@@ -88,6 +91,7 @@ export function Hero() {
                       <span>{app.name}</span>
                     </Link>
                   </div>
+                </div>
                 </div>
               </div>
             ))}
