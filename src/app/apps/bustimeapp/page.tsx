@@ -27,7 +27,7 @@ const weatherDetails = [
 
 export default function BusTimeAppPage() {
   return (
-    <article className={styles.page}>
+    <article className={styles.page} data-product-page>
       <ProductMotion />
       <nav className={styles.localNav} aria-label="BusTimeApp ナビゲーション">
         <Link href="/#projects">← アプリ一覧</Link>

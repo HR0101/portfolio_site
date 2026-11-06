@@ -82,7 +82,7 @@ const stack = [
 
 export default function EkiHubPage() {
   return (
-    <article className={styles.page}>
+    <article className={styles.page} data-product-page>
       <nav className={styles.localNav} aria-label="EkiHub ナビゲーション">
         <Link href="/#works">← Web とゲームの一覧</Link>
         <span>EkiHub</span>

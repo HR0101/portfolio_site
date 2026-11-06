@@ -9,6 +9,7 @@ import { SectionHeading } from '../components/SectionHeading';
 import { ScrollTimeline } from '../components/ScrollTimeline';
 import { GitHubIcon } from '../components/icons/GitHubIcon';
 import { siteConfig } from '../config/site';
+import { useLayoutMotion } from '../hooks/useLayoutMotion';
 import {
   buildRepositoryUrl,
   matchesPlatform,
@@ -244,6 +245,13 @@ export function Projects() {
   const [activeFilterId, setActiveFilterId] = useState<AppPlatform | 'all'>('all');
   const [indicatorStyle, setIndicatorStyle] = useState<IndicatorStyle>({ left: 0, width: 0 });
   const tabListRef = useRef<HTMLDivElement | null>(null);
+  const { ref: panelRef, capture: captureLayout } = useLayoutMotion<HTMLDivElement>({ enter: false });
+
+  const selectFilter = useCallback((filter: AppPlatform | 'all') => {
+    if (filter === activeFilterId) return;
+    captureLayout();
+    setActiveFilterId(filter);
+  }, [activeFilterId, captureLayout]);
 
   // 選択中のタブに合わせてインジケーターを移動させる
   const updateIndicator = useCallback(() => {
@@ -289,11 +297,11 @@ export function Projects() {
 
       event.preventDefault();
       const nextFilter = PLATFORM_FILTERS[nextIndex];
-      setActiveFilterId(nextFilter.id);
+      selectFilter(nextFilter.id);
       // 移動先のタブへフォーカスも移す
       document.getElementById(buildTabId(nextFilter.id))?.focus();
     },
-    [],
+    [selectFilter],
   );
 
   // 絞り込み結果を注目アプリとその他に分ける
@@ -348,7 +356,7 @@ export function Projects() {
                     aria-controls={APPS_PANEL_ID}
                     // 選択中のタブだけをタブキーの移動対象にする（ロービングタブインデックス）
                     tabIndex={isActive ? 0 : -1}
-                    onClick={() => setActiveFilterId(filter.id)}
+                    onClick={() => selectFilter(filter.id)}
                     onKeyDown={(event) => handleTabKeyDown(event, index)}
                     className={`press-effect relative z-10 inline-flex min-h-11 items-center px-4 rounded-full text-sm font-medium transition-colors duration-200 ${
                       isActive
@@ -376,6 +384,7 @@ export function Projects() {
         {/* 絞り込み結果（タブに対応するパネル） */}
         <div
           id={APPS_PANEL_ID}
+          ref={panelRef}
           role="tabpanel"
           aria-labelledby={buildTabId(activeFilterId)}
         >
@@ -384,7 +393,8 @@ export function Projects() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {featuredApps.map((app, index) => (
               <Reveal
-                key={`${activeFilterId}-${app.name}`}
+                key={app.name}
+                layoutKey={app.name}
                 delayMs={index * STAGGER_DELAY_MS}
                 variant="scene"
                 className="h-full"
@@ -409,7 +419,8 @@ export function Projects() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {otherApps.map((app, index) => (
                 <Reveal
-                  key={`${activeFilterId}-${app.name}`}
+                  key={app.name}
+                  layoutKey={app.name}
                   delayMs={index * STAGGER_DELAY_MS}
                   variant={pickRevealVariant(index)}
                   className="h-full"

@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import styles from './product.module.css';
+import { MotionTabs } from '../../../components/MotionTabs';
 
 interface TourScreen {
   id: string;
@@ -175,7 +176,7 @@ export function ScreenTour() {
 
   return (
     <div className={styles.tour}>
-      <div className={styles.tourTabs} role="tablist" aria-label="EkiHub の画面を選ぶ">
+      <MotionTabs activeKey={active} className={styles.tourTabs} role="tablist" aria-label="EkiHub の画面を選ぶ">
         {SCREENS.map((screen, index) => (
           <button
             key={screen.id}
@@ -195,7 +196,7 @@ export function ScreenTour() {
             {screen.tab}
           </button>
         ))}
-      </div>
+      </MotionTabs>
 
       {SCREENS.map((screen, index) => {
         const Icon = screen.icon;

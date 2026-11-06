@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useScrollLinked } from '../../../hooks/useScrollLinked';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
 import styles from './product.module.css';
+import { MotionTabs } from '../../../components/MotionTabs';
 
 // 話題ごとの半減期（日数）．アプリ内の判定と同じ考え方を，そのまま図にしている
 const TOPICS = [
@@ -60,7 +61,7 @@ export function HalfLifeChart() {
 
   return (
     <div className={styles.chartCard} ref={ref}>
-      <div className={styles.topicRow} role="group" aria-label="話題の種類を選ぶ">
+      <MotionTabs activeKey={topicIndex} className={styles.topicRow} role="group" aria-label="話題の種類を選ぶ">
         {TOPICS.map((item, index) => (
           <button
             key={item.id}
@@ -72,7 +73,7 @@ export function HalfLifeChart() {
             <small>{item.halfLife}日</small>
           </button>
         ))}
-      </div>
+      </MotionTabs>
 
       <svg
         className={styles.chartSvg}

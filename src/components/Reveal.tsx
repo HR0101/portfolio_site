@@ -25,6 +25,7 @@ interface RevealProps {
   // 登場の仕方（既定は下から上へのフェードイン）
   variant?: RevealVariant;
   className?: string;
+  layoutKey?: string;
 }
 
 export function Reveal({
@@ -32,12 +33,14 @@ export function Reveal({
   delayMs = 0,
   variant = 'up',
   className = '',
+  layoutKey,
 }: RevealProps) {
   const { ref, isInView } = useInView<HTMLDivElement>();
 
   return (
     <div
       ref={ref}
+      data-layout-key={layoutKey}
       className={`reveal ${VARIANT_CLASS_NAMES[variant]} ${
         isInView ? 'reveal-visible' : ''
       } ${className}`}

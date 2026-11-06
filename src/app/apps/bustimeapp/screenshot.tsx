@@ -14,7 +14,7 @@ export function Screenshot({ image, alt, caption }: { image: string; alt: string
         <span className={styles.zoomHint} aria-hidden="true"><Maximize2 size={14} /></span>
       </button>
       {caption && <figcaption>{caption}</figcaption>}
-      <dialog ref={dialog} className={styles.screenshotDialog} aria-label={alt} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
+      <dialog ref={dialog} data-motion-dialog className={styles.screenshotDialog} aria-label={alt} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
         <div className={styles.dialogToolbar}><span>{caption || 'BusTimeApp'}</span><button type="button" onClick={() => dialog.current?.close()} aria-label="拡大画像を閉じる"><X size={22} /></button></div>
         <img src={src} alt={alt} width={840} height={1826} loading="lazy" />
       </dialog>
