@@ -26,7 +26,10 @@ const DETAIL_PAGES = [
 // 利用規約などの紹介ページ以外では何も出さない
 export function NextProductLink() {
   const pathname = usePathname();
-  const currentIndex = DETAIL_PAGES.findIndex((page) => page.href === pathname);
+  // Static hosting uses trailing slashes; match the same product before and
+  // after hydration, regardless of which URL spelling opened the page.
+  const currentPath = pathname.replace(/\/+$/, '') || '/';
+  const currentIndex = DETAIL_PAGES.findIndex((page) => page.href.replace(/\/+$/, '') === currentPath);
   if (currentIndex < 0) {
     return null;
   }
