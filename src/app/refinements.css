@@ -2,8 +2,8 @@
 :root {
   --portfolio-ease: var(--site-ease);
 }
-.portfolio-eyebrow { display:flex; align-items:center; gap:12px; font-size:12px; font-weight:500; letter-spacing:.02em; color:var(--site-muted); }
-.portfolio-section-number { display:inline-flex; align-items:center; gap:12px; color:var(--site-accent); font-family:var(--font-mono); font-size:12px; letter-spacing:0; }
+.portfolio-eyebrow { display:flex; align-items:center; gap:12px; font-size:11px; font-weight:600; letter-spacing:.12em; color:var(--site-muted); }
+.portfolio-section-number { display:inline-flex; align-items:center; gap:12px; color:var(--site-accent); font-family:var(--font-mono); font-size:10px; letter-spacing:.04em; }
 .portfolio-section-number::after { content:''; width:26px; height:1px; background:currentColor; opacity:.45; }
 .portfolio-hero { padding: 150px 24px 70px; text-align: center; background: radial-gradient(ellipse at 50% 60%, #edf5fc 0%, transparent 62%); }
 .dark .portfolio-hero { background: radial-gradient(ellipse at 50% 60%, #102333 0%, transparent 62%); }
@@ -31,18 +31,18 @@
 .portfolio-stats dd { font-size: 19px; font-weight: 600; letter-spacing: -.025em; }
 .dark .portfolio-stats dt { color: #a1a1a6; }
 .portfolio-section-heading { margin-bottom: clamp(40px, 5vw, 64px); }
-.portfolio-section-heading h2 { margin-top: 16px; font-size: clamp(32px, 4.5vw, 54px); letter-spacing: -.025em; line-height: 1.3; font-weight: 600; }
+.portfolio-section-heading h2 { margin-top: 16px; font-size: clamp(32px, 4.5vw, 54px); letter-spacing: -.04em; line-height: 1.3; font-weight: 650; }
 .portfolio-section-description { margin-top: 24px; max-width: 700px; font-size: 17px; line-height: 1.9; color: var(--site-muted); }
 :is(#about, #skills, #projects, #github, #contact) { padding-block: var(--site-section-space); }
 .principle-section { overflow:hidden; padding:clamp(90px, 11vw, 160px) 24px; background:var(--site-surface); }
 /* 上の罫線は背景の線として引き，見出しが現れたところで左から伸ばす */
 .principle-inner { position:relative; isolation:isolate; max-width:1120px; margin:auto; padding:32px 0 0; background:linear-gradient(var(--site-line), var(--site-line)) 0 0 / 0% 1px no-repeat; transition:background-size 1.6s var(--site-ease); }
 .principle-inner:has(> .principle-heading.reveal-visible) { background-size:100% 1px; }
-.principle-heading { display:flex; justify-content:space-between; gap:16px; color:var(--site-muted); font:12px/1.5 var(--font-mono); letter-spacing:.02em; }
+.principle-heading { display:flex; justify-content:space-between; gap:16px; color:var(--site-muted); font:10px/1.5 var(--font-mono); letter-spacing:.14em; }
 .principle-heading span:last-child { color:var(--site-accent); }
-.principle-watermark { position:absolute; z-index:-1; right:-.08em; top:32px; color:color-mix(in srgb, var(--site-ink) 4%, transparent); font-size:clamp(100px, 22vw, 300px); font-weight:600; letter-spacing:-.09em; line-height:1; pointer-events:none; }
+.principle-watermark { position:absolute; z-index:-1; right:-.08em; top:32px; color:color-mix(in srgb, var(--site-ink) 4%, transparent); font-size:clamp(100px, 22vw, 300px); font-weight:750; letter-spacing:-.09em; line-height:1; pointer-events:none; }
 .principle-copy { max-width:900px; margin:clamp(80px, 10vw, 150px) 0 clamp(75px, 9vw, 120px); font-size:clamp(25px, 3.5vw, 44px); font-weight:600; line-height:1.8; letter-spacing:-.04em; }
-.principle-footer { display:flex; align-items:center; flex-wrap:wrap; gap:clamp(12px, 2.5vw, 32px); padding-top:24px; background:linear-gradient(var(--site-line), var(--site-line)) 0 0 / 0% 1px no-repeat; color:var(--site-muted); font:12px/1.5 var(--font-mono); letter-spacing:.02em; }
+.principle-footer { display:flex; align-items:center; flex-wrap:wrap; gap:clamp(12px, 2.5vw, 32px); padding-top:24px; background:linear-gradient(var(--site-line), var(--site-line)) 0 0 / 0% 1px no-repeat; color:var(--site-muted); font:10px/1.5 var(--font-mono); letter-spacing:.12em; }
 /* Reveal の浮かび上がりに，罫線を引く時間を足す（.reveal の時間の指定より詳細度を上げる） */
 .reveal.principle-footer { transition:background-size 1.4s var(--site-ease), opacity .65s var(--portfolio-ease), transform .65s var(--portfolio-ease); }
 .principle-footer.reveal-visible { background-size:100% 1px; }
@@ -61,24 +61,33 @@
 [data-testid='navbar'] nav a { font-size: 12px; }
 [data-testid='navbar'] nav a > span[aria-hidden] { height: 1px; bottom: 5px; background: var(--color-accent); }
 #mobile-navigation a { font-size: 19px; padding-block: 12px; }
-.tile { border-radius:var(--site-radius-card); border: 1px solid color-mix(in srgb, var(--site-line) 65%, transparent); box-shadow: var(--site-shadow-card); }
+.tile { border: 1px solid color-mix(in srgb, var(--site-line) 65%, transparent); box-shadow: var(--site-shadow-card); }
 .portfolio-technologies { display: flex; flex-wrap: wrap; gap: 10px; padding: 0; list-style: none; }
-.portfolio-technologies li { border: 1px solid #86868b26; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: var(--color-subtle); }
+.portfolio-technologies li { border: 1px solid #86868b26; border-radius: 999px; padding: 6px 12px; font-size: 12px; color: var(--color-subtle); }
 .dark .portfolio-technologies li { color: #a1a1a6; }
-.portfolio-section-heading svg, .product-card .lucide, #contact .lucide { stroke-width:1.5; }
 .product-card { transition: box-shadow .35s, transform .35s var(--portfolio-ease); }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .product-card:hover { transform: translateY(-4px); box-shadow: 0 16px 35px #0000000c; }
 }
-.product-card-visual { --project-glow:#e5e8ed; --project-base:#f5f5f7; height: 330px; background:radial-gradient(ellipse at 50% 72%, var(--project-glow), var(--project-base) 72%); }
-.dark .product-card-visual { --project-glow:#292d35; --project-base:#191c22; }
+.product-card-visual { --project-glow:#c6dcf2; --project-base:#eef4fa; height: 330px; background:radial-gradient(ellipse at 50% 72%, var(--project-glow), var(--project-base) 72%); }
+.product-card-visual[data-tone='violet'] { --project-glow:#d9d3ee; --project-base:#f2f0f8; }
+.product-card-visual[data-tone='green'] { --project-glow:#cce6db; --project-base:#eef8f2; }
+.product-card-visual[data-tone='amber'] { --project-glow:#ead9c7; --project-base:#f8f3ed; }
+.product-card-visual[data-tone='indigo'] { --project-glow:#d1d8ef; --project-base:#f0f2fa; }
+.product-card-visual[data-tone='mint'] { --project-glow:#c9e5df; --project-base:#eff8f5; }
+.dark .product-card-visual { --project-glow:#25425b; --project-base:#17212b; }
+.dark .product-card-visual[data-tone='violet'] { --project-glow:#3d3458; --project-base:#211e2b; }
+.dark .product-card-visual[data-tone='green'] { --project-glow:#28483d; --project-base:#182922; }
+.dark .product-card-visual[data-tone='amber'] { --project-glow:#504031; --project-base:#2a241f; }
+.dark .product-card-visual[data-tone='indigo'] { --project-glow:#333c5b; --project-base:#202433; }
+.dark .product-card-visual[data-tone='mint'] { --project-glow:#284b44; --project-base:#192c29; }
 .product-screen-frame { position:relative; z-index:1; display:block; overflow:hidden; background:#20242b; border:1px solid #768291; box-shadow:0 24px 35px -18px #1b293e75, inset 0 0 0 1px #ffffff55; }
 .product-screen-frame.is-phone { height:85%; aspect-ratio:840 / 1826; padding:6px; border-radius:26px; }
-.product-screen-frame.is-wide { width:76%; aspect-ratio:4 / 3; padding:8px; border-radius:16px; }
+.product-screen-frame.is-wide { width:76%; aspect-ratio:4 / 3; padding:8px; border-radius:15px; }
 .product-card-screen { display:block; width:100%; height:100%; object-fit:cover; border-radius:inherit; }
 .product-screen-frame.is-phone .product-card-screen { border-radius:20px; }
-.product-screen-frame.is-wide .product-card-screen { border-radius:8px; }
-.works-web-card { border-color:var(--site-line); border-radius:var(--site-radius-panel); background:var(--site-surface-raised); box-shadow:var(--site-shadow-card); }
+.product-screen-frame.is-wide .product-card-screen { border-radius:9px; }
+.works-web-card { border-color:var(--site-line); border-radius:var(--site-radius-panel); background:linear-gradient(145deg, var(--site-surface-raised) 58%, color-mix(in srgb, #41ad9e 8%, var(--site-surface-raised))); box-shadow:var(--site-shadow-card); }
 .works-browser { border-color:var(--site-line); }
 .works-browser-bar { background:var(--site-surface-soft); border-color:var(--site-line); }
 .dark .works-browser-bar { background:#252831; border-color:var(--site-line); }

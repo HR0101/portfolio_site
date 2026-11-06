@@ -1,18 +1,17 @@
-.section { --about-surface:var(--site-surface-raised); --about-text:var(--site-ink); --about-muted:var(--site-muted); --about-ease:var(--site-ease); }
+.section { --about-surface:var(--site-surface-soft); --about-text:var(--site-ink); --about-muted:var(--site-muted); --about-ease:var(--site-ease); }
 .grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; perspective:1200px; }
 .entry { height:100%; }
-.card { position:relative; isolation:isolate; overflow:clip; min-height:256px; height:100%; padding:32px; border:1px solid var(--site-line); border-radius:var(--site-radius-card); background:var(--about-surface); color:var(--about-text); box-shadow:var(--site-shadow-card); transform:perspective(900px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)); transition:transform .55s var(--about-ease),box-shadow .55s,border-color .4s; }
-.card::before { content:''; position:absolute; z-index:-1; inset:0; background:radial-gradient(circle at var(--glare-x,70%) var(--glare-y,25%),color-mix(in srgb,var(--about-text) 5%,transparent),transparent 65%); opacity:.2; transition:opacity .5s; pointer-events:none; }
+.card { position:relative; isolation:isolate; overflow:clip; min-height:255px; height:100%; padding:32px; border:1px solid color-mix(in srgb,var(--about-accent) 18%,transparent); border-radius:var(--site-radius-card); background:var(--about-surface); color:var(--about-text); box-shadow:var(--site-shadow-card); transform:perspective(900px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)); transition:transform .55s var(--about-ease),box-shadow .55s,border-color .4s; }
+.card::before { content:''; position:absolute; z-index:-1; inset:0; background:radial-gradient(circle at var(--glare-x,70%) var(--glare-y,25%),color-mix(in srgb,var(--about-accent) 15%,transparent),transparent 65%); opacity:.2; transition:opacity .5s; pointer-events:none; }
 .card::after { content:''; position:absolute; z-index:3; inset:-65%; pointer-events:none; background:linear-gradient(110deg,transparent 43%,#ffffff30 50%,transparent 57%); transform:translateX(-65%) rotate(-10deg); }
 .top { display:flex; align-items:center; justify-content:space-between; margin-bottom:40px; }
-.icon > svg { width:20px; height:20px; stroke-width:1.5; }
-.icon { width:48px; height:48px; border:1px solid var(--site-line); border-radius:12px; display:grid; place-items:center; background:var(--site-surface-soft); color:var(--about-accent); transition:transform .6s var(--about-ease),box-shadow .5s; }
-.number { align-self:flex-start; color:var(--about-muted); opacity:1; font:12px/1.5 var(--font-mono); letter-spacing:0; }
+.icon { width:48px; height:48px; border:1px solid color-mix(in srgb,var(--about-accent) 16%,transparent); border-radius:16px; display:grid; place-items:center; background:color-mix(in srgb,var(--about-accent) 9%,var(--about-surface)); color:var(--about-accent); transition:transform .6s var(--about-ease),box-shadow .5s; }
+.number { align-self:flex-start; color:var(--about-accent); opacity:.65; font:10px/1.5 var(--font-mono); letter-spacing:.08em; }
 .copy { position:relative; z-index:1; }
-.label { display:block; margin-bottom:8px; color:var(--about-muted); font-size:12px; font-weight:500; letter-spacing:.02em; }
+.label { display:block; margin-bottom:8px; color:var(--about-accent); font-size:9px; font-weight:650; letter-spacing:.12em; }
 .copy h3 { margin-bottom:8px; font-size:20px; font-weight:600; letter-spacing:-.02em; transition:translate .55s var(--about-ease); }
-.copy p { max-width:34em; font-size:14px; line-height:1.85; color:var(--about-muted); }
-.motif { position:absolute; top:16px; right:40px; width:180px; height:125px; color:var(--about-accent); opacity:.58; stroke:currentColor; stroke-width:1.3; pointer-events:none; transition:opacity .5s,transform .7s var(--about-ease); }
+.copy p { max-width:34em; font-size:13px; line-height:1.85; color:var(--about-muted); }
+.motif { position:absolute; top:15px; right:42px; width:180px; height:125px; color:var(--about-accent); opacity:.58; stroke:currentColor; stroke-width:1.3; pointer-events:none; transition:opacity .5s,transform .7s var(--about-ease); }
 .trace,.check { stroke-dasharray:1; stroke-dashoffset:1; transition:stroke-dashoffset 1.4s var(--about-ease); transition-delay:calc(var(--about-delay) + 200ms); }
 .entry:global(.reveal-visible) .trace,.entry:global(.reveal-visible) .check { stroke-dashoffset:0; }
 .node,.satellite { fill:currentColor; stroke:none; transform-box:fill-box; transform-origin:center; }
@@ -32,11 +31,11 @@
   .entry:global(.reveal-visible) .ripple { animation:about-ripple 3s ease-out infinite; }
 }
 @media(hover:hover) and (pointer:fine) {
-  .card:hover { translate:0 -12px; border-color:color-mix(in srgb,var(--about-accent) 50%,transparent); box-shadow:0 26px 48px -20px rgb(24 28 36 / 16%); }
+  .card:hover { translate:0 -12px; border-color:color-mix(in srgb,var(--about-accent) 50%,transparent); box-shadow:0 26px 48px -20px color-mix(in srgb,var(--about-accent) 55%,transparent); }
   .card { transition:transform .55s var(--about-ease),translate .55s var(--about-ease),box-shadow .55s,border-color .4s; }
   .card:hover::before { opacity:1; }
   .card:hover::after { animation:about-shine .95s var(--about-ease); }
-  .card:hover .icon { transform:translateY(-6px) rotate(-15deg) scale(1.1); box-shadow:0 12px 22px rgb(24 28 36 / 10%); }
+  .card:hover .icon { transform:translateY(-6px) rotate(-15deg) scale(1.1); box-shadow:0 12px 22px color-mix(in srgb,var(--about-accent) 25%,transparent); }
   .card:hover .copy h3 { translate:0 -5px; }
   .card:hover .motif { opacity:1; transform:translate(-8px,-8px) rotate(-8deg) scale(1.13); }
   .card:hover .edge { transform:scaleX(1); }
@@ -55,10 +54,10 @@
 @keyframes about-ripple { from { transform:scale(.8); opacity:.5; } to { transform:scale(1.2); opacity:0; } }
 @media(max-width:767px) {
   .grid { grid-template-columns:1fr; gap:24px; }
-  .card { min-height:240px; padding:24px; transform:none; }
+  .card { min-height:235px; padding:24px; transform:none; }
   .top { margin-bottom:40px; }
-  .motif { width:144px; height:104px; right:32px; opacity:.55; }
-  .copy p { font-size:14px; }
+  .motif { width:145px; height:105px; right:35px; opacity:.55; }
+  .copy p { font-size:13px; }
 }
 @media(prefers-reduced-motion:reduce) {
   .section *, .section *::after, .section *::before { animation:none!important; transition:none!important; }

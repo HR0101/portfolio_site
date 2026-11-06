@@ -19,7 +19,7 @@ const TERMINAL_LINES: TerminalLine[] = [
   },
   {
     command: 'npm test',
-    output: ['# tests 50', '# pass 50', '# fail 0'],
+    output: ['# tests 42', '# pass 42', '# fail 0'],
   },
   {
     command: 'git push origin main',
@@ -95,11 +95,11 @@ export function Hero() {
                 </div>
               </div>
             ))}
-            <span className={styles.coordinate} aria-hidden="true">Design × Code × Curiosity</span>
+            <span className={styles.coordinate} aria-hidden="true">DESIGN × CODE × CURIOSITY</span>
           </div>
         </div>
         <div className={styles.bottom}>
-          <a className={styles.scrollCue} href="#showcase" data-hero-cue><span>Scroll to explore</span><i aria-hidden="true" /></a>
+          <a className={styles.scrollCue} href="#showcase" data-hero-cue><span>SCROLL TO EXPLORE</span><i aria-hidden="true" /></a>
           <dl className={styles.stats}>
             <div><dt>公開プロダクト</dt><dd><RollingNumber value={SWIFT_APPS.length} /></dd></div>
             <div><dt>開発言語・フレームワーク</dt><dd>Swift / SwiftUI</dd></div>

@@ -34,11 +34,11 @@ export function Skills() {
           title="アイデアを、動くものに。"
           description="Swift で日常のアプリを。TypeScript で Web の体験を。目的に合わせて技術を選び、ソフトウェアからハードウェアまで形にしています。"
         />
-        <div className={styles.sectionLabel}><span>My development toolkit</span><span>技術と、それでつくったもの</span></div>
+        <div className={styles.sectionLabel}><span>MY DEVELOPMENT TOOLKIT</span><span>技術と、それでつくったもの</span></div>
         <div className={styles.grid}>
           <Reveal className={styles.nativeSlot} cardDirection="left">
             <SkillCard className={styles.native}>
-              <div className={styles.cardTop}><span className={styles.icon}><Code2 size={22} aria-hidden="true" /></span><span className={styles.category}>App development</span><span className={styles.primaryBadge}>メインスキル</span></div>
+              <div className={styles.cardTop}><span className={styles.icon}><Code2 size={22} aria-hidden="true" /></span><span className={styles.category}>APP DEVELOPMENT</span><span className={styles.primaryBadge}>メインスキル</span></div>
               <h3>Swift <span>/ SwiftUI</span></h3>
               <p className={styles.description}>毎日使いたくなる、<br />iPhone と Mac のアプリを。</p>
               <div className={styles.nativeVisual}>
@@ -64,7 +64,7 @@ export function Skills() {
           <Reveal className={styles.webSlot} cardDirection="right" delayMs={80}>
             <SkillCard className={styles.web}>
               <div className={styles.webCopy}>
-                <div className={styles.cardTop}><span className={styles.icon}><Globe2 size={21} aria-hidden="true" /></span><span className={styles.category}>Web experience</span></div>
+                <div className={styles.cardTop}><span className={styles.icon}><Globe2 size={21} aria-hidden="true" /></span><span className={styles.category}>WEB EXPERIENCE</span></div>
                 <h3>TypeScript <span>/ Next.js</span></h3>
                 <p className={styles.description}>ブラウザから、体験を届ける。</p>
                 <p className={styles.evidence}>EkiHub・このポートフォリオサイト</p>
@@ -79,7 +79,7 @@ export function Skills() {
           </Reveal>
           <Reveal cardDirection="left" delayMs={150}>
             <SkillCard className={styles.python}>
-              <div className={styles.cardTop}><span className={styles.icon}><Terminal size={21} aria-hidden="true" /></span><span className={styles.category}>Automation</span></div>
+              <div className={styles.cardTop}><span className={styles.icon}><Terminal size={21} aria-hidden="true" /></span><span className={styles.category}>AUTOMATION</span></div>
               <h3>Python</h3>
               <p className={styles.description}>繰り返す作業に、仕組みを。</p>
               <div className={styles.pipeline} aria-hidden="true"><span>Data</span><i className={styles.dataLink} /><span>Script</span><i className={styles.dataLink} /><span>Done</span></div>
@@ -89,7 +89,7 @@ export function Skills() {
           </Reveal>
           <Reveal cardDirection="right" delayMs={220}>
             <SkillCard className={styles.hardware}>
-              <div className={styles.cardTop}><span className={styles.icon}><Cpu size={21} aria-hidden="true" /></span><span className={styles.category}>Hardware</span></div>
+              <div className={styles.cardTop}><span className={styles.icon}><Cpu size={21} aria-hidden="true" /></span><span className={styles.category}>HARDWARE</span></div>
               <h3>C <span>/ Arduino</span></h3>
               <p className={styles.description}>画面の先の、ものづくり。</p>
               <div className={styles.circuit} aria-hidden="true"><span /><span /><Cpu size={32} /><span /><span /></div>

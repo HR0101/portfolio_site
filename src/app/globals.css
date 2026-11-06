@@ -22,10 +22,10 @@
   --color-night-subtle: #86868b; /* 副次的な文字 */
 
   /* アクセント（Apple の青） */
-  --color-accent: #396da9;        /* リンク・ラベルなどの文字 */
-  --color-accent-strong: #396da9; /* ボタンの塗り */
-  --color-accent-hover: #2c5c91;  /* ボタンのホバー */
-  --color-accent-dark: #a9c8f0;   /* ダークモードの強調 */
+  --color-accent: #0066cc;        /* リンク・ラベルなどの文字 */
+  --color-accent-strong: #0071e3; /* ボタンの塗り */
+  --color-accent-hover: #0077ed;  /* ボタンのホバー */
+  --color-accent-dark: #2997ff;   /* ダークモードの強調 */
 }
 
 /* ─────────────────────────────────────
@@ -1035,13 +1035,16 @@ html.is-theme-switching::view-transition-old(site-navbar) {
 
 /* ===== Web & Games セクション ===== */
 .works-ekihub-accent {
-  color: var(--site-accent);
+  background: linear-gradient(90deg, #14b8a6, #6366f1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* 実画面を収めるブラウザの枠 */
 .works-browser {
   overflow: hidden;
-  border-radius: var(--site-radius-card);
+  border-radius: 22px;
   border: 1px solid var(--color-soft);
   background: #fff;
   box-shadow: 0 30px 70px -30px rgb(15 23 42 / 0.35);
@@ -1213,7 +1216,7 @@ html.is-theme-switching::view-transition-old(site-navbar) {
 .works-games-intro {
   background:
     radial-gradient(120% 90% at 0% 0%, rgb(255 255 255 / 0.16), transparent 55%),
-    linear-gradient(135deg, #343a43 0%, #292f38 55%, #20252d 100%);
+    linear-gradient(135deg, #2f5d48 0%, #1f3b4d 55%, #22303f 100%);
   background-size: 160% 160%;
   animation: gradientShift 14s ease infinite;
 }
@@ -1368,7 +1371,7 @@ html.is-theme-switching::view-transition-old(site-navbar) {
   white-space: nowrap;
   will-change: transform;
   font-size: clamp(56px, 11vw, 150px);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -0.04em;
 }

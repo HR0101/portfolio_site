@@ -146,7 +146,7 @@ function GamePanel({ work, children }: { work: Work; children?: React.ReactNode 
           <div className="flex items-center gap-3">
             <img src={work.iconSrc} alt="" width={40} height={40} className="w-10 h-10 rounded-xl" loading="lazy" />
             <div>
-              <p className="text-xs tracking-[0.02em] text-subtle dark:text-night-subtle">{work.latinName}</p>
+              <p className="text-[11px] tracking-[0.18em] text-subtle dark:text-night-subtle">{work.latinName}</p>
               <h3 className="text-xl md:text-2xl font-semibold text-ink dark:text-night-ink">{work.name}</h3>
             </div>
           </div>
@@ -179,9 +179,9 @@ function GamesIntroPanel() {
   return (
     <div className="works-games-intro h-full rounded-3xl p-9 md:p-12 flex flex-col justify-between gap-10">
       <div>
-        <p className="inline-flex items-center gap-2 text-xs tracking-[0.02em] text-white/70">
+        <p className="inline-flex items-center gap-2 text-xs tracking-[0.2em] text-white/70">
           <Gamepad2 size={15} aria-hidden="true" />
-          <ScrambleText text="Games" />
+          <ScrambleText text="GAMES" />
         </p>
         <h3 className="mt-5 text-4xl md:text-6xl font-semibold leading-[1.15] tracking-tight text-white">
           <SplitTextReveal text="遊べる，" />
@@ -241,13 +241,13 @@ export function Works() {
         {/* Web サービス（EkiHub）：線が中心駅へ集まる装飾と，起き上がる実画面 */}
         <SpotlightCard
           className="works-web-card rounded-3xl border border-soft dark:border-night-border bg-white dark:bg-night-soft shadow-soft overflow-hidden"
-          color="rgb(57 109 169 / 0.14)"
+          color="rgb(47 211 181 / 0.14)"
         >
           <div className="grid lg:grid-cols-[1fr_1.05fr] gap-10 p-7 md:p-12 items-center" data-morph-scope>
             <Reveal variant="left">
-              <p className="inline-flex items-center gap-2 text-xs tracking-[0.02em] text-subtle dark:text-night-subtle">
+              <p className="inline-flex items-center gap-2 text-xs tracking-[0.2em] text-subtle dark:text-night-subtle">
                 <Globe size={15} aria-hidden="true" />
-                <ScrambleText text="Web service" />
+                <ScrambleText text="WEB SERVICE" />
               </p>
               <div className="mt-5 flex items-center gap-3">
                 <img src={ekihub.iconSrc} alt="" width={48} height={48} className="w-12 h-12 rounded-2xl" />
