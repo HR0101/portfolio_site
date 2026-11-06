@@ -1,0 +1,3 @@
+# 改名前の紹介ページ（AllServerForMac）から，Ark Server の紹介ページへ恒久的に転送する
+/apps/allserverformac /apps/arkserver 301
+/apps/allserverformac/ /apps/arkserver/ 301

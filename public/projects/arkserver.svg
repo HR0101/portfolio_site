@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Ark Server">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b2340"/>
+      <stop offset="0.7" stop-color="#1b4f82"/>
+      <stop offset="1" stop-color="#f0b85c"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a6fb0"/>
+      <stop offset="1" stop-color="#0d2f55"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffd98a" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffd98a" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="tile"><rect width="256" height="256" rx="58"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="256" height="256" fill="url(#sky)"/>
+    <!-- 水平線に昇る朝日 -->
+    <circle cx="188" cy="176" r="26" fill="#ffd98a" opacity="0.9"/>
+    <!-- 海 -->
+    <rect y="178" width="256" height="78" fill="url(#sea)"/>
+    <!-- 船体：積み重なったサーバーの段が，そのまま船の形になる -->
+    <g fill="#f6f1e7">
+      <rect x="52" y="146" width="152" height="17" rx="8"/>
+      <rect x="66" y="166" width="124" height="17" rx="8"/>
+      <rect x="82" y="186" width="92" height="17" rx="8"/>
+    </g>
+    <g fill="#e3a43c">
+      <circle cx="68" cy="154.5" r="3.2"/>
+      <circle cx="80" cy="174.5" r="3.2"/>
+      <circle cx="96" cy="194.5" r="3.2"/>
+    </g>
+    <!-- 帆：右向きの三角は，そのまま再生ボタン -->
+    <rect x="86" y="46" width="5" height="100" rx="2.5" fill="#f6f1e7"/>
+    <path d="M97 58 L97 136 L172 97 Z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round"/>
+    <!-- 船のランタン（配信中の灯） -->
+    <circle cx="88.5" cy="40" r="20" fill="url(#lamp)"/>
+    <circle cx="88.5" cy="40" r="6.5" fill="#ffd98a"/>
+    <!-- 手前の波 -->
+    <path d="M0 206 C 26 196, 52 216, 78 206 S 130 196, 156 206 S 208 216, 256 204 V 256 H 0 Z" fill="#1b5088" opacity="0.92"/>
+    <path d="M0 226 C 30 218, 60 234, 92 226 S 154 218, 186 226 S 230 234, 256 224 V 256 H 0 Z" fill="#0d2f55"/>
+  </g>
+</svg>

@@ -1,0 +1,2916 @@
+/* Ark Server 専用の配色（unslop 済み）．面・線・文字は中立の灰，アクセントは海の青灰．
+   --teal-ink・--blue-ink・--gold-ink は同じ値で，旧名（AllServerForMac）の頃の変数名を残している．
+   写真（--landscape）の上に載る文字・ボタン・リンクは，面の色を敷いて読めるようにしてある． */
+.page {
+  --teal: #d9962f;
+  --gold: #e3a43c;
+  --gold-soft: #f6cf86;
+  --sea-a: #123a5e;
+  --sea-b: #2b6fae;
+  --glow: 227 164 60;
+  --hero-to: #dbe9f5;
+  /* 空と海（ヒーロー・仕組み・締めの情景） */
+  --sky-top: #b9d6ee;
+  --sky-low: #ffe6bd;
+  --sea-top: #86b8dc;
+  --sea-bottom: #2d6a9f;
+  --wave-a: #6aa4cf;
+  --wave-c: #1f5588;
+  color: var(--text);
+  padding-top: 64px;
+  overflow: clip;
+}
+
+:global(.dark) .page {
+  --teal: #f2b960;
+  --gold: #f2b960;
+  --gold-soft: #ffd98a;
+  --sea-a: #1b4b82;
+  --sea-b: #3b7fd0;
+  --glow: 242 185 96;
+  --hero-to: #07142a;
+  --sky-top: #040a18;
+  --sky-low: #1a3866;
+  --sea-top: #12385f;
+  --sea-bottom: #06172e;
+  --wave-a: #1d4b7c;
+  --wave-c: #0a2342;
+}
+
+.page h2 {
+  /* 対応ブラウザでは，日本語を文節の切れ目で折り返す */
+  word-break: auto-phrase;
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.4;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+
+.page p {
+  line-height: 1.9;
+}
+
+.localNav {
+  max-width: 1160px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.localNav a {
+  padding-block: 10px;
+  color: var(--muted);
+}
+
+.localNav span {
+  font-size: 16px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  color: var(--teal-ink);
+}
+
+/* ===== ヒーロー（明るい面に，アプリの実画面） ===== */
+.hero {
+  position: relative;
+  margin: 28px auto 0;
+  max-width: 1200px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.heroInner {
+  display: grid;
+}
+
+/* 1文字ずつ動かす文字は，親の background-clip: text では塗れないため単色にする */
+
+.appName {
+  display: flex;
+  align-items: center;
+}
+
+.appName span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.lead {
+  margin-top: 24px;
+  font-size: clamp(15px, 1.5vw, 17px);
+  color: var(--muted);
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.primaryLink,
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.secondaryLink {
+  border: 1px solid var(--line);
+}
+
+.secondaryLink:hover {
+  border-color: var(--teal-ink);
+}
+
+/* ===== ヒーローの画面 ===== */
+
+.heroWindow {
+  animation: windowRise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
+
+.heroWindow img,
+.stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 28px 30px rgb(0 0 0 / 0.3));
+}
+
+/* 暗い地の上では，暗い画面の輪郭が溶けないよう，ごく細い縁を足す */
+:global(.dark) .heroWindow img,
+:global(.dark) .stage img {
+  filter: drop-shadow(0 0 0.6px rgb(255 255 255 / 0.4)) drop-shadow(0 28px 30px rgb(0 0 0 / 0.5));
+}
+
+.heroPhone,
+.phoneFrame {
+  border-radius: 38px;
+  padding: 8px;
+  background: #05080b;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.12),
+    0 36px 70px -28px rgb(0 0 0 / 0.7);
+}
+
+.heroPhone img,
+.phoneFrame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 30px;
+}
+
+.heroPhone {
+  position: absolute;
+}
+
+.tourShot figcaption {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+@keyframes windowRise {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.97);
+  }
+}
+
+@keyframes phoneRise {
+  from {
+    opacity: 0;
+    transform: translateY(40px) rotate(9deg);
+  }
+}
+
+/* ===== 共通の節 ===== */
+.how,
+.tourSection,
+.demos,
+.iphone,
+.browser,
+.more,
+.looks,
+.care,
+.stack,
+.closing {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.sectionIntro h2 {
+  margin-top: 16px;
+}
+
+.sectionIntro > p:not(:first-child) {
+  color: var(--muted);
+}
+
+.sectionIntro strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ===== 仕組み：発見→認証→配信が流れる図 ===== */
+.flowStage {
+  --step-ms: 3000ms; /* how-flow.tsx の STEP_MS と必ずそろえる */
+  --phone-h: 152px;
+  margin-top: 48px;
+  border: 1px solid var(--line);
+}
+
+.flowScene {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 1.5fr minmax(150px, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.flowDevice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.flowDevice b {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.flowChips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.flowChips li {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.flowMac,
+.flowPhone {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: var(--teal-ink);
+  border: 2px solid var(--line);
+  background: linear-gradient(160deg, var(--surface), var(--hero-to));
+}
+
+.flowMac {
+  width: 124px;
+  height: var(--phone-h);
+  border-radius: 20px;
+}
+
+.flowLed {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: livePulse 1.8s ease-out infinite;
+}
+
+.flowPhone {
+  width: 112px;
+  height: var(--phone-h);
+  border-radius: 26px;
+  padding: 10px 8px;
+  align-content: start;
+  justify-items: center;
+  gap: 8px;
+}
+
+.flowNotch {
+  width: 34px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.flowFound {
+  display: block;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #fff;
+  background: linear-gradient(90deg, var(--sea-a), var(--sea-b));
+}
+
+.flowTiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  width: 100%;
+}
+
+.flowTiles i {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: var(--line);
+  opacity: 0.55;
+}
+
+/* 道すじ．高さを iPhone にそろえ，レールを真ん中に通す */
+.flowTrack {
+  position: relative;
+  height: var(--phone-h);
+  overflow: hidden;
+}
+
+.flowRail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--teal-ink) 0 8px, transparent 8px 16px);
+  background-size: 16px 2px;
+  animation: lineFlow 1s linear infinite;
+}
+
+.flowWifi {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 38px);
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* 1. 見つける：iPhone 側から，波紋が Mac へ広がる */
+.flowRing {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--teal);
+  translate: 50% -50%;
+  opacity: 0;
+}
+
+.flowStage[data-step='0'] .flowRing {
+  animation: ringOut 2.4s ease-out infinite;
+}
+
+.flowRingB {
+  animation-delay: 0.8s !important;
+}
+
+.flowRingC {
+  animation-delay: 1.6s !important;
+}
+
+/* 2. 鍵を開ける：6桁が順に埋まり，鍵が開く */
+.flowPin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  opacity: 0;
+  scale: 0.9;
+  transition: opacity 0.4s ease, scale 0.4s ease;
+}
+
+.flowStage[data-step='1'] .flowPin {
+  opacity: 1;
+  scale: 1;
+}
+
+.flowPin i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--teal-ink);
+}
+
+.flowStage[data-step='1'] .flowPin i {
+  animation: pinFill 0.3s ease both;
+  animation-delay: calc(var(--d) * 220ms + 300ms);
+}
+
+.flowLock {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 2px;
+  color: var(--teal-ink);
+}
+
+.flowLock svg {
+  position: absolute;
+}
+
+.flowLockOpen {
+  opacity: 0;
+}
+
+.flowStage[data-step='1'] .flowLockClosed {
+  animation: lockOut 0.3s ease 1.7s forwards;
+}
+
+.flowStage[data-step='1'] .flowLockOpen {
+  animation: lockIn 0.3s ease 1.7s forwards;
+}
+
+/* 3. 届ける：サムネイルが Mac から iPhone へ流れ，iPhone の枠が埋まる */
+.flowPacket {
+  position: absolute;
+  left: 0;
+  opacity: 0;
+}
+
+.flowStage[data-step='2'] .flowPacket {
+  animation: packetFly 1.5s linear infinite;
+  animation-delay: calc(var(--p) * 0.36s);
+}
+
+.flowStage[data-step='2'] .flowTiles i {
+  opacity: 1;
+  background: hsl(calc(30 + var(--p) * 55) 75% 58%);
+  animation: tileIn 0.5s cubic-bezier(0.22, 1.4, 0.36, 1) backwards;
+  animation-delay: calc(var(--p) * 0.36s + 0.9s);
+}
+
+/* 見つかったサーバーの名前．最初の段階の終わりごろに現れ，以降は出たまま */
+.flowFound {
+  opacity: 1;
+}
+
+.flowStage[data-step='0'] .flowFound {
+  animation: foundIn 0.5s cubic-bezier(0.22, 1.4, 0.36, 1) 1.2s backwards;
+}
+
+/* 段階の目印 */
+.flowSteps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.flowSteps li {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  gap: 12px;
+  border: 1px solid var(--line);
+  transition: transform 0.4s ease, border-color 0.4s ease, background 0.4s ease, opacity 0.4s ease;
+}
+
+.flowSteps li[data-active='true'] {
+  opacity: 1;
+  background: var(--surface);
+}
+
+.flowStepIcon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  color: var(--teal-ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.flowSteps li[data-active='true'] .flowStepIcon {
+  border-color: transparent;
+}
+
+.flowSteps strong {
+  display: block;
+  font-size: 15px;
+}
+
+.flowSteps em {
+  margin-right: 8px;
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--teal-ink);
+}
+
+.flowSteps small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+}
+
+.flowStepBar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--sea-a), var(--sea-b));
+  transform-origin: left;
+  animation: stepBar var(--step-ms) linear both;
+}
+
+.flowNote {
+  margin-top: 24px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+@keyframes lineFlow {
+  to {
+    background-position: 16px 0;
+  }
+}
+
+@keyframes ringOut {
+  from {
+    opacity: 0.9;
+    scale: 0.4;
+  }
+  to {
+    opacity: 0;
+    scale: 5.5;
+  }
+}
+
+@keyframes pinFill {
+  from {
+    background: transparent;
+  }
+  to {
+    background: var(--teal-ink);
+  }
+}
+
+@keyframes lockOut {
+  to {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+
+@keyframes lockIn {
+  from {
+    scale: 0.6;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes packetFly {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% - 18px);
+    opacity: 0;
+  }
+}
+
+@keyframes tileIn {
+  from {
+    opacity: 0;
+    scale: 0.3;
+  }
+}
+
+@keyframes foundIn {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+
+@keyframes stepBar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ===== 実際の画面のツアー ===== */
+.tour {
+  margin-top: 44px;
+}
+
+.tourTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.tourTabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.tourTabs button span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--teal-ink);
+}
+
+.tourTabs button:hover {
+  color: var(--text);
+  border-color: var(--teal-ink);
+}
+
+.tourTabs button[aria-selected='true'] {
+  color: #fff;
+  background: linear-gradient(90deg, var(--sea-a), var(--sea-b));
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+
+.tourTabs button[aria-selected='true'] span {
+  color: #dbe8ff;
+}
+
+.tourPanel {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+  animation: tourIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tourPanel[hidden] {
+  display: none;
+}
+
+/* 切り替えたときにページの位置が跳ねないよう，高さをそろえる */
+@media (min-width: 961px) {
+  .tourPanel {
+    min-height: 560px;
+  }
+}
+
+@keyframes tourIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.tourStep {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--teal-ink);
+}
+
+.tourCopy h3 {
+  margin-top: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  letter-spacing: -0.02em;
+  word-break: auto-phrase;
+}
+
+.tourCopy h3 svg {
+  flex-shrink: 0;
+  margin-top: 6px;
+  color: var(--teal-ink);
+}
+
+.tourCopy > p {
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.tourPoints {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tourPoints li {
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+
+.tourPoints svg {
+  flex-shrink: 0;
+  margin-top: 4px;
+  color: var(--teal-ink);
+}
+
+.tourPoints strong {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tourShot {
+  margin: 0;
+}
+
+/* 透過の角をもつ実画面は，淡い面の上に影つきで置く */
+
+.tourShot figcaption {
+  padding: 12px 4px 0;
+  line-height: 1.7;
+}
+
+/* iPhone の画面は縦長なので，淡い面の中央に，端末の枠ごと置く */
+.phonePanel {
+  min-height: 0;
+}
+
+@media (min-width: 961px) {
+  .phonePanel {
+    min-height: 640px;
+  }
+}
+
+.phoneStage {
+  display: grid;
+  place-items: center;
+}
+
+.phoneStage .phoneFrame {
+  width: min(100%, 250px);
+  margin: 0;
+}
+
+.phoneStage .phoneFrame img {
+  filter: none;
+}
+
+/* ===== ブラウザ ===== */
+
+.phoneFrame {
+  max-width: 260px;
+  margin-inline: auto;
+}
+
+/* 再生画面（Mac 幅）と，スマホ幅の2画面 */
+
+.tabList {
+  margin-top: 28px;
+  display: grid;
+}
+
+.tabList li {
+  color: var(--muted);
+}
+
+.tabList b {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ===== ほかにも：絵のタイル（押すと裏返る） ===== */
+.moreWrap {
+  margin-top: 44px;
+}
+
+.moreFilter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.moreFilter button {
+  --g2: var(--teal-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.moreFilter button svg {
+  color: var(--g2);
+}
+
+.moreFilter button span {
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.moreFilter button:hover {
+  color: var(--text);
+  border-color: var(--g2);
+}
+
+.moreFilter button[aria-pressed='true'] svg {
+  color: #fff;
+}
+
+.moreLead {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--muted);
+  animation: leadIn 0.4s ease both;
+}
+
+.moreTiles {
+  margin-top: 24px;
+  display: grid;
+}
+
+.moreTiles li {
+  animation: tilePop 0.6s cubic-bezier(0.22, 1.35, 0.36, 1) both;
+  animation-delay: calc(var(--i) * 28ms);
+}
+
+/* 画面に入るまでは，タイルを伏せておく（入った瞬間に，順に弾んで現れる） */
+@media (prefers-reduced-motion: no-preference) {
+  .moreWrap[data-visible='false'] .moreTiles li {
+    animation-play-state: paused;
+    opacity: 0;
+  }
+}
+
+.moreTile {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 168px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 22px;
+}
+
+.moreHint {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+@keyframes tilePop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.6);
+  }
+}
+
+@keyframes leadIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ===== 明るい外観と暗い外観 ===== */
+
+/* ===== 守り方 ===== */
+.careGrid {
+  display: grid;
+}
+
+.careItem,
+.careReveal {
+  display: flex;
+}
+
+.careReveal {
+  width: 100%;
+}
+
+.careCard {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.careCard svg {
+  color: var(--teal-ink);
+}
+
+.careCard p {
+  color: var(--muted);
+}
+
+.careNote {
+  margin-top: 28px;
+  padding: 16px 20px;
+  font-size: 13px;
+  line-height: 1.8;
+  background: var(--surface);
+}
+
+.careNote strong {
+  color: var(--text);
+}
+
+/* ===== 技術 ===== */
+.stackTable {
+  margin-top: 40px;
+  border-top: 1px solid var(--line);
+}
+
+.stackRow {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 24px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.stackRow dt {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.stackRow dd {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stackRow b {
+  font-weight: 600;
+}
+
+.stackRow span {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ===== 締め ===== */
+.closing {
+  text-align: center;
+}
+
+.closing > div {
+  flex-direction: column;
+  align-items: center;
+}
+
+.closing h2 {
+  margin-top: 16px;
+}
+
+.closing p {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.closing .heroActions {
+  justify-content: center;
+}
+
+/* 写真の上に置くリンクは，キャプションと同じ静かな面に載せて読めるようにする */
+.backLink {
+  margin-top: 28px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #fff;
+  background: rgb(6 24 38 / 0.76);
+}
+
+.backLink:hover {
+  background: rgb(6 24 38 / 0.9);
+}
+
+/* ===== 小さな画面 ===== */
+@media (max-width: 960px) {
+  .heroInner,
+  .tourPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .careGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .heroCopy h1 {
+    font-size: clamp(28px, 8vw, 38px);
+  }
+
+  .hero {
+    border-radius: 0;
+    margin-top: 0;
+  }
+
+  .heroPhone {
+    width: 32%;
+    right: 0;
+  }
+
+  .careGrid,
+  .tabList {
+    grid-template-columns: 1fr;
+  }
+
+  .stackRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+/* ===== 動きを減らす設定 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .heroWindow,
+  .heroPhone,
+  .tourPanel {
+    animation: none;
+  }
+
+  .careCard,
+  .tourTabs button {
+    transition: none;
+  }
+}
+
+/* ページ上部の小さなナビゲーション：戻るリンクは左へ，下へ進むリンクは下へ少しだけ動く */
+.localNav a { transition: color .25s, translate .35s cubic-bezier(.22, 1, .36, 1); }
+.localNav a:first-child:hover { translate: -4px 0; }
+.localNav a:last-child:hover { translate: 0 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .localNav a { transition: none; }
+  .localNav a:first-child:hover, .localNav a:last-child:hover { translate: none; }
+}
+
+
+/* ===== ヒーロー：配信中の目印 ===== */
+
+@keyframes livePulse {
+  from {
+    box-shadow: 0 0 0 0 rgb(34 197 94 / 0.6);
+  }
+  to {
+    box-shadow: 0 0 0 10px rgb(34 197 94 / 0);
+  }
+}
+
+/* ===== 数字の帯 ===== */
+.stats {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: clamp(36px, 5vw, 60px) 28px 0;
+}
+
+.statsGrid {
+  display: grid;
+}
+
+.statCard {
+  height: 100%;
+  padding: 20px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.statCard:hover {
+  border-color: var(--teal-ink);
+}
+
+.statCard b {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: clamp(32px, 3.8vw, 46px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.statCard small {
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.statCard > span {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* ===== ツアー：自動再生 ===== */
+.tourBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.tourBar .tourTabs {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+
+.tourTabs button {
+  position: relative;
+  overflow: hidden;
+}
+
+.tourAuto {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+
+.tourAuto:hover {
+  color: var(--text);
+  border-color: var(--teal-ink);
+}
+
+.tabProgress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--gold-soft);
+  transform-origin: left;
+  animation: tabProgress var(--tour-interval, 6500ms) linear both;
+}
+
+/* 向きに合わせて，画面が横からすべり込む．説明と画面は，少しずつ遅れて現れる */
+.tourPanel[data-dir='1'] {
+  animation-name: tourInNext;
+}
+
+.tourPanel[data-dir='-1'] {
+  animation-name: tourInPrev;
+}
+
+.tourPanel:not([hidden]) .stage {
+  animation: stageIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.12s backwards;
+}
+
+.tourPanel:not([hidden]) .tourStep,
+.tourPanel:not([hidden]) .tourCopy h3,
+.tourPanel:not([hidden]) .tourCopy > p {
+  animation: copyIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.tourPanel:not([hidden]) .tourCopy h3 {
+  animation-delay: 0.06s;
+}
+
+.tourPanel:not([hidden]) .tourCopy > p {
+  animation-delay: 0.12s;
+}
+
+.tourPanel:not([hidden]) .tourPoints li {
+  animation: copyIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.tourPanel:not([hidden]) .tourPoints li:nth-child(1) {
+  animation-delay: 0.22s;
+}
+
+.tourPanel:not([hidden]) .tourPoints li:nth-child(2) {
+  animation-delay: 0.32s;
+}
+
+@keyframes tabProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes tourInNext {
+  from {
+    opacity: 0;
+    transform: translateX(36px);
+  }
+}
+
+@keyframes tourInPrev {
+  from {
+    opacity: 0;
+    transform: translateX(-36px);
+  }
+}
+
+@keyframes stageIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94) rotate(-0.8deg);
+  }
+}
+
+@keyframes copyIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* ===== ミニデモ ===== */
+.demoGrid {
+  margin-top: 44px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.demoCard {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.demoCard figcaption {
+  color: var(--muted);
+}
+
+.demoCard figcaption strong {
+  display: block;
+  color: var(--text);
+}
+
+.demoBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 差分切り替え */
+.vdScreen {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #111;
+}
+
+.vdLayer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.vdBand {
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: 0;
+  width: 22%;
+  background: linear-gradient(90deg, transparent, rgb(255 196 120 / 0.9), transparent);
+  filter: blur(2px);
+  transform: translateX(200%) rotate(18deg);
+  animation: vdBand 6s linear infinite;
+}
+
+.vdBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.vdClock {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 4px;
+  background: rgb(255 255 255 / 0.9);
+  transform: scaleX(0.4);
+  transform-origin: left;
+  animation: vdClock 6s linear infinite;
+}
+
+.vdControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.vdChips {
+  display: flex;
+  gap: 6px;
+}
+
+.vdChips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.vdChips button:hover {
+  transform: translateY(-1px);
+  color: var(--text);
+}
+
+.vdChips kbd {
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--teal-ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.vdChips button[aria-pressed='true'] {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(90deg, var(--sea-a), var(--sea-b));
+}
+
+.vdChips button[aria-pressed='true'] kbd {
+  color: #fff;
+  background: rgb(255 255 255 / 0.2);
+  border-color: transparent;
+}
+
+.vdBeats {
+  display: flex;
+  gap: 4px;
+}
+
+.vdBeats i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.vdBeats i[data-on='true'] {
+  background: var(--teal);
+  transform: scale(1.5);
+}
+
+/* シーン抽出 */
+.sdTimeline {
+  position: relative;
+  height: 112px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.sdWave {
+  position: absolute;
+  inset: 14px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+.sdWave i {
+  flex: 1;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+}
+
+.sdCandidate {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  border-radius: 10px;
+  border: 2px dashed var(--teal-ink);
+  background: rgb(var(--glow) / 0.1);
+  transition: background 0.35s ease, border-color 0.35s ease;
+}
+
+.sdCandidate[data-verdict='adopted'] {
+  border-style: solid;
+  border-color: #22a06b;
+  background: rgb(34 160 107 / 0.25);
+}
+
+.sdCandidate[data-verdict='hold'] {
+  border-style: solid;
+  border-color: #d69e2e;
+  background: rgb(214 158 46 / 0.25);
+}
+
+.sdCandidate[data-verdict='rejected'] {
+  border-style: solid;
+  border-color: #98a2ad;
+  background: rgb(120 130 140 / 0.22);
+}
+
+.sdHead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #f05a5a;
+  box-shadow: none;
+  transition: left 0.9s cubic-bezier(0.45, 0.05, 0.2, 1);
+}
+
+.sdKeys {
+  display: flex;
+  gap: 8px;
+}
+
+.sdKey {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 6px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.sdKey kbd {
+  padding: 0 6px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.sdKey[data-pressed='true'] {
+  transform: translateY(2px) scale(0.96);
+  color: #fff;
+  border-color: transparent;
+}
+
+.sdKey[data-pressed='true'][data-n='1'] {
+  background: #22a06b;
+}
+
+.sdKey[data-pressed='true'][data-n='2'] {
+  background: #d69e2e;
+}
+
+.sdKey[data-pressed='true'][data-n='3'] {
+  background: #78828c;
+}
+
+.sdKey[data-pressed='true'] kbd {
+  color: var(--text);
+}
+
+.sdList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.sdList li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.sdList li b {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.sdList li[data-verdict='adopted'] b {
+  color: #1f8f5f;
+}
+
+.sdList li[data-verdict='hold'] b {
+  color: #b7791f;
+}
+
+.sdList li[data-verdict='rejected'] b {
+  color: #6b7580;
+}
+
+/* 10等分の頭出し */
+.spScreen {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.spTime {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 2px 10px rgb(0 0 0 / 0.4);
+}
+
+.spSeek {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.3);
+}
+
+.spSeek i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: #fff;
+  transition: width 0.35s ease;
+}
+
+.spStrip {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+}
+
+.spStrip button {
+  position: relative;
+  aspect-ratio: 1 / 1.15;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.spStrip button span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 0.6);
+}
+
+.spStrip button[aria-pressed='true'] {
+  border-color: #fff;
+  outline: 2px solid var(--teal-ink);
+  transform: translateY(-4px) scale(1.06);
+}
+
+@keyframes vdBand {
+  from {
+    transform: translateX(-150%) rotate(18deg);
+  }
+  to {
+    transform: translateX(560%) rotate(18deg);
+  }
+}
+
+@keyframes vdClock {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ===== 背景の飾り（スクロールでゆっくりずれる） ===== */
+.more,
+.care {
+  position: relative;
+}
+
+.more > :not(.blob),
+.care > :not(.blob) {
+  position: relative;
+  z-index: 1;
+}
+
+/* 守り方のアイコンは，画面に入るにつれて線が描かれる（対応するブラウザのみ） */
+@supports (animation-timeline: view()) {
+  .careCard svg * {
+    animation: iconDraw linear backwards;
+    animation-timeline: view();
+    animation-range: entry 5% cover 38%;
+  }
+}
+
+@keyframes iconDraw {
+  from {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ===== 小さな画面（追加分） ===== */
+@media (max-width: 1100px) {
+  .moreTiles {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .moreTile {
+    height: 178px;
+  }
+}
+
+@media (max-width: 960px) {
+
+  .demoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .flowSteps {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .moreTiles {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .moreTile {
+    height: 214px;
+  }
+
+  .flowStage {
+    --phone-h: 124px;
+  }
+
+  .flowScene {
+    grid-template-columns: minmax(92px, 1fr) 1.1fr minmax(92px, 1fr);
+    gap: 6px;
+  }
+
+  .flowMac {
+    width: 92px;
+  }
+
+  .flowPhone {
+    width: 84px;
+  }
+
+  .flowFound {
+    font-size: 7px;
+  }
+
+  .flowChips {
+    display: none;
+  }
+
+  .flowWifi {
+    font-size: 10px;
+  }
+
+  .flowPin {
+    padding: 8px 8px;
+    gap: 4px;
+  }
+
+  .tourAuto {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .statsGrid li:last-child {
+    grid-column: span 2;
+  }
+}
+
+/* ===== 動きを減らす設定（追加分） ===== */
+@media (prefers-reduced-motion: reduce) {
+  .flowLed,
+  .flowRail,
+  .flowRing,
+  .flowPacket,
+  .flowPin i,
+  .flowLockClosed,
+  .flowLockOpen,
+  .flowTiles i,
+  .flowFound,
+  .flowStepBar,
+  .tabProgress,
+  .tourPanel .stage,
+  .tourPanel .tourStep,
+  .tourPanel .tourCopy h3,
+  .tourPanel .tourCopy > p,
+  .tourPanel .tourPoints li,
+  .moreLead,
+  .moreTiles li,
+  .vdBand,
+  .vdClock,
+  .page h2 span,
+  .careCard svg * {
+    animation: none;
+  }
+
+  .flowSteps li,
+  .flowPin,
+  .statCard,
+  .sdHead,
+  .spStrip button,
+  .spSeek i {
+    transition: none;
+  }
+
+  /* 止めたときは，鍵は開いた形，6桁は埋まった形で見せる */
+  .flowLockClosed {
+    opacity: 0;
+  }
+
+  .flowLockOpen {
+    opacity: 1;
+  }
+
+  .flowPin i {
+    background: var(--teal-ink);
+  }
+}
+
+.wipe { max-width: 1050px; margin: 2rem auto 0; }
+.wipeStage { position: relative; overflow: hidden; isolation: isolate; }
+.wipeStage img { display: block; width: 100%; height: auto; }
+.wipeStage .wipeLight { position: absolute; inset: 0; }
+.wipeDivider { position: absolute; inset-block: 0; width: 2px; background: white; pointer-events: none; transform: translateX(-50%); }
+.wipeDivider b { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; background: #27384b; color: white; padding: 10px; border: 2px solid white; }
+.wipeInput { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.wipeStage:focus-within { outline: 3px solid #5284d8; outline-offset: 4px; }
+.wipe figcaption { text-align: center; margin-top: 1rem; font-size: .85rem; }
+
+.annotatedStage { position: relative; }
+.callouts { position: absolute; inset: 0; pointer-events: none; }
+.callout { position: absolute; transform: translate(-50%, -50%); width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; color: white; background: #294668; pointer-events: auto; font-size: 12px; font-weight: 600; box-shadow: 0 0 0 5px #629ee54a; }
+.callout[data-current='true'] { background: #0062c4; box-shadow: 0 0 0 9px #629ee56a; }
+.callout span { display: none; position: absolute; top: 34px; left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 4px 8px; border-radius: 5px; background: #163457; }
+.callout[data-current='true'] span { display: block; }
+.calloutCaption { position: absolute; bottom: 0; left: 0; right: 0; margin: 0; padding: 8px; color: white; background: #14263bef; font-size: clamp(10px, 1.1vw, 13px); text-align: center; }
+@media (max-width: 500px) { .callout { width: 23px; height: 23px; } .callout span { font-size: 10px; top: 26px; } }
+
+.resizeDemo { margin: 2rem auto; max-width: 1100px; }
+.resizeControls { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 24px; }
+.resizeControls label { font-size: 14px; font-weight: 600; }
+.resizeControls output { display: inline-block; min-width: 64px; font-variant-numeric: tabular-nums; }
+.resizeControls input { flex: 1; min-width: 130px; accent-color: var(--teal-ink); }
+.resizeControls button { padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; margin-right: 4px; }
+.resizeControls button[aria-pressed='true'] { background: var(--teal-ink); color: white; }
+.resizeHost { padding-right: 24px; min-height: 390px; }
+.resizeWindow { position: relative; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-width: 180px; height: 370px; }
+.resizeChrome { height: 32px; padding: 8px 12px; font-size: 10px; border-bottom: 1px solid var(--line); }
+.resizeChrome span { margin-left: 12px; }
+.resizeBody { display: flex; height: calc(100% - 32px); overflow: hidden; border-radius: 0 0 12px 12px; }
+.resizeNav { width: 110px; flex-shrink: 0; border-right: 1px solid var(--line); padding: 12px 6px; display: flex; flex-direction: column; gap: 20px; }
+.resizeNav > span { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+.resizeFeed { flex: 1; min-width: 0; overflow: hidden; padding: 16px; }
+.resizeFeed strong { display: block; margin-bottom: 10px; }
+.resizeFeed p { font-size: 11px; margin: 6px 0 12px; }
+.resizeThumbnail { display: grid; place-items: center; height: 155px; border-radius: 10px; color: white; background: radial-gradient(ellipse at 70% 40%, #78c8bc, transparent 60%), linear-gradient(140deg,#172b56,#5753a1); }
+.resizeThumbnail[data-second] { background: linear-gradient(60deg, #2d5368, #aa9870); }
+.resizeWindow[data-compact='true'] .resizeBody { flex-direction: column-reverse; }
+.resizeWindow[data-compact='true'] .resizeNav { width: 100%; flex-direction: row; gap: 0; justify-content: space-around; border-right: 0; border-top: 1px solid var(--line); padding: 8px 2px; }
+.resizeWindow[data-compact='true'] .resizeNav > span { flex-direction: column; font-size: 8px; gap: 3px; }
+.resizeWindow[data-compact='true'] .resizeFeed { padding: 12px; }
+.resizeHandle { position: absolute; right: -19px; top: 45%; width: 36px; height: 48px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); touch-action: none; cursor: ew-resize; }
+.resizeDemo figcaption { margin-top: 12px; font-size: 13px; color: var(--muted); }
+.tileSpotlight { border-radius: 22px; height: 100%; }
+.careDiagram { margin: 16px 0; font-size: 11px; }
+.careSteps { display: grid; gap: 8px; margin: 10px 0; padding: 0; list-style: none; }
+.careSteps li { display: flex; gap: 8px; align-items: center; border: 1px solid var(--line); padding: 8px; border-radius: 8px; transition: background .3s, transform .3s; }
+.careSteps li > span { border-radius: 50%; background: var(--surface); padding: 1px 4px; color: var(--text); }
+.careSteps li[data-current='true'] { background: var(--teal-ink); color: var(--surface); transform: translateX(3px); }
+.careSteps li[data-done='true'] { border-color: var(--teal-ink); }
+.backupCopies { display: flex; flex-wrap: wrap; gap: 4px; }
+.backupCopies span { border: 1px solid var(--line); border-radius: 4px; padding: 4px; }
+.backupCopies [data-stopped='true'] { text-decoration: line-through; opacity: .6; }
+.diagramNext, .deleteChoices button { border: 1px solid var(--line); padding: 8px 10px; border-radius: 7px; margin: 4px 4px 0 0; }
+.deleteChoices button[aria-pressed='true'] { border-color: var(--teal-ink); font-weight: 600; }
+.techTimeline { position: relative; padding-left: 28px; }
+.techLine { position: absolute; inset: 0 auto 0 5px; width: 2px; background: var(--line); }
+.techLine i { display: block; height: 100%; background: var(--teal-ink); transform-origin: top; }
+.techRow { position: relative; transition: background .3s; }
+.techRow::before { content: ''; position: absolute; left: -28px; top: 30px; width: 12px; height: 12px; background: var(--surface); border: 2px solid var(--line); border-radius: 50%; }
+.techRow[data-lit='true']::before { border-color: var(--teal-ink); background: var(--teal-ink); }
+@media (prefers-reduced-motion: reduce) {
+  .careSteps li, .techRow { transition: none; transform: none; }
+  .techLine i { transform: scaleY(1) !important; }
+}
+.featureDemo { height: 100%; border-radius: 22px; }
+.featureBack { width: 100%; height: 100%; min-height: 350px; background: var(--surface); border: 1px solid var(--line); }
+.featureBack { display: flex; flex-direction: column; align-items: stretch; gap: 10px; animation: featureEnter .3s ease-out; }
+.featureHeading { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.featureHeading strong { font-size: 14px; }
+.featureBack button { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; }
+.featureBack button[aria-pressed='true'] { background: var(--teal-ink); color: var(--surface); }
+.featureBack button:disabled { opacity: .5; }
+.featureBack p, .featureBack small { font-size: 11px; }
+.featureBack small { color: var(--muted); }
+.demoButtons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.durationDial { align-self: center; display: grid; place-items: center; width: 82px; height: 82px; border-radius: 50%; }
+.durationDial b { display: grid; place-items: center; width: 66px; height: 66px; border-radius: 50%; background: var(--surface); font-size: 20px; }
+.durationDial small { font-size: 10px; }
+.durationTrack { height: 12px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.durationTrack i { display: block; height: 100%; background: var(--teal-ink); transition: width .4s; }
+.demoTv, .proxyScreen { display: grid; place-items: center; min-height: 100px; border: 5px solid #253040; border-radius: 12px; color: white; background: linear-gradient(120deg,#123745,#4975b4); text-align: center; font-size: 14px; margin-bottom: 10px; }
+.demoTv[data-channel='1'] { background: linear-gradient(120deg,#294e31,#bd9b73); }
+.demoTv[data-channel='2'] { background: repeating-linear-gradient(45deg,#354453 0 10px,#6a5482 10px 20px); }
+.demoTv strong { animation: featureEnter .3s; }
+.duplicateFiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-height: 140px; }
+.duplicateFiles span { display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 11px; border: 1px solid var(--line); border-radius: 8px; transition: transform .4s, background .4s; }
+.duplicateFiles b { font-size: 24px; }
+.duplicateFiles[data-sorted='true'] span:nth-child(2) { grid-column: 2; grid-row: 1 / 3; }
+.duplicateFiles[data-sorted='true'] span:nth-child(odd) { background: color-mix(in srgb, var(--teal-ink) 20%, var(--surface)); transform: translateX(3px); }
+.proxyScreen[data-playing='true'] { background: linear-gradient(120deg,#12594d,#4975b4); }
+.featureBack progress { width: 100%; accent-color: var(--teal-ink); }
+@keyframes featureEnter { from { opacity: .6; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .featureBack, .demoTv strong { animation: none; } .durationTrack i, .duplicateFiles span { transition: none; transform: none; } }
+
+
+/* =====================================================================
+   Ark Server：方舟の情景（ここから下が，改名時に足した部分）
+   ヒーロー・波・船・断面図の目次・積み荷のコンテナ・空の弧・締めの航海
+   ===================================================================== */
+
+/* ----- 金色のボタン（ランタンの色） ----- */
+.primaryLink {
+  box-shadow: 0 14px 30px -14px rgb(var(--glow) / 0.75);
+}
+
+/* ----- 仕組みの図の水面（静止した波．下へ向かって消える） ----- */
+.waves {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 35%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 35%, transparent 100%);
+}
+
+.waveSheet {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 200%;
+  height: 100%;
+  color: var(--wave-a);
+  opacity: 0.55;
+}
+
+.waveSheet path {
+  fill: currentColor;
+}
+
+/* ----- ヒーロー：空と海と方舟 ----- */
+.hero {
+  isolation: isolate;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-low) 72%, var(--sea-top) 72%, var(--sea-bottom) 100%);
+}
+
+/* ダークでは星がまたたく */
+
+/* ダークでは，同じ場所に月が昇る */
+
+.heroInner {
+  padding-bottom: 196px;
+}
+
+/* 方舟．帆に実際の画面を掛け，ゆるやかに揺れる */
+.heroStage {
+  position: relative;
+  justify-self: center;
+  /* 船体の下の部分を，海の中へ沈める */
+}
+
+/* そばの小舟（iPhone・ブラウザ）．別の拍子で揺れる */
+.heroPhone {
+  animation:
+    phoneRise 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.8s both,
+    boatBob 5s ease-in-out 2s infinite;
+}
+
+/* 画面の注記．手前の波より上に出す */
+.heroCaption {
+  position: absolute;
+  z-index: 4;
+  margin: 0;
+  text-align: right;
+  line-height: 1.7;
+}
+
+@keyframes boatBob {
+  50% {
+    translate: 0 -9px;
+  }
+}
+
+/* ----- 積載量（真鍮の銘板） ----- */
+.statsIntro {
+  max-width: 520px;
+}
+
+.statsIntro > p:not(:first-child) {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.statCard {
+  position: relative;
+  border-color: color-mix(in srgb, var(--gold) 45%, var(--line));
+}
+
+/* ----- 仕組みの図：海の上を，積み荷が運ばれる ----- */
+.flowTag {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--gold-ink);
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+}
+
+.flowMac {
+  border-color: color-mix(in srgb, var(--gold) 55%, var(--line));
+}
+
+.flowMac img {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+}
+
+/* 積み荷は小さなコンテナ */
+.flowPacket {
+  width: 24px;
+  height: 15px;
+  top: calc(50% - 13px);
+  border-radius: 3px;
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.22) 0 3px, rgb(0 0 0 / 0.1) 3px 6px),
+    hsl(calc(18 + var(--p) * 62) 62% 52%);
+}
+
+.flowStage[data-step='2'] .flowPacket {
+  animation-name: packetFloat;
+}
+
+@keyframes packetFloat {
+  0% {
+    left: 0;
+    opacity: 0;
+    translate: 0 0;
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+  100% {
+    left: calc(100% - 24px);
+    opacity: 0;
+    translate: 0 0;
+  }
+}
+
+/* ----- 船の断面図（ツアーの目次） ----- */
+.tourBar {
+  justify-content: flex-end;
+}
+
+.tourAuto {
+  order: -1;
+  margin-left: auto;
+}
+
+.cutaway {
+  position: relative;
+  flex: 1 1 100%;
+  display: grid;
+}
+
+/* 船体：上は甲板，下は丸い船底 */
+.cutaway::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 62px;
+  bottom: 0;
+  border-radius: 22px 22px 120px 120px / 22px 22px 84px 84px;
+  border: 1px solid var(--line);
+}
+
+/* 船首の救命浮き輪と，船尾の錨（飾り） */
+.cutawayBow,
+.cutawayStern {
+  grid-area: bow;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--gold) 60%, var(--line));
+}
+
+.cutawayStern {
+  grid-area: stern;
+}
+
+.cutawayBow svg {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+.cutawayStern svg {
+  animation: floatSlow 6s ease-in-out 1s infinite;
+}
+
+@keyframes floatSlow {
+  50% {
+    transform: translateY(-5px) rotate(6deg);
+  }
+}
+
+/* 見張り台の旗 */
+.cutawayMast {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 22px;
+  background: var(--gold);
+}
+
+.cutawayMast::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0;
+  width: 16px;
+  height: 10px;
+  background: var(--gold);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  animation: pennant 2.2s ease-in-out infinite alternate;
+  transform-origin: left center;
+}
+
+.room {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.room:hover {
+  transform: translateY(-2px);
+  color: var(--text);
+  border-color: var(--gold);
+}
+
+.roomIcon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.roomText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.roomText em {
+  font-style: normal;
+  font-family: var(--font-mono);
+}
+
+.roomText strong {
+  line-height: 1.4;
+  color: inherit;
+}
+
+.roomText small {
+  color: var(--muted);
+}
+
+.room[aria-selected='true'] {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--sea-a), var(--sea-b));
+  box-shadow: 0 16px 28px -16px rgb(15 42 71 / 0.75), 0 0 0 2px rgb(var(--glow) / 0.6);
+}
+
+.room[aria-selected='true'] .roomIcon {
+  color: #fff;
+  background: rgb(255 255 255 / 0.16);
+  border-color: rgb(255 255 255 / 0.3);
+}
+
+.room[aria-selected='true'] .roomText em,
+.room[aria-selected='true'] .roomText small {
+  color: rgb(255 255 255 / 0.82);
+}
+
+@keyframes pennant {
+  to {
+    transform: skewY(-10deg) scaleX(0.82);
+  }
+}
+
+/* ----- 積み荷：コンテナ（押す・触れると，扉が開いて積荷目録が出る） ----- */
+
+/* 扉：左の蝶番を軸に，手前へ開く．奥に，積荷目録が見える */
+
+/* クレーンで降ろすように，上から落ちて，少し弾んで止まる */
+.moreTiles li {
+  animation-name: containerDrop;
+  animation-duration: 0.8s;
+  animation-timing-function: cubic-bezier(0.3, 1.45, 0.5, 1);
+}
+
+@keyframes containerDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-90px) rotate(-3deg);
+  }
+  55% {
+    opacity: 1;
+  }
+}
+
+/* ----- 外観の比較：空の弧を，太陽と月が渡る ----- */
+.skyArc {
+  position: relative;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: linear-gradient(90deg, #ffe0b0 0%, #cfe3f4 30%, #274b7a 66%, #070f22 100%);
+}
+
+.skyArc svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.skyArc path {
+  fill: none;
+  stroke: rgb(255 255 255 / 0.6);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 6;
+  vector-effect: non-scaling-stroke;
+}
+
+.skyLabelLeft,
+.skyLabelRight {
+  position: absolute;
+  bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.skyLabelLeft {
+  left: 16px;
+}
+
+.skyLabelRight {
+  right: 16px;
+}
+
+.skyBody {
+  position: absolute;
+  bottom: 6px;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  transition: transform 0.15s linear;
+}
+
+.skyBody svg {
+  position: static;
+  grid-area: 1 / 1;
+  width: auto;
+  height: auto;
+}
+
+.skySun {
+  color: #f0a020;
+  fill: #ffd98a;
+}
+
+.skyMoon {
+  color: #eef3ff;
+  fill: #eef3ff;
+}
+
+/* ----- 備え：船にたとえた呼び名 ----- */
+.careHead {
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ----- 設計図（技術の表） ----- */
+.techTimeline {
+  background-size: 28px 28px;
+}
+
+.techTimeline .techLine {
+  inset: 10px auto 10px 29px;
+}
+
+/* ----- 締め：出航 ----- */
+.closing > div {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.closingCard {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.closingBody {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(48px, 7vw, 88px) 28px 270px;
+}
+
+/* ----- 小さな画面（方舟まわり） ----- */
+@media (max-width: 960px) {
+
+  .heroInner {
+    padding-bottom: 152px;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroPhone {
+    right: -2%;
+    width: 27%;
+    padding: 4px;
+    border-radius: 18px;
+  }
+
+  .heroPhone img {
+    border-radius: 14px;
+  }
+
+  .heroCaption {
+    max-width: calc(100% - 48px);
+    right: 24px;
+  }
+
+  .cutaway {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: none;
+    padding: 12px 12px 48px;
+  }
+
+  .cutaway::before {
+    top: 0;
+    border-radius: 22px 22px 60px 60px / 22px 22px 40px 40px;
+  }
+
+  .cutawayMast,
+  .cutawayBow,
+  .cutawayStern {
+    display: none;
+  }
+
+  .room {
+    grid-area: auto !important;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .closingBody {
+    padding-bottom: 232px;
+  }
+
+  .skyArc {
+    height: 84px;
+  }
+
+  .techTimeline {
+    padding-left: 44px;
+  }
+
+  .techTimeline .techLine {
+    left: 25px;
+  }
+}
+
+/* ----- 動きを減らす設定（方舟まわり） ----- */
+@media (prefers-reduced-motion: reduce) {
+  .waveSheet,
+  .heroPhone,
+  .cutawayMast::after,
+  .cutawayBow svg,
+  .cutawayStern svg,
+  .moreTiles li {
+    animation: none;
+  }
+
+  .room,
+  .skyBody {
+    transition: none;
+  }
+}
+
+/* 航海の質感：空気遠近・索具・水面・金属を同じ光源でまとめる */
+.hero { border-bottom: 1px solid color-mix(in srgb, var(--wave-c) 65%, transparent); }
+.statCard {
+  border-radius: 10px;
+  border: 1px solid #b8a071;
+  background:
+    radial-gradient(circle at 10px 10px, #79653e 1px, #d4bc88 2px, transparent 3px),
+    radial-gradient(circle at calc(100% - 10px) 10px, #79653e 1px, #d4bc88 2px, transparent 3px),
+    repeating-linear-gradient(0deg, transparent 0 2px, rgb(141 105 41 / .025) 3px 4px),
+    linear-gradient(115deg,#e9d5a4,#faf0d7 42%,#d8bd83);
+  box-shadow: inset 0 1px 0 #fff8e2, inset 0 -2px 0 #ad8c51, 0 12px 24px -20px #3a2204;
+}
+.statCard b { color: #6d491a; text-shadow: 0 1px 0 #fff5d9; }
+.statCard > span, .statCard small { color: #76592d; }
+:global(.dark) .statCard { background: linear-gradient(115deg,#443822,#695332 48%,#3b3020); border-color: #8d7449; box-shadow: inset 0 1px 0 #a58b59, inset 0 -2px 0 #251f15, 0 12px 24px -20px #000; }
+:global(.dark) .statCard b { color: #f5d89e; text-shadow: 0 1px 1px #1b160d; }
+:global(.dark) .statCard > span, :global(.dark) .statCard small { color: #ddc89e; }
+.cutaway::before { background: repeating-linear-gradient(180deg, transparent 0 78px, color-mix(in srgb,var(--gold) 18%,transparent) 79px 80px), linear-gradient(160deg,color-mix(in srgb,var(--gold) 10%,var(--surface)),var(--surface)); box-shadow: inset 0 0 0 5px var(--bg), inset 0 0 0 6px var(--line), 0 24px 45px -35px rgb(15 42 71 / .6); }
+.room { border-radius: 8px; box-shadow: inset 0 1px 0 rgb(255 255 255 / .08); }
+.flowPin { border: 1px dashed color-mix(in srgb,var(--gold) 60%,var(--line)); border-radius: 6px; background: var(--surface); box-shadow: 0 5px 12px -8px #081c32; }
+.flowPacket { box-shadow: inset 0 2px 0 rgb(255 255 255 / .25), inset 0 -2px 0 rgb(0 0 0 / .2); }
+.skyArc { box-shadow: inset 0 0 30px rgb(8 30 60 / .12); }
+.skyArc::after { content: ''; position: absolute; inset: 8px 6% 35px 60%; pointer-events: none; background: radial-gradient(circle at 15% 45%,#fff 0 1px,transparent 1.5px), radial-gradient(circle at 70% 20%,#fff 0 1px,transparent 1.5px), radial-gradient(circle at 85% 65%,#dbe6fc 0 1px,transparent 1.5px); }
+.techTimeline { border: 1px solid color-mix(in srgb,var(--teal-ink) 30%,var(--line)); }
+.techRow dt { letter-spacing: .04em; }
+.techRow dd { padding-right: 8px; }
+
+/* ヒーローの海：水平線から手前へ，波紋の密度と光の幅が変わる水面 */
+
+/* 航海テーマの可読性。装飾色と，文字を載せる操作面の色を分ける。 */
+.resizeControls button[aria-pressed='true'],
+.featureBack button[aria-pressed='true'],
+.careSteps li[data-current='true'] {
+  background: var(--control-fill);
+  color: var(--control-text);
+  border-color: var(--control-fill);
+}
+.careSteps li[data-current='true'] > span { background: var(--surface); color: var(--text); }
+.moreFilter button[data-hue='0'], .moreTile[data-hue='0'] { --g1: #32648d; --g2: #21496d; }
+.moreFilter button[data-hue='1'], .moreTile[data-hue='1'] { --g1: #a04a32; --g2: #773322; }
+.moreFilter button[data-hue='2'], .moreTile[data-hue='2'] { --g1: #806020; --g2: #5d4314; }
+.moreFilter button[data-hue='3'], .moreTile[data-hue='3'] { --g1: #306c50; --g2: #214e3a; }
+.moreFilter button[data-hue='4'], .moreTile[data-hue='4'] { --g1: #525c9a; --g2: #393f72; }
+.moreFilter button[data-hue='5'], .moreTile[data-hue='5'] { --g1: #8a5533; --g2: #653c22; }
+:global(.dark) .moreFilter button:not([aria-pressed='true']) svg { color: #c6d7eb; }
+.moreFilter button[aria-pressed='true'], .room[aria-selected='true'] { background: #214f7a; color: #fff; }
+.moreFilter button[aria-pressed='true'] span { background: #153752; color: #fff; }
+.moreTile { min-height: 190px; }
+.featureBack small { font-size: 12px; }
+.heroCaption { color: #fff; text-shadow: none; }
+.techRow dd > span { border-radius: 4px; }
+.careNote { color: var(--text); }
+.skyLabelLeft, .skyLabelRight { padding: 3px 8px; border-radius: 4px; }
+.skyLabelLeft { background: #fff0d2; color: #62410e; }
+.skyLabelRight { background: #122844; color: #e1edff; }
+.page button:focus-visible, .page a:focus-visible { outline: 3px solid var(--teal-ink); outline-offset: 4px; }
+
+/* 機能一覧：同じ高さの見出しと静かな面で，機能名を先に読めるようにする。 */
+.moreTiles { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 16px; }
+.moreTiles li { perspective: none; }
+.featureDemoItem { grid-row: auto; }
+.tileSpotlight, .featureDemo { border-radius: 14px; height: auto; }
+.featureCard, .featureDemo .moreTile {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--g2, var(--teal-ink));
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 6px 14px -12px rgb(8 30 60 / .3);
+}
+.featureCardToggle {
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: center;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  text-align: left;
+  color: var(--text);
+  background: var(--surface);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  cursor: pointer;
+}
+.featureCardToggle:hover { background: color-mix(in srgb,var(--teal-ink) 5%,var(--surface)); }
+.featureCardToggle strong { line-height: 1.6; color: var(--text); text-shadow: none; }
+.featureCardIcon { display: grid; place-items: center; border-radius: 10px; box-shadow: none; }
+.featureCardAction { grid-column: 2; color: var(--teal-ink); font-size: 12px; line-height: 1.6; }
+.featureCardDescription { border-top: 1px solid var(--line); color: var(--text); font-size: 14px; line-height: 1.85; text-align: left; }
+.featureCardDescription[hidden] { display: none; }
+.featureDemo .moreTile { height: auto; min-height: 0; }
+.featureDemo .featureBack { height: auto; min-height: 350px; border: 0; border-radius: 0; }
+@media (max-width: 960px) { .moreTiles { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 560px) { .moreTiles { grid-template-columns: minmax(0,1fr); gap: 12px; } .featureCardToggle { min-height: 112px; padding: 16px; } }
+.featureCard[data-hue='0'] { --g2: #32648d; }
+.featureCard[data-hue='1'] { --g2: #a04a32; }
+.featureCard[data-hue='2'] { --g2: #806020; }
+.featureCard[data-hue='3'] { --g2: #306c50; }
+.featureCard[data-hue='4'] { --g2: #525c9a; }
+.featureCard[data-hue='5'] { --g2: #8a5533; }
+:global(.dark) .featureCard, :global(.dark) .featureDemo .moreTile { border-top-color: color-mix(in srgb,var(--g2) 50%, #d0ddec); }
+.featureListActions { display: flex; justify-content: center; margin-top: 24px; }
+.featureListActions button { padding: 12px 24px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--teal-ink); font-size: 14px; font-weight: 600; }
+.featureListActions button:hover { border-color: var(--teal-ink); background: color-mix(in srgb,var(--teal-ink) 6%,var(--surface)); }
+
+/* 写真に近い空と水面。本文の面は静かに保ち，情景の質感に集中させる。 */
+.page {
+  --landscape: url('/projects/arkserver-backgrounds/ocean-dawn.webp');
+}
+:global(.dark) .page {
+  --landscape: url('/projects/arkserver-backgrounds/ocean-night.webp');
+}
+.hero, .closingCard {
+  background-image: var(--landscape);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-color: color-mix(in srgb,var(--text) 12%,transparent);
+  box-shadow: 0 28px 65px -45px rgb(7 29 43 / .45);
+}
+.heroInner { position: relative; z-index: 1; }
+.heroCopy { position: relative; }
+.heroCopy::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -45px -35px -35px -45px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(245 242 232 / .78), rgb(245 242 232 / .35) 50%, transparent 73%);
+  pointer-events: none;
+}
+:global(.dark) .heroCopy::before { background: radial-gradient(ellipse, rgb(6 17 31 / .8), rgb(6 17 31 / .4) 50%, transparent 74%); }
+.heroCopy .lead { color: #283b4b; }
+:global(.dark) .heroCopy .lead { color: #d1dce7; }
+.heroCaption { background: rgb(6 24 38 / .76); }
+.closingBody { background: linear-gradient(180deg,rgb(247 244 235 / .8),rgb(247 244 235 / .45) 50%,transparent 75%); }
+:global(.dark) .closingBody { background: linear-gradient(180deg,rgb(5 15 29 / .86),rgb(5 15 29 / .55) 50%,transparent 75%); }
+@media (max-width: 600px) {
+  .hero { background-position: 58% center; }
+  .heroCopy::before { inset: -30px -20px; background: radial-gradient(ellipse,rgb(245 242 232 / .92),rgb(245 242 232 / .55) 55%,transparent 78%); }
+  :global(.dark) .heroCopy::before { background: radial-gradient(ellipse,rgb(6 17 31 / .9),rgb(6 17 31 / .55) 55%,transparent 78%); }
+}
+
+/* 本文セクション：実画面を中心とした，静かな展示のレイアウト */
+.sectionIntro .eyebrow { align-items: center; gap: 16px; letter-spacing: .2em; }
+.sectionIntro .eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--gold-ink); }
+.sectionIntro h2 { font-size: clamp(27px,3.5vw,42px); line-height: 1.55; font-weight: 600; letter-spacing: -.035em; }
+.statsGrid { gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.statCard, :global(.dark) .statCard { border: 0; border-radius: 0; border-right: 1px solid var(--line); background: transparent; box-shadow: none; padding: 28px 24px; }
+.statsGrid li:last-child .statCard { border-right: 0; }
+.statCard b, :global(.dark) .statCard b { text-shadow: none; }
+.statCard small, .statCard > span, :global(.dark) .statCard small, :global(.dark) .statCard > span { color: var(--muted); }
+.statCard:hover { transform: none; }
+.flowStage { background: var(--surface); box-shadow: 0 24px 55px -45px rgb(7 29 43 / .35); }
+.flowSteps li[data-done='true'] { opacity: 1; }
+.flowSteps small { line-height: 1.85; }
+.flowTag { display: none; }
+.cutaway { grid-template-columns: repeat(4,minmax(0,1fr)); grid-template-areas: none; padding: 0; }
+.cutaway::before, .cutawayMast, .cutawayBow, .cutawayStern { display: none; }
+.cutaway .room { grid-area: auto !important; background: var(--surface); }
+.cutaway .room[aria-selected='true'] { box-shadow: none; }
+.roomIcon { width: 30px; height: 30px; border: 0; background: transparent; border-radius: 6px; }
+.roomText strong { font-size: 13px; }
+.roomText small { font-size: 11px; line-height: 1.5; }
+.roomText em { font-size: 11px; }
+.stage { background: linear-gradient(145deg,var(--surface),color-mix(in srgb,var(--teal-ink) 6%,var(--bg))); border: 1px solid var(--line); box-shadow: 0 28px 48px -40px rgb(7 29 43 / .4); }
+.phoneStage { background: radial-gradient(ellipse at 50% 50%,color-mix(in srgb,var(--teal-ink) 9%,var(--surface)),var(--surface) 75%); }
+.demoCard { background: var(--surface); box-shadow: 0 16px 30px -28px rgb(7 29 43 / .4); border: 1px solid var(--line); }
+.demoCard figcaption { font-size: 13px; line-height: 1.85; border-top: 1px solid var(--line); }
+.demoCard figcaption strong { font-size: 16px; margin-bottom: 8px; }
+.browserIntro { max-width: none; }
+.tabList { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 0; border-top: 1px solid var(--line); margin: 16px 0 32px; }
+.tabList li { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; font-size: 13px; line-height: 1.8; }
+.browserShowcase { margin: 0; border: 1px solid var(--line); overflow: hidden; background: var(--surface); box-shadow: 0 30px 65px -48px rgb(7 29 43 / .55); }
+.showcaseChrome { display: flex; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--line); }
+.showcaseChrome span:first-child { letter-spacing: 4px; }
+.browserShowcase img { display: block; width: 100%; height: auto; }
+.browserShowcase figcaption { padding: 12px 20px; font-size: 12px; color: var(--muted); }
+.previewDetails { margin-top: 24px; padding: 20px 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.previewDetails > summary, .careDetails > summary { cursor: pointer; color: var(--teal-ink); font-size: 13px; font-weight: 600; padding: 4px 0; }
+.careGrid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-top: 24px; align-items: start; }
+.careCard { height: auto; box-shadow: none; }
+.careCard:hover { border-color: var(--line); }
+.careHead { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; }
+.careCard h3 { font-size: 17px; margin-top: 16px; }
+.careCard p { font-size: 14px; line-height: 1.85; margin-top: 10px; }
+.careDetails { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--line); }
+.careNote { border: 1px solid var(--line); border-left: 3px solid var(--gold-ink); border-radius: 4px; }
+.techTimeline { background-image: none; background-color: var(--surface); box-shadow: none; }
+.techRow:last-child { border-bottom: 0; }
+.techRow dt { font-family: inherit; }
+.techRow dd > span { background: transparent; padding: 0; margin-top: 4px; line-height: 1.85; color: var(--muted); }
+.skyArc { height: 72px; border-radius: 10px; }
+.wipeStage { border: 1px solid var(--line); }
+@media (max-width: 960px) { .cutaway { grid-template-columns: repeat(2,minmax(0,1fr)); } .tabList { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 600px) {
+  .careGrid { grid-template-columns: minmax(0,1fr); }
+  .careCard { padding: 24px; }
+  .phoneStage { min-height: auto; }
+  .sectionIntro > p:not(:first-child) { font-size: 14px; }
+  .roomText small { display: none; }
+  .techTimeline { padding-right: 20px; }
+}
+
+
+/* Unslop direction: quiet coastal light, exact product screens, one connection dot.
+   Method: unslop by Damir Sokolovsky / https://github.com/heydamir/unslop (CC BY 4.0).
+   1 spacing, 2 color, 3 icons, 4 copy, 5 type, 6 layout, 7 details, 8 visuals, 9 motion. */
+.page {
+  --bg: #f5f6f7; --surface: #fff; --line: #dfe3e7;
+  --text: #18232e; --muted: #536170;
+  --teal-ink: #315c75; --blue-ink: #315c75; --gold-ink: #315c75;
+
+  --control-fill: #315c75; --control-text: #fff;
+  background: var(--bg);
+}
+:global(.dark) .page {
+  --bg: #0b1017; --surface: #121922; --line: #27313c;
+  --text: #edf0f3; --muted: #a8b2bf;
+  --teal-ink: #b0cbdc; --blue-ink: #b0cbdc; --gold-ink: #b0cbdc;
+  --control-fill: #dce7ee; --control-text: #14212c;
+  background: var(--bg);
+}
+.how,.tourSection,.demos,.iphone,.browser,.more,.looks,.care,.stack,.closing { padding: 96px 32px 0; }
+.sectionIntro { max-width: 800px; padding-bottom: 24px; }
+.sectionIntro > p:not(:first-child) { margin-top: 16px; max-width: 672px; font-size: 15px; line-height: 1.9; }
+.page .eyebrow { font-size: 13px; font-weight: 500; line-height: 1.5; letter-spacing: 0; text-transform: none; color: var(--muted); }
+.sectionIntro .eyebrow { display: block; }
+.sectionIntro .eyebrow::before,.sectionIntro::after { display: none; }
+.page h2,.sectionIntro h2 { font-size: clamp(28px,3vw,40px); font-weight: 500; letter-spacing: -.02em; line-height: 1.5; }
+.page h3 { font-weight: 500; }
+.page :is(button,a,strong,b) { font-weight: 500; }
+.page :is(figcaption,.flowNote,.moreHint,.careNote) { font-size: 13px; line-height: 1.8; letter-spacing: 0; }
+.page :is(.primaryLink,.secondaryLink) { min-height: 48px; padding: 12px 20px; border-radius: 8px; font-weight: 500; gap: 8px; box-shadow: none; transform: none; transition: background-color 160ms ease-out,border-color 160ms ease-out,color 160ms ease-out; }
+.primaryLink { background: #244a62; color: #fff; border: 1px solid #244a62; }
+.primaryLink:hover { background: #1d3b4e; box-shadow: none; transform: none; }
+:global(.dark) .primaryLink { background: #e4eaf0; color: #16212c; border-color: #e4eaf0; }
+:global(.dark) .primaryLink:hover { background: #fff; }
+.secondaryLink { background: var(--surface); color: var(--text); }
+.page :is(.roomIcon,.featureCardIcon,.careHead,.flowStepIcon) { width: 32px; height: 32px; padding: 6px; border-radius: 8px; color: var(--muted); background: transparent; border: 0; box-shadow: none; }
+.page :is(button svg,.careHead svg,.flowStepIcon svg,.tourCopy h3 svg) { width: 18px; height: 18px; stroke-width: 1.5; flex-shrink: 0; }
+.localNav { padding: 24px 32px; font-size: 13px; }
+.localNav span { font-weight: 500; }
+.hero { border-radius: 20px; border-color: var(--line); box-shadow: none; }
+.heroInner { grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); padding: 80px 48px 104px; gap: 32px; align-items: center; }
+.heroCopy { z-index: 1; }
+.heroCopy h1 { white-space: normal; margin-top: 24px; }
+.heroCopy h1 em { font-style: normal; color: inherit; }
+.heroCopy .lead { font-size: 17px; line-height: 1.8; max-width: 440px; margin-top: 24px; }
+/* 文節の途中では折り返さない（「ライブ／ラリ」のような分かれ方を防ぐ） */
+.phrase { display: inline-block; }
+.heroActions { margin-top: 32px; gap: 12px; }
+.appName { margin-top: 16px; gap: 12px; font-size: 18px; font-weight: 500; }
+.appName img { box-shadow: none; border-radius: 8px; width: 32px; height: 32px; }
+.heroStage { width: 100%; margin: 0; transform: none; }
+.heroWindow { width: 100%; overflow: hidden; }
+.heroWindow img { display: block; width: 100%; height: auto; border-radius: 0; filter: none; }
+.heroPhone { right: 0; transform: none; border-radius: 20px; box-shadow: 0 8px 20px rgb(0 0 0 / .16); }
+.heroCaption { bottom: 16px; right: 24px; max-width: calc(100% - 48px); padding: 4px 8px; font-size: 12px; border-radius: 4px; }
+.requirements { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px 24px; max-width: 1160px; margin: 24px auto 0; padding: 0 32px; font-size: 13px; color: var(--muted); }
+.stats { padding-top: 64px; }
+.statsIntro { margin-bottom: 24px; }
+.statCard,.statCard:hover,:global(.dark) .statCard { padding: 24px; transform: none; background: transparent; box-shadow: none; }
+.statCard b,:global(.dark) .statCard b { font-size: 36px; font-weight: 500; color: var(--text); }
+.statCard small { font-size: 13px; }
+.statCard > span { font-size: 13px; }
+.flowStage,.stage,.phoneStage,.demoCard,.browserShowcase,.techTimeline,.careCard,.featureCard,.featureDemo .moreTile { background: var(--surface); border-color: var(--line); box-shadow: none; }
+.flowStage { padding: 32px; border-radius: 16px; }
+.flowSteps { gap: 16px; margin-top: 32px; }
+.flowSteps li { padding: 16px; border-radius: 8px; background: var(--surface); border-color: var(--line); box-shadow: none; opacity: 1; transform: none; }
+.flowSteps li[data-active='true'] { border-color: var(--teal-ink); box-shadow: none; transform: none; }
+.flowSteps li[data-active='true'] .flowStepIcon { background: transparent; color: var(--teal-ink); }
+.flowMac,.flowPhone { box-shadow: none; border-color: var(--line); }
+.flowMac img { box-shadow: none; }
+.flowSteps strong { font-weight: 500; }
+.flowSteps small { font-size: 13px; }
+.roomIcon { color: var(--muted); }
+.cutaway { gap: 8px; }
+.cutaway .room { min-height: 88px; padding: 16px 12px; border-radius: 8px; box-shadow: none; transition: color 160ms ease-out,background-color 160ms ease-out,border-color 160ms ease-out; }
+.cutaway .room:hover { transform: none; background: color-mix(in srgb,var(--text) 4%,var(--surface)); }
+.cutaway .room[aria-selected='true'] { color: var(--text); background: color-mix(in srgb,var(--text) 7%,var(--surface)); border-color: var(--teal-ink); }
+.cutaway .room[aria-selected='true'] :is(.roomIcon,.roomText small,.roomText em) { color: var(--muted); background: none; }
+.roomText strong { font-weight: 500; }
+.roomText em { color: var(--muted); letter-spacing: 0; }
+.tourCopy h3 { font-size: 24px; line-height: 1.6; }
+.tourPoints { gap: 16px; }
+.stage { padding: 24px; border-radius: 16px; }
+.stage img { border-radius: 8px; filter: none; }
+.phoneStage { min-height: auto; padding: 32px; }
+.phoneStage .phoneFrame { box-shadow: 0 8px 24px rgb(0 0 0 / .1); transform: none; }
+.demoCard { padding: 16px; gap: 16px; border-radius: 16px; }
+.demoCard figcaption { padding: 16px 8px 8px; }
+.demoCard figcaption strong { font-weight: 500; }
+.tabList li { padding: 24px 16px; }
+.browserShowcase { border-radius: 16px; }
+.showcaseChrome { padding: 12px 16px; gap: 24px; }
+.showcaseChrome span:first-child { color: var(--muted); }
+.moreFilter button,.featureListActions button { padding: 8px 16px; min-height: 40px; border-radius: 8px; font-weight: 500; transition: background-color 160ms ease-out,border-color 160ms ease-out; }
+.moreFilter button[aria-pressed='true'] { color: var(--text); background: color-mix(in srgb,var(--text) 7%,var(--surface)); border-color: var(--teal-ink); transform: none; }
+.moreFilter button[aria-pressed='true'] :is(svg,span) { color: inherit; background: none; }
+.moreFilter button span { background: transparent; color: var(--muted); padding: 0 0 0 4px; }
+.featureCard,.featureDemo .moreTile,:global(.dark) .featureCard,:global(.dark) .featureDemo .moreTile { border: 1px solid var(--line); border-radius: 12px; }
+.featureCardToggle { grid-template-columns: 32px minmax(0,1fr); gap: 8px 12px; padding: 24px; min-height: 136px; }
+.featureCardToggle strong { font-size: 15px; font-weight: 500; }
+.featureCardIcon { width: 32px; height: 32px; padding: 6px; background: transparent; color: var(--muted); border: 0; }
+.featureCardDescription { padding: 16px 24px 24px; }
+.featureBack { padding: 24px; border-radius: 12px; }
+.careCard { padding: 24px; border-radius: 12px; }
+.careHead { background: transparent; }
+.careCard:hover { transform: none; box-shadow: none; }
+.technicalNotes { display: flex; flex-wrap: wrap; gap: 16px 32px; max-width: 1096px; padding: 32px; margin: 64px auto 0; border-block: 1px solid var(--line); font-size: 13px; color: var(--muted); font-family: var(--font-mono); }
+.techTimeline { padding: 8px 24px 8px 48px; border-radius: 12px; }
+.techRow { padding: 24px 0; gap: 24px; }
+.techRow dt { color: var(--muted); }
+.techRow[data-lit='true']::before { box-shadow: none; }
+.skyArc { display: none; }
+.wipeStage { box-shadow: none; border-radius: 12px; }
+.closing { padding-bottom: 96px; }
+.closingCard { background: var(--surface); border-radius: 16px; box-shadow: none; }
+.closingBody,:global(.dark) .closingBody { background: none; padding: 64px 32px; }
+.closingBody h2 { max-width: 720px; }
+.closingBody > p:not(.eyebrow) { max-width: 640px; }
+@media (max-width: 960px) {
+  .heroInner { grid-template-columns: minmax(0,1fr); padding: 48px 32px 72px; gap: 48px; }
+  .heroCopy .lead { max-width: 560px; }
+  .heroStage { justify-self: center; }
+}
+@media (max-width: 600px) {
+  .how,.tourSection,.demos,.iphone,.browser,.more,.looks,.care,.stack,.closing { padding: 64px 24px 0; }
+  .hero { margin: 16px 16px 0; border-radius: 16px; }
+  .heroInner { padding: 32px 24px 64px; gap: 32px; }
+  .heroCopy .lead { font-size: 16px; }
+  .heroCaption { font-size: 11px; line-height: 1.5; bottom: 12px; right: 16px; }
+  .requirements { justify-content: flex-start; padding: 0 24px; gap: 8px 16px; font-size: 12px; }
+  .statCard,:global(.dark) .statCard { padding: 20px 16px; }
+  .statCard b { font-size: 32px; }
+  .flowStage,.stage,.phoneStage { padding: 16px; }
+  .cutaway .room { padding: 12px; min-height: 72px; }
+  .featureCardToggle { padding: 20px; min-height: 112px; }
+  .closing { padding-bottom: 64px; }
+  .closingBody { padding: 40px 24px; }
+}
+/* Decorative motion is removed; functional playback/analysis/progress demos retain theirs. */
+.page :is(.heroWindow,.heroPhone,.roomIcon,.careHead,.moreTiles li,.featureBack,.demoTv strong,.tourPanel,.tourPanel .stage,.tourPanel .tourStep,.tourPanel .tourCopy h3,.tourPanel .tourCopy > p,.tourPanel .tourPoints li,.moreLead,.careCard svg *,.tourShot figcaption) { animation: none; }
+.page .tourPanel:not([hidden]) :is(.stage,.tourStep,.tourCopy h3,.tourCopy > p,.tourPoints li) { animation: none; }
+.page :is(.featureCardIcon,.careHead,.durationTrack i) { transition: background-color 160ms ease-out,color 160ms ease-out; }
+.page button:active { transform: scale(.98); }
+@media (prefers-reduced-motion: no-preference) { .heroInner { animation: refinedEnter 400ms cubic-bezier(.22,1,.36,1) both; } @keyframes refinedEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } } }
+.page .moreFilter button svg { color: inherit; }
+.page .callout { box-shadow: none; border-radius: 6px; border-width: 1px; background: #294c65; }
+.page .callout[data-current='true'] { background: #182f40; box-shadow: none; }
+.page .tabProgress { background: var(--teal-ink); }
+.page .flowPacket { box-shadow: none; }
+.page .flowPin { box-shadow: none; border-color: var(--line); }
+.page .tourAuto:hover svg { transform: none; }
+.page .tourPanel .phoneFrame img { border-radius: 0; }
+:global(.dark) .page :is(.heroWindow img,.stage img) { filter: none; }
+.page :is(.tourStep,.tourAuto,.flowNote,.roomText em,.moreLead) { letter-spacing: 0; text-transform: none; }
+.page .tourAuto { border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+.page .room:hover { transform: none; }
+.page .techLine i { background: var(--teal-ink); }
+
+/* Character pass: coastal editorial type and the server-ark from the actual app mark.
+   Keep the surrounding controls quiet; the product scene carries the detail. */
+.page { --harbor-ink: #294c60; --harbor-metal: #d6d0bf; --harbor-lamp: #b68436; }
+:global(.dark) .page { --harbor-ink: #a5c0d0; --harbor-metal: #7d8d98; --harbor-lamp: #dfba74; }
+.heroCopy h1 {
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', serif;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -.04em;
+  font-size: clamp(36px,3.7vw,50px);
+}
+.heroCopy h1 em { display: inline-block; }
+.heroCopy .eyebrow { color: var(--harbor-ink); }
+.heroStage { padding: 32px 28px 116px 0; }
+.heroWindow { position: relative; z-index: 1; border-radius: 10px; border: 3px solid #e5dfd0; box-shadow: 0 16px 36px -20px rgb(0 0 0 / .4); }
+:global(.dark) .heroWindow { border-color: #8999a4; }
+.libraryLabel { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--text); font-size: 12px; letter-spacing: .02em; }
+.connectionDot { width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%; background: #3b8a67; }
+.libraryBase { position: absolute; left: 0; width: calc(100% - 28px); height: auto; bottom: 28px; overflow: visible; }
+.libraryBase rect { fill: var(--harbor-metal); stroke: color-mix(in srgb,var(--text) 20%,transparent); stroke-width: 1; }
+.libraryBase .libraryDeck { fill: #37576b; stroke: #244557; stroke-width: 1; }
+:global(.dark) .libraryBase .libraryDeck { fill: #4b6578; stroke: #718996; }
+.libraryBase .libraryPorts { fill: var(--harbor-lamp); }
+.libraryBase .libraryVents { stroke: color-mix(in srgb,var(--text) 40%,transparent); stroke-width: 2; stroke-linecap: round; }
+.heroPhone { z-index: 2; bottom: 24px; width: 23%; }
+.statsGrid { grid-template-columns: 1.5fr repeat(4,minmax(0,1fr)); }
+.statsGrid li:first-child .statCard b { font-family: 'Hiragino Mincho ProN','Yu Mincho',serif; font-size: 64px; color: var(--harbor-ink); }
+.statsGrid li:first-child .statCard { padding-block: 20px; }
+.statCard { display: flex; flex-direction: column; justify-content: center; min-height: 144px; }
+.statCard b { font-variant-numeric: tabular-nums; }
+.statsIntro .eyebrow { color: var(--harbor-ink); }
+.technicalNotes { justify-content: flex-start; padding-inline: 0; letter-spacing: .02em; }
+.technicalNotes span:first-child { color: var(--harbor-ink); }
+.sectionIntro .eyebrow { color: var(--harbor-ink); font-family: var(--font-mono); font-size: 12px; }
+.closingCard { background-image: linear-gradient(180deg,var(--surface) 30%,transparent),var(--landscape); background-position: center,bottom; background-size: cover; }
+.closingBody { padding-bottom: 112px; }
+.closingMark { display: block; width: 48px; height: 48px; margin-bottom: 24px; border-radius: 12px; }
+.closingBody h2 { font-family: 'Hiragino Mincho ProN','Yu Mincho',serif; font-weight: 500; }
+@media (max-width: 960px) {
+  .heroStage { width: min(100%,600px); }
+  .heroCopy h1 { max-width: 600px; font-size: 44px; }
+  .statsGrid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (max-width: 600px) {
+  .heroCopy h1 { font-size: 34px; line-height: 1.6; }
+  .heroStage { padding: 28px 20px 88px 0; }
+  .libraryBase { width: calc(100% - 20px); bottom: 24px; }
+  .heroPhone { bottom: 40px; }
+  .libraryLabel { font-size: 11px; }
+  .statsGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .statsGrid li:first-child .statCard b { font-size: 48px; }
+  .statCard { min-height: 128px; }
+  .closingBody { padding-bottom: 96px; }
+  .technicalNotes { margin-inline: 24px; padding-block: 24px; }
+}
+
+/* Product-specific transitions share the same timing as the portfolio. */
+@media (prefers-reduced-motion: no-preference) {
+  .heroCopy > * { animation: ark-copy-arrive .75s var(--site-ease) backwards; }
+  .heroCopy > :nth-child(2) { animation-delay: 60ms; }
+  .heroCopy > :nth-child(3) { animation-delay: 120ms; }
+  .heroCopy > :nth-child(4) { animation-delay: 180ms; }
+  .heroCopy > :nth-child(5) { animation-delay: 240ms; }
+  .page .heroWindow { animation: ark-screen-arrive 1s 100ms var(--site-ease) backwards; }
+  .page .heroPhone { animation: ark-phone-arrive 1s 260ms var(--site-ease) backwards; }
+  .libraryBase { animation: ark-copy-arrive .9s 180ms var(--site-ease) backwards; }
+  .requirements li { animation: ark-copy-arrive .65s var(--site-ease) backwards; }
+  .requirements li:nth-child(2) { animation-delay: 100ms; }
+  .requirements li:nth-child(3) { animation-delay: 200ms; }
+
+  .page .tourPanel:not([hidden]) .tourStep,
+  .page .tourPanel:not([hidden]) .tourCopy h3,
+  .page .tourPanel:not([hidden]) .tourCopy > p,
+  .page .tourPanel:not([hidden]) .tourPoints li { animation: ark-copy-arrive .55s var(--site-ease) backwards; }
+  .page .tourPanel:not([hidden]) .tourCopy h3 { animation-delay: 40ms; }
+  .page .tourPanel:not([hidden]) .tourCopy > p { animation-delay: 80ms; }
+  .page .tourPanel:not([hidden]) .tourPoints li { animation-delay: 120ms; }
+  .page .tourPanel:not([hidden]) .tourPoints li:nth-child(2) { animation-delay: 170ms; }
+  .page .tourPanel:not([hidden]) .tourPoints li:nth-child(3) { animation-delay: 220ms; }
+  .page .tourPanel:not([hidden]) .stage { animation: ark-screen-arrive .7s var(--site-ease) backwards; }
+  .page .tourPanel:not([hidden]) .tourShot figcaption { animation: ark-copy-arrive .45s 180ms var(--site-ease) backwards; }
+
+  .page .moreWrap[data-visible='true'] .moreTiles > li { animation: ark-tile-arrive .55s var(--site-ease) backwards; animation-delay: calc(min(var(--i), 5) * 45ms); }
+  .page .moreWrap[data-visible='false'] .moreTiles > li { opacity: 1; }
+  .page .moreLead { animation: ark-copy-arrive .4s var(--site-ease) backwards; }
+  .featureCardToggle .featureCardIcon { transition: rotate .35s var(--site-ease), color .25s; }
+  .featureCardToggle:is(:hover, :focus-visible) .featureCardIcon { rotate: -8deg; color: var(--teal-ink); }
+  .featureCardAction { transition: translate .35s var(--site-ease), color .25s; }
+  .featureCardToggle:is(:hover, :focus-visible) .featureCardAction { translate: 4px 0; }
+  .featureCardToggle[aria-expanded='true'] .featureCardAction { color: var(--text); }
+  .page .demoTv strong { animation: ark-copy-arrive .4s var(--site-ease) backwards; }
+  .techRow::before { transition: background-color .4s, border-color .4s, scale .4s var(--site-ease); }
+  .techRow[data-lit='true']::before { scale: 1.15; }
+  .careDetails summary { transition: color .25s, padding-inline-start .3s var(--site-ease); }
+  .careDetails summary:is(:hover, :focus-visible), .careDetails[open] summary { color: var(--teal-ink); padding-inline-start: 5px; }
+}
+@keyframes ark-copy-arrive { from { opacity: 0; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
+@keyframes ark-screen-arrive { from { opacity: .2; translate: 0 24px; scale: .96; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes ark-phone-arrive { from { opacity: 0; translate: 20px 28px; rotate: 4deg; } to { opacity: 1; translate: 0 0; rotate: 0deg; } }
+@keyframes ark-tile-arrive { from { opacity: 0; transform: translateY(20px) scale(.97); } to { opacity: 1; transform: none; } }

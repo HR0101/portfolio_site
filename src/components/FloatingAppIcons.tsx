@@ -63,7 +63,7 @@ const FLOATING_TILES: FloatingTile[] = [
     parallaxFactor: 0.16,
   },
   {
-    src: '/projects/allserverformac.webp',
+    src: '/projects/arkserver.svg',
     left: 88,
     top: 58,
     sizePx: 94,

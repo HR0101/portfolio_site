@@ -17,6 +17,7 @@ AWS（S3 + CloudFront）から移した理由：AWS の無料プランのプロ�
 | 環境変数 | `NODE_VERSION=22`，`NEXT_PUBLIC_SITE_URL=https://hr0101.dev`，`NEXT_TELEMETRY_DISABLED=1` |
 | カスタムドメイン | `hr0101.dev` |
 
+- 改名前の紹介ページ（`/apps/allserverformac`）から `/apps/arkserver` への恒久転送は `public/_redirects` で指定する（静的書き出しでは `next.config.mjs` の `redirects()` が効かないため．同じ内容を両方に置いている）．
 - セキュリティヘッダー・`_next/static/` の長期キャッシュ・拡張子のない OGP 画像の `Content-Type` は `public/_headers` で指定する（書き出し時に `out/_headers` へコピーされる）．CSP を変えるときは `next.config.mjs` と両方をそろえる．
 - `404.html` は Pages が自動で使う．`/apps/bustimeapp/` のような末尾スラッシュ付きの URL もそのまま配信される．
 - PR やブランチへの push ごとに `*.pages.dev` のプレビューが作られる（本番には影響しない）．
