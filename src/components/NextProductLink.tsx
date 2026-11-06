@@ -8,6 +8,9 @@ import { RollLabel } from './RollLabel';
 import { SWIFT_APPS } from '../data/apps';
 import { WEB_WORKS } from '../data/works';
 import './NextProductLink.css';
+import type { TransitionEffect } from '../lib/transitionEffects';
+
+const NEXT_EFFECTS: TransitionEffect[] = ['slide', 'wipe', 'scale', 'morph', 'fade'];
 
 // 紹介ページを持つプロダクト（apps.ts / works.ts に detailHref を足せば，ここにも自動で並ぶ）
 const DETAIL_PAGES = [
@@ -35,7 +38,7 @@ export function NextProductLink() {
   return (
     <nav className="next-product" aria-label="次のプロダクト">
       <Reveal className="next-product-inner">
-        <Link href={nextPage.href} className="next-product-link roll-label-host">
+        <Link href={nextPage.href} data-route-transition={NEXT_EFFECTS[currentIndex % NEXT_EFFECTS.length]} className="next-product-link roll-label-host">
           <span className="next-product-eyebrow">
             <span>Next product</span>
             <span aria-hidden="true">{position}</span>

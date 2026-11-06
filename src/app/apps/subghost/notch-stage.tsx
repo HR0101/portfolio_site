@@ -117,7 +117,7 @@ export function NotchStage({ variant = 'timeline', caption, isMorphTarget = fals
     : [];
 
   return (
-    <figure className={styles.stage} data-morph-target={isMorphTarget || undefined}>
+    <figure className={styles.stage} data-morph-target={isMorphTarget || undefined} data-morph-surface={isMorphTarget || undefined}>
       <div className={styles.display}>
         <div className={styles.wallpaper} aria-hidden="true" />
 

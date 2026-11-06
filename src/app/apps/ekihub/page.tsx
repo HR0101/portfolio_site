@@ -94,8 +94,8 @@ export default function EkiHubPage() {
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>FIND THE FAIR MIDDLE</p>
-            <div className={styles.appName}>
-              <img src="/projects/works/ekihub.svg" alt="" width={40} height={40} />
+            <div className={styles.appName} data-morph-title>
+              <img data-morph-icon src="/projects/works/ekihub.svg" alt="" width={40} height={40} />
               EkiHub <span>ekihub.jp</span>
             </div>
             <h1>
@@ -122,7 +122,7 @@ export default function EkiHubPage() {
           </div>
 
           {/* スマホで検索した実際の結果画面と，所要時間のカード */}
-          <figure className={styles.heroScreens}>
+          <figure className={styles.heroScreens} data-morph-surface>
             <div className={styles.heroPhone} data-morph-target>
               <img
                 src={`${SCREEN_DIR}/mob-result.webp`}

@@ -26,6 +26,7 @@ interface RevealProps {
   variant?: RevealVariant;
   className?: string;
   layoutKey?: string;
+  cardDirection?: 'left' | 'right';
 }
 
 export function Reveal({
@@ -34,17 +35,19 @@ export function Reveal({
   variant = 'up',
   className = '',
   layoutKey,
+  cardDirection,
 }: RevealProps) {
-  const { ref, isInView } = useInView<HTMLDivElement>();
+  const { ref, isInView } = useInView<HTMLDivElement>(0.15, Boolean(cardDirection));
 
   return (
     <div
       ref={ref}
       data-layout-key={layoutKey}
+      data-card-reveal={cardDirection}
       className={`reveal ${VARIANT_CLASS_NAMES[variant]} ${
         isInView ? 'reveal-visible' : ''
       } ${className}`}
-      style={{ transitionDelay: `${delayMs}ms` }}
+      style={{ transitionDelay: `${cardDirection ? Math.min(delayMs * 1.4, 420) : delayMs}ms` }}
     >
       {children}
     </div>

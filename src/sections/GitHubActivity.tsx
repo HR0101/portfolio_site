@@ -217,6 +217,7 @@ export function GitHubActivity() {
                 return (
                   <Reveal
                     key={repo.id}
+                    cardDirection={index % 3 === 0 ? 'left' : index % 3 === 2 ? 'right' : undefined}
                     delayMs={Math.min(index, MAX_STAGGER_INDEX) * STAGGER_DELAY_MS}
                     className="h-full"
                   >

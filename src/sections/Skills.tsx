@@ -36,7 +36,7 @@ export function Skills() {
         />
         <div className={styles.sectionLabel}><span>MY DEVELOPMENT TOOLKIT</span><span>技術と、それでつくったもの</span></div>
         <div className={styles.grid}>
-          <Reveal className={styles.nativeSlot}>
+          <Reveal className={styles.nativeSlot} cardDirection="left">
             <SkillCard className={styles.native}>
               <div className={styles.cardTop}><span className={styles.icon}><Code2 size={22} aria-hidden="true" /></span><span className={styles.category}>APP DEVELOPMENT</span><span className={styles.primaryBadge}>メインスキル</span></div>
               <h3>Swift <span>/ SwiftUI</span></h3>
@@ -61,7 +61,7 @@ export function Skills() {
               <div className={styles.cardFooter}><span>SwiftUI / UIKit</span><Link href="#projects">つくったアプリへ <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
             </SkillCard>
           </Reveal>
-          <Reveal className={styles.webSlot} delayMs={80}>
+          <Reveal className={styles.webSlot} cardDirection="right" delayMs={80}>
             <SkillCard className={styles.web}>
               <div className={styles.webCopy}>
                 <div className={styles.cardTop}><span className={styles.icon}><Globe2 size={21} aria-hidden="true" /></span><span className={styles.category}>WEB EXPERIENCE</span></div>
@@ -77,7 +77,7 @@ export function Skills() {
               </div>
             </SkillCard>
           </Reveal>
-          <Reveal delayMs={150}>
+          <Reveal cardDirection="left" delayMs={150}>
             <SkillCard className={styles.python}>
               <div className={styles.cardTop}><span className={styles.icon}><Terminal size={21} aria-hidden="true" /></span><span className={styles.category}>AUTOMATION</span></div>
               <h3>Python</h3>
@@ -87,7 +87,7 @@ export function Skills() {
               <a className={styles.textLink} href={`${siteConfig.githubUrl}?tab=repositories&language=python`}>AeroPath / FraTerm など <ArrowUpRight size={15} aria-hidden="true" /></a>
             </SkillCard>
           </Reveal>
-          <Reveal delayMs={220}>
+          <Reveal cardDirection="right" delayMs={220}>
             <SkillCard className={styles.hardware}>
               <div className={styles.cardTop}><span className={styles.icon}><Cpu size={21} aria-hidden="true" /></span><span className={styles.category}>HARDWARE</span></div>
               <h3>C <span>/ Arduino</span></h3>

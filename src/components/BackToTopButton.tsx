@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 import { subscribeToScroll } from '../lib/scrollObserver';
+import { navigateToSection } from '../lib/sectionNavigation';
 
 // このスクロール量（ピクセル）を超えたらボタンを表示する
 const SHOW_AFTER_SCROLL_PX = 600;
@@ -20,6 +21,7 @@ export function BackToTopButton() {
   );
 
   const handleClick = () => {
+    if (document.getElementById('hero') && navigateToSection('hero')) return;
     window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   };
 
