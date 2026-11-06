@@ -84,7 +84,7 @@ export default function HomePage() {
       <section className="principle-section" aria-label="制作の姿勢">
         <div className="principle-inner">
           {/* 見出しが現れると，上の罫線が左から引かれる */}
-          <Reveal className="principle-heading"><span aria-hidden="true">THE WAY I BUILD</span><span aria-hidden="true">DESIGN / CODE / CARE</span></Reveal>
+          <Reveal className="principle-heading"><span aria-hidden="true">The way I build</span><span aria-hidden="true">Design / Code / Care</span></Reveal>
           {/* 背後の大きな文字は，スクロールに合わせて横へゆっくり流れる */}
           <ParallaxLayer className="principle-watermark" distancePx={0} horizontalDistancePx={-160}><span aria-hidden="true">TRUST</span></ParallaxLayer>
           <ScrollHighlightText
@@ -92,7 +92,7 @@ export default function HomePage() {
             className="principle-copy"
           />
           {/* 罫線が引かれたあと，アイデアから信頼までの流れが左から順に灯る */}
-          <Reveal className="principle-footer"><span aria-hidden="true">IDEA</span><span aria-hidden="true">→</span><span aria-hidden="true">DESIGN</span><span aria-hidden="true">→</span><span aria-hidden="true">BUILD</span><span aria-hidden="true">→</span><span aria-hidden="true">TRUST</span></Reveal>
+          <Reveal className="principle-footer"><span aria-hidden="true">Idea</span><span aria-hidden="true">→</span><span aria-hidden="true">Design</span><span aria-hidden="true">→</span><span aria-hidden="true">Build</span><span aria-hidden="true">→</span><span aria-hidden="true">Trust</span></Reveal>
         </div>
       </section>
       <Skills />

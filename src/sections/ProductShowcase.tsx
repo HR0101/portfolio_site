@@ -113,7 +113,7 @@ export function ProductShowcase() {
     <section id="showcase" className="product-showcase" aria-labelledby="showcase-heading">
       <div className="showcase-heading-row">
         <div>
-          <p className="showcase-eyebrow">SELECTED APPS</p>
+          <p className="showcase-eyebrow">Selected apps</p>
           <h2 id="showcase-heading">日常に、小さな進化を。</h2>
         </div>
         <a href="#projects" className="showcase-catalog-link">
