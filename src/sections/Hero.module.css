@@ -99,11 +99,7 @@
 }
 
 .terminalWrap { margin-top:24px; max-width:560px; min-width:0; }
-.terminalWrap :global(.typing-terminal-prompt) { color:var(--site-accent); }
-.terminalWrap :global(.typing-terminal-output) { color:var(--site-muted); }
-.terminalWrap :global(.typing-terminal-next) { color:var(--site-ink); }
-.terminalWrap :global(.typing-terminal-caret) { background:var(--site-ink); }
-.terminalWrap .terminal { width:100%; margin:0; font-size:12px; opacity:1; animation:none; border:1px solid var(--site-line); background:var(--site-surface-soft); color:var(--site-ink); box-shadow:var(--site-shadow-card); }
+.terminalWrap .terminal { width:100%; margin:0; font-size:12px; opacity:1; animation:none; border:1px solid #ffffff12; box-shadow:var(--site-shadow-card); }
 @media(min-width:761px) and (max-height:820px) {
   .runway { height:auto; }
   .stage { position:relative; height:auto; min-height:820px; }

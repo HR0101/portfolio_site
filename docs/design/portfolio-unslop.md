@@ -20,7 +20,7 @@ Polish mode. Keep the section order, content, system fonts, blue accent and real
 4. Copy: kept the portfolio's claims and descriptions. Changed decorative English labels to sentence case and updated the terminal's illustrated test count to the current 50 tests.
 5. Type: raised small Hero/meta labels to readable 11–12px, reduced excessive tracking and used 600-weight headings in the changed components. Kept Japanese system fonts.
 6. Layout: preserved the Hero, terminal, orbiting apps, About motifs, Skills composition, product panels and section sequence. Reduced competing surface treatments so the actual apps lead.
-7. Details: shared 16px cards and 20px panels, matched control/inner radii where changed, lighter shadows and consistent hairline borders. The terminal uses a light surface in light mode and a dark surface in dark mode.
+7. Details: shared 16px cards and 20px panels, matched control/inner radii where changed, lighter shadows and consistent hairline borders. Following user feedback, the terminal keeps its original black background in both themes, with light command/output text, a green prompt and a light caret.
 8. Visuals: reused existing icons, screenshots and code-native illustrations. No generated artwork, paid image service or new image prompt.
 9. Motion: preserved all existing animation and transition declarations, keyframes, transforms, input handlers, timings, easing and travel distances. The cursor, lateral card entrances, autonomous loops, footer wave and six page-transition styles remain. Existing reduced-motion behavior remains available.
 
