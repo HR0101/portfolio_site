@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import styles from './product.module.css';
+import { MotionTabs } from '../../../components/MotionTabs';
 
 interface DiagnosisScreen {
   id: string;
@@ -156,7 +157,7 @@ export function DiagnosisGallery() {
 
   return (
     <>
-      <div className={styles.diagTabs} role="tablist" aria-label="Tsumugiの画面を選ぶ">
+      <MotionTabs activeKey={active} className={styles.diagTabs} role="tablist" aria-label="Tsumugiの画面を選ぶ">
         {SCREENS.map((screen, index) => (
           <button
             key={screen.id}
@@ -175,7 +176,7 @@ export function DiagnosisGallery() {
             {screen.tab}
           </button>
         ))}
-      </div>
+      </MotionTabs>
 
       {SCREENS.map((screen, index) => {
         const Icon = screen.icon;

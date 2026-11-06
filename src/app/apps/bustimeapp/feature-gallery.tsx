@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Screenshot } from './screenshot';
+import { useContentMotion } from '../../../hooks/useContentMotion';
 import styles from './product.module.css';
 
 const features = [
@@ -16,6 +17,7 @@ const features = [
 
 export function FeatureGallery() {
   const [active, setActive] = useState('timetable');
+  const copyRef = useContentMotion<HTMLDivElement>(active);
   const trackRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLSpanElement>(null);
   const motionRef = useRef<Animation | null>(null);
@@ -55,7 +57,7 @@ export function FeatureGallery() {
   const feature = features.find(item => item.id === active)!;
   return <div className={styles.featureGallery}>
     <div id="bustime-feature" className={styles.featurePanel}>
-      <div className={styles.featureCopy} aria-live="polite" aria-atomic="true"><h3>{feature.title}</h3><p>{feature.copy}</p></div>
+      <div ref={copyRef} className={styles.featureCopy} aria-live="polite" aria-atomic="true"><h3>{feature.title}</h3><p>{feature.copy}</p></div>
       <div className={styles.featureScreens} key={feature.id}>{feature.shots.map(shot => <Screenshot key={shot.image} {...shot} />)}</div>
     </div>
     <div className={styles.featureButtons} role="group" aria-label="BusTimeAppの機能を選ぶ">

@@ -40,3 +40,123 @@
   .motion-work-surface:active .motion-surface-arrow { transform:scale(.9); }
 }
 @keyframes mobile-work-arrive { from { opacity:.65; transform:scale(1.08) translateY(12px); } to { opacity:1; transform:none; } }
+
+/* Shared controls: the selection line can travel between wrapped rows too. */
+.motion-tabs { position: relative; isolation: isolate; }
+.motion-tabs > .motion-tab-line {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 2;
+  display: block;
+  height: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+.motion-tabs > .motion-tab-line[data-ready] {
+  transition: translate .48s cubic-bezier(.22, 1, .36, 1), width .4s cubic-bezier(.22, 1, .36, 1), opacity .2s;
+}
+
+.motion-disclosure {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  opacity: 0;
+  transition: grid-template-rows .42s cubic-bezier(.22, 1, .36, 1), opacity .25s, visibility 0s .42s;
+}
+.motion-disclosure[data-open='true'] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+.motion-disclosure-inner { min-height: 0; overflow: hidden; }
+
+/* Keep the reveal directions distinct; refinements.css used to flatten them. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal.reveal-left { transform: translateX(-34px); }
+  .reveal.reveal-right { transform: translateX(34px); }
+  .reveal.reveal-scale { transform: translateY(16px) scale(.93); }
+  .reveal.reveal-blur { transform: translateY(22px); filter: blur(7px); }
+  .reveal.reveal-flip { transform: perspective(900px) translateY(24px) rotateX(12deg); transform-origin: 50% 100%; }
+  .reveal.reveal-visible { transform: none; filter: none; }
+
+  [data-product-page] a > .lucide-arrow-up-right,
+  [data-product-page] a > .lucide-arrow-right,
+  [data-product-page] a > .lucide-arrow-down {
+    transition: translate .35s cubic-bezier(.22, 1, .36, 1), rotate .35s;
+  }
+  [data-product-page] a:is(:hover, :focus-visible) > .lucide-arrow-up-right { translate: 3px -3px; }
+  [data-product-page] a:is(:hover, :focus-visible) > .lucide-arrow-right { translate: 4px 0; }
+  [data-product-page] a:is(:hover, :focus-visible) > .lucide-arrow-down { translate: 0 4px; }
+  [data-product-page] button:not(:disabled) { transition: scale .2s cubic-bezier(.22, 1, .36, 1), background-color .25s, border-color .25s, color .25s; }
+  [data-product-page] button:not(:disabled):active { scale: .97; }
+  [data-motion-card] { transition: translate .4s cubic-bezier(.22, 1, .36, 1), box-shadow .4s; }
+  [data-motion-card]:focus-within { translate: 0 -3px; }
+
+  /* Native disclosures retain their semantics, with bidirectional height
+     animation where the browser supports intrinsic-size interpolation. */
+  @supports (interpolate-size: allow-keywords) {
+    [data-product-page] details { interpolate-size: allow-keywords; }
+    [data-product-page] details::details-content {
+      block-size: 0;
+      opacity: 0;
+      overflow: clip;
+      transition: block-size .45s cubic-bezier(.22, 1, .36, 1), opacity .25s, content-visibility .45s allow-discrete;
+    }
+    [data-product-page] details[open]::details-content { block-size: auto; opacity: 1; }
+  }
+
+  /* Display/overlay transitions keep a closing modal in the top layer until
+     its exit finishes, including Escape and backdrop dismissal. */
+  dialog[data-motion-dialog] {
+    opacity: 0;
+    translate: 0 18px;
+    scale: .96;
+    transition: opacity .25s, translate .35s cubic-bezier(.22, 1, .36, 1), scale .35s cubic-bezier(.22, 1, .36, 1), display .35s allow-discrete, overlay .35s allow-discrete;
+  }
+  dialog[data-motion-dialog][open] { opacity: 1; translate: 0 0; scale: 1; }
+  dialog[data-motion-dialog]::backdrop {
+    opacity: 0;
+    transition: opacity .3s, display .35s allow-discrete, overlay .35s allow-discrete;
+  }
+  dialog[data-motion-dialog][open]::backdrop { opacity: 1; }
+  @starting-style {
+    dialog[data-motion-dialog][open] { opacity: 0; translate: 0 18px; scale: .96; }
+    dialog[data-motion-dialog][open]::backdrop { opacity: 0; }
+  }
+
+  .contact-form { transition: border-color .35s, box-shadow .4s; }
+  #contact .contact-form:focus-within { border-color: color-mix(in srgb, var(--site-accent) 40%, var(--site-line)); box-shadow: 0 12px 36px -24px color-mix(in srgb, var(--site-accent) 40%, transparent); }
+  .contact-field { position: relative; }
+  .contact-field::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto auto -10px;
+    width: 2px;
+    height: 20px;
+    background: var(--site-accent);
+    border-radius: 2px;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform .3s cubic-bezier(.22, 1, .36, 1);
+  }
+  .contact-field:focus-within::after { transform: scaleY(1); }
+  .contact-field:has(:not(:placeholder-shown):valid) label { color: var(--site-accent); }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-motion-card]:hover { translate: 0 -4px; box-shadow: 0 14px 30px -20px rgb(15 23 42 / .25); }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .reveal.reveal-left { transform: translate(-14px, 14px); }
+  .reveal.reveal-right { transform: translate(14px, 14px); }
+  .reveal.reveal-blur { filter: blur(3px); }
+  .reveal.reveal-visible { transform: none; filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-tabs > .motion-tab-line[data-ready], .motion-disclosure { transition: none; }
+}

@@ -96,7 +96,7 @@ const freshnessNotes = [
 
 export default function TsumugiPage() {
   return (
-    <article className={styles.page}>
+    <article className={styles.page} data-product-page>
       <ProductMotion />
       <nav className={styles.localNav} aria-label="Tsumugi ナビゲーション">
         <Link href="/#projects">← アプリ一覧</Link>

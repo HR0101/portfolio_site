@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { ArrowRight, Terminal, Share2, Plug, MonitorDot } from 'lucide-react';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
 import styles from './product.module.css';
+import { MotionTabs } from '../../../components/MotionTabs';
+import { useContentMotion } from '../../../hooks/useContentMotion';
 
 interface HookEvent {
   name: string;
@@ -59,10 +61,11 @@ export function HookFlow() {
   const [runId, setRunId] = useState(0);
   const prefersReducedMotion = usePrefersReducedMotion();
   const active = EVENTS[activeIndex];
+  const resultRef = useContentMotion<HTMLDivElement>(`${activeIndex}-${runId}`);
 
   return (
     <div className={styles.flow}>
-      <div className={styles.eventChips} role="group" aria-label="フックイベントを選ぶ">
+      <MotionTabs activeKey={activeIndex} className={styles.eventChips} role="group" aria-label="フックイベントを選ぶ">
         {EVENTS.map((event, index) => (
           <button
             key={event.name}
@@ -76,7 +79,7 @@ export function HookFlow() {
             {event.name}
           </button>
         ))}
-      </div>
+      </MotionTabs>
 
       <div className={styles.flowDiagram}>
         <div className={styles.flowTrack} aria-hidden="true">
@@ -110,7 +113,7 @@ export function HookFlow() {
         </p>
       </div>
 
-      <div className={styles.flowResult} aria-live="polite">
+      <div ref={resultRef} className={styles.flowResult} aria-live="polite">
         <span className={styles.badge} data-state={active.state}>
           <span className={styles.statusDot} />
           {active.state === 'working' ? 'Working' : 'Done'}

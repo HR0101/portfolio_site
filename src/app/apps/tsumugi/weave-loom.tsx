@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
 import { useTheme } from '../../../hooks/useTheme';
 import styles from './product.module.css';
+import { MotionTabs } from '../../../components/MotionTabs';
 
 // 経糸（縦糸）の本数．細い糸を多く通したほうが，布の面として落ち着く
 const WARP_COUNT = 48;
@@ -350,7 +351,7 @@ export function WeaveLoom() {
           />
         </label>
 
-        <div className={styles.presetRow} role="group" aria-label="診断結果の例から選ぶ">
+        <MotionTabs activeKey={activePreset?.label ?? ''} className={styles.presetRow} role="group" aria-label="診断結果の例から選ぶ">
           {PRESETS.map((preset) => (
             <button
               key={preset.label}
@@ -364,7 +365,7 @@ export function WeaveLoom() {
               {preset.label}
             </button>
           ))}
-        </div>
+        </MotionTabs>
         <p className={styles.weaveNote}>
           スライダーを動かすと，同じ記事でも布の表情が変わります．値が同じなら，いつも同じ一枚が織り上がります．
         </p>

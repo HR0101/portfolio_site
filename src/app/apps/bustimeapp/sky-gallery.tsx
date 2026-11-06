@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { Screenshot } from './screenshot';
+import { useContentMotion } from '../../../hooks/useContentMotion';
 import styles from './product.module.css';
+import { MotionTabs } from '../../../components/MotionTabs';
 
 const scenes = [
   { id: 'dawn', group: '時間帯', label: '夜明け', time: '04:50', title: '空が明るくなる、その前から。', copy: '紫色の空から朝へ。早い時間の確認にも、やわらかな色を添えます。' },
@@ -19,6 +21,7 @@ const scenes = [
 
 export function SkyGallery() {
   const [active, setActive] = useState('morning');
+  const copyRef = useContentMotion<HTMLDivElement>(active);
   const [group, setGroup] = useState('時間帯');
   const scene = scenes.find(item => item.id === active)!;
   const options = scenes.filter(item => item.group === group);
@@ -26,19 +29,19 @@ export function SkyGallery() {
   const neighbors = [options[(index + options.length - 1) % options.length], options[(index + 1) % options.length]];
   return (
     <div className={styles.gallery}>
-      <div className={styles.sceneCopy} aria-live="polite" aria-atomic="true"><p className={styles.sceneTime}>{scene.time}</p><h3>{scene.title}</h3><p>{scene.copy}</p></div>
+      <div ref={copyRef} className={styles.sceneCopy} aria-live="polite" aria-atomic="true"><p className={styles.sceneTime}>{scene.time}</p><h3>{scene.title}</h3><p>{scene.copy}</p></div>
       <div className={styles.scenePanel}>
         <div className={styles.sceneFlank} aria-hidden="true"><img src={`/projects/bustimeapp-screens/${neighbors[0].id}.webp`} alt="" width={840} height={1826} loading="lazy" /></div>
         <div id="bustime-scene" className={styles.sceneImage} key={scene.id}><Screenshot image={scene.id} alt={`BusTimeAppの${scene.label}のホーム画面`} /></div>
         <div className={styles.sceneFlank} aria-hidden="true"><img src={`/projects/bustimeapp-screens/${neighbors[1].id}.webp`} alt="" width={840} height={1826} loading="lazy" /></div>
       </div>
       <div className={styles.sceneControls}>
-        <div className={styles.sceneCategories} role="group" aria-label="風景の種類">
+        <MotionTabs activeKey={group} className={styles.sceneCategories} role="group" aria-label="風景の種類">
           {['時間帯', '季節', '雨の夜'].map(item => <button type="button" key={item} aria-pressed={group === item} onClick={() => { setGroup(item); setActive(scenes.find(entry => entry.group === item)!.id); }}>{item}</button>)}
-        </div>
-        <div className={styles.sceneButtons} role="group" aria-label={group}>
+        </MotionTabs>
+        <MotionTabs activeKey={active} className={styles.sceneButtons} role="group" aria-label={group}>
           {options.map(item => <button type="button" key={item.id} aria-pressed={active === item.id} aria-controls="bustime-scene" onClick={() => setActive(item.id)}><span className={styles.sceneSwatch} data-scene={item.id} aria-hidden="true" />{item.label}</button>)}
-        </div>
+        </MotionTabs>
       </div>
       <p className={styles.captureNote}>実際のアプリ画面。時刻・天気・便は撮影時の条件です。</p>
     </div>
