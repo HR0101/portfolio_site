@@ -53,6 +53,6 @@ export const TIMELINE_MILESTONES: TimelineMilestone[] = [
     title: '日常に溶け込む常駐アプリへ',
     description:
       'ノッチで AI CLI を見張る Subghost，通知とウィジェットまで作り込んだ BusTimeApp，記事を端末内で診断する Tsumugi．',
-    apps: ['Subghost', 'BusTimeApp', 'Tsumugi', 'AllServerForMac'],
+    apps: ['Subghost', 'BusTimeApp', 'Tsumugi', 'Ark Server'],
   },
 ];

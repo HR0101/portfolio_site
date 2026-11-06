@@ -108,7 +108,7 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
   const isPhoneScreen = app.name === 'BusTimeApp' || app.name === 'Tsumugi';
   const tones: Record<string, string> = {
     Subghost: 'violet', BusTimeApp: 'blue', Fomura: 'green',
-    'AllServerForMac × VideoPlayer': 'amber', TeleDeck: 'indigo', Tsumugi: 'mint',
+    'Ark Server × VideoPlayer': 'amber', TeleDeck: 'indigo', Tsumugi: 'mint',
   };
 
   return (

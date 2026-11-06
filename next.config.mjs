@@ -70,6 +70,11 @@ const nextConfig = {
         async headers() {
           return [{ source: '/:path*', headers: securityHeaders }];
         },
+        // 改名前の紹介ページ（AllServerForMac）から，新しいページへ恒久的に転送する．
+        // 静的書き出しでは使えないので，同じ内容を public/_redirects（Cloudflare Pages）にも置いている
+        async redirects() {
+          return [{ source: '/apps/allserverformac', destination: '/apps/arkserver', permanent: true }];
+        },
       }),
 };
 

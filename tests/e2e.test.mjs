@@ -90,7 +90,7 @@ describe('アプリカタログ', () => {
     'Subghost',
     'BusTimeApp',
     'Fomura',
-    'AllServerForMac × VideoPlayer',
+    'Ark Server × VideoPlayer',
     'TeleDeck',
     'Tsumugi',
     'MenuDock',
@@ -188,11 +188,13 @@ describe('アプリ専用ページ', () => {
   let tsumugiHtml = '';
   let busTimeHtml = '';
   let subghostHtml = '';
+  let arkHtml = '';
 
   before(async () => {
     tsumugiHtml = await (await fetch(`${BASE_URL}/apps/tsumugi`)).text();
     busTimeHtml = await (await fetch(`${BASE_URL}/apps/bustimeapp`)).text();
     subghostHtml = await (await fetch(`${BASE_URL}/apps/subghost`)).text();
+    arkHtml = await (await fetch(`${BASE_URL}/apps/arkserver`)).text();
   });
 
   it('BusTimeApp の紹介ページが配信される', () => {
@@ -247,10 +249,12 @@ describe('アプリ専用ページ', () => {
     assert.ok(tsumugiHtml.includes('https://github.com/HR0101/Tsumugi'));
     assert.ok(busTimeHtml.includes('https://github.com/HR0101/BusTimeApp'));
     assert.ok(subghostHtml.includes('https://github.com/HR0101/subghost'));
+    assert.ok(arkHtml.includes('https://github.com/HR0101/AllServerForMac'));
+    assert.ok(arkHtml.includes('https://github.com/HR0101/VideoPlayer'));
   });
 
   it('アプリ専用の OGP 画像が生成される', async () => {
-    for (const path of ['/apps/tsumugi', '/apps/subghost', '/apps/ekihub']) {
+    for (const path of ['/apps/tsumugi', '/apps/subghost', '/apps/ekihub', '/apps/arkserver']) {
       const response = await fetch(`${BASE_URL}${path}/opengraph-image`);
       assert.equal(response.status, 200, `${path} の OGP 画像が返りません`);
       assert.equal(response.headers.get('content-type'), 'image/png');
@@ -259,26 +263,102 @@ describe('アプリ専用ページ', () => {
 
   it('sitemap にすべてのアプリページが登録される', async () => {
     const xml = await (await fetch(`${BASE_URL}/sitemap.xml`)).text();
-    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost', '/apps/ekihub']) {
+    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost', '/apps/ekihub', '/apps/arkserver']) {
       assert.ok(xml.includes(path), `${path} が sitemap にありません`);
     }
   });
 
   it('トップページから各アプリページへ遷移できる', () => {
-    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost', '/apps/ekihub']) {
+    for (const path of ['/apps/bustimeapp', '/apps/tsumugi', '/apps/subghost', '/apps/ekihub', '/apps/arkserver']) {
       assert.ok(homePageHtml.includes(path), `${path} へのリンクがありません`);
     }
   });
 
   it('紹介ページの末尾から次の紹介ページへ進める', () => {
-    // Subghost → BusTimeApp → Tsumugi の順に並ぶ（apps.ts の掲載順）
+    // Subghost → BusTimeApp → Ark Server → Tsumugi の順に並ぶ（apps.ts の掲載順）
     assert.match(subghostHtml, /aria-label="次のプロダクト"[\s\S]*?href="\/apps\/bustimeapp"/);
-    assert.match(busTimeHtml, /aria-label="次のプロダクト"[\s\S]*?href="\/apps\/tsumugi"/);
+    assert.match(busTimeHtml, /aria-label="次のプロダクト"[\s\S]*?href="\/apps\/arkserver"/);
+    assert.match(arkHtml, /aria-label="次のプロダクト"[\s\S]*?href="\/apps\/tsumugi"/);
   });
 
   it('利用規約のページには次の紹介ページへの導線を出さない', async () => {
     const termsHtml = await (await fetch(`${BASE_URL}/apps/bustimeapp/terms`)).text();
     assert.ok(!termsHtml.includes('aria-label="次のプロダクト"'));
+  });
+
+  it('Ark Server の紹介ページが配信される', () => {
+    // 見出しと画面名で，アプリの用途を直接説明する
+    assert.match(arkHtml, /Ark Server/);
+    assert.match(arkHtml, /手元の端末で/);
+    assert.match(arkHtml, /自宅のメディアライブラリ/);
+    assert.match(arkHtml, /そのほかの機能/);
+    assert.match(arkHtml, /ソースコード/);
+    for (const room of ['配信の開始・接続設定', '動画の一覧', 'アルバムの一覧', '動画の再生', '再生方法を選ぶ', '差分動画の検索', '動画の切り替え', '見どころの解析']) {
+      assert.ok(arkHtml.includes(room), `画面の説明「${room}」がありません`);
+    }
+    assert.match(arkHtml, /説明を見る/);
+    assert.ok(arkHtml.includes('/projects/arkserver.svg'));
+    // 旧名は，ページの見出し・本文に残さない（GitHub のリポジトリ名だけは，改名するまで旧名のまま）
+    assert.ok(!arkHtml.includes('AllServerForMac を'), '旧名が本文に残っています');
+    assert.match(arkHtml, /Bonjour/);
+    // 画面は実際のアプリの画像で，LAN の情報はぼかしてあることを断っている
+    assert.match(arkHtml, /撮影用に作った合成映像/);
+    assert.match(arkHtml, /QR コードは，家の LAN の情報なので/);
+  });
+
+  it('改名前の紹介ページ（AllServerForMac）から，新しいページへ転送される', async () => {
+    const response = await fetch(`${BASE_URL}/apps/allserverformac`, { redirect: 'manual' });
+    assert.ok([301, 308].includes(response.status), `転送されません（${response.status}）`);
+    assert.match(response.headers.get('location') ?? '', /\/apps\/arkserver\/?$/);
+  });
+
+  it('Ark Server の iPhone アプリの画面を，シミュレータの撮影と断って載せている', async () => {
+    assert.match(arkHtml, /iPhone アプリ/);
+    assert.match(arkHtml, /シミュレータ/);
+    assert.match(arkHtml, /実機ではありません/);
+    assert.match(arkHtml, /aria-label="VideoPlayer（iPhone）の画面を選ぶ"/);
+    for (const shot of ['ios-lock', 'ios-albums', 'ios-home', 'ios-variants', 'ios-player', 'ios-remote']) {
+      const response = await fetch(`${BASE_URL}/projects/arkserver-screens/${shot}.webp`);
+      assert.equal(response.status, 200, `${shot}.webp が配信されません`);
+    }
+  });
+
+  it('Ark Server の紹介ページに，動きで見せる部品がそろっている', () => {
+    // 数字の帯（機能の数は more-data.ts の合計）と，段階が流れる図
+    assert.match(arkHtml, /ツアーのほかにも/);
+    assert.match(arkHtml, /Mac を探す/);
+    assert.match(arkHtml, /PIN で接続/);
+    assert.match(arkHtml, /動画と写真を見る/);
+    // ミニデモは，実際の画面ではないと断っている
+    assert.match(arkHtml, /操作デモ/);
+    assert.match(arkHtml, /アプリの動きを再現した図です．実際の画面ではありません/);
+    // 「ほかにも」の絞り込みと，ツアーの自動再生の切り替え
+    assert.match(arkHtml, /aria-label="分野で絞り込む"/);
+    assert.match(arkHtml, /自動再生を止める/);
+  });
+
+  it('Ark Server の「ほかにも」で6分野の機能を紹介している', () => {
+    for (const group of ['再生まわり', 'お楽しみ再生', 'いろいろな見方', '整理まわり', '解析まわり', '配信・ブラウザまわり']) {
+      assert.ok(arkHtml.includes(group), `分野「${group}」が見つかりません`);
+    }
+    for (const feature of ['字幕と音声トラック', 'マイチャンネル', '同時再生', '重複チェック', '尺が違う動画の部分一致', '1080p の軽量版']) {
+      assert.ok(arkHtml.includes(feature), `機能「${feature}」が見つかりません`);
+    }
+  });
+
+  it('Ark Server の8画面がタブとして並び，画像が実在する', async () => {
+    assert.match(arkHtml, /role="tablist"/);
+    assert.match(arkHtml, /role="tabpanel"/);
+    for (const tab of ['ダッシュボード', 'ライブラリ', 'アルバム', 'プレイヤー', 'お楽しみ再生', '差分を探す', '切り替え再生', 'シーン抽出']) {
+      assert.ok(arkHtml.includes(tab), `タブ「${tab}」が見つかりません`);
+    }
+    // ページが参照する WebP は，すべて public に置かれている
+    const shots = [...arkHtml.matchAll(/\/projects\/arkserver-screens\/([\w-]+\.webp)/g)].map((match) => match[1]);
+    assert.ok(shots.length >= 8, `画像の参照が少なすぎます（${shots.length}）`);
+    for (const shot of new Set(shots)) {
+      const response = await fetch(`${BASE_URL}/projects/arkserver-screens/${shot}`);
+      assert.equal(response.status, 200, `${shot} が配信されません`);
+    }
   });
 });
 
