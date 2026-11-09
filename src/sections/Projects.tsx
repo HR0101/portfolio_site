@@ -7,6 +7,9 @@ import { SpotlightCard } from '../components/SpotlightCard';
 import { Reveal, type RevealVariant } from '../components/Reveal';
 import { SectionHeading } from '../components/SectionHeading';
 import { ScrollTimeline } from '../components/ScrollTimeline';
+import { AppCursorPreview, type AppPreviewItem } from '../components/AppCursorPreview';
+import { ArrowSwap } from '../components/ArrowSwap';
+import { HoverShuffle } from '../components/HoverShuffle';
 import { GitHubIcon } from '../components/icons/GitHubIcon';
 import { siteConfig } from '../config/site';
 import { useLayoutMotion } from '../hooks/useLayoutMotion';
@@ -22,6 +25,10 @@ import {
 
 // カードの段階表示に使う遅延間隔（ミリ秒）
 const STAGGER_DELAY_MS = 90;
+const PREVIEW_APPS: AppPreviewItem[] = SWIFT_APPS.flatMap(app => app.screenshotSrc ? [{
+  id: app.name, name: app.name, src: app.screenshotSrc,
+  portrait: app.name === 'BusTimeApp' || app.name === 'Tsumugi',
+}] : []);
 
 // 絞り込みタブの下を滑るインジケーターの位置とサイズ
 interface IndicatorStyle {
@@ -50,16 +57,16 @@ function PlatformBadge({ platform }: { platform: AppPlatform }) {
   );
 }
 
-// 技術タグの一覧（ホバーで少し持ち上がる）
+// Short Latin technology names shuffle in place without moving the tag.
 function TagList({ tags }: { tags: string[] }) {
   return (
     <div className="stagger-child mt-4 flex flex-wrap gap-2">
       {tags.map((tag) => (
         <span
           key={tag}
-          className="chip px-2.5 py-1 text-xs rounded-full text-subtle dark:text-night-subtle hover:-translate-y-0.5 hover:border-ink dark:hover:border-night-ink hover:text-ink dark:hover:text-night-ink transition-all duration-200"
+          className="chip px-2.5 py-1 text-xs rounded-full text-subtle dark:text-night-subtle"
         >
-          {tag}
+          {/^[\x20-\x7e]+$/.test(tag) ? <HoverShuffle text={tag} /> : tag}
         </span>
       ))}
     </div>
@@ -73,9 +80,9 @@ function RepositoryLinks({ app }: { app: SwiftApp }) {
       {app.detailHref && (
         <Link
           href={app.detailHref}
-          className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-accent dark:text-accent-dark"
+          className="arrow-swap-host inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-accent dark:text-accent-dark"
         >
-          {app.name}のこだわりを見る →
+          {app.name}のこだわりを見る <ArrowSwap />
         </Link>
       )}
       {app.repositories.map((repository) => (
@@ -85,17 +92,14 @@ function RepositoryLinks({ app }: { app: SwiftApp }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`${repository.name}${repository.role ? `（${repository.role}）` : ''}を新しいタブで開く`}
-          className="group/link inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-accent dark:text-accent-dark transition-colors"
+          className="line-sweep-host inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-accent dark:text-accent-dark transition-colors"
         >
-          <GitHubIcon className="w-4 h-4 group-hover/link:rotate-12 transition-transform" />
-          <span className="underline-grow">{repository.name}</span>
+          <GitHubIcon className="w-4 h-4" />
+          <span className="line-sweep">{repository.name}</span>
           {repository.role && (
             <span className="text-xs text-subtle dark:text-night-subtle">（{repository.role}）</span>
           )}
-          <ArrowUpRight
-            className="w-3.5 h-3.5 opacity-0 group-hover/link:opacity-100 -translate-x-1 group-hover/link:translate-x-0 transition-all"
-            aria-hidden="true"
-          />
+          <ArrowUpRight size={14} aria-hidden="true" />
         </a>
       ))}
     </div>
@@ -183,7 +187,7 @@ function FeaturedAppCard({ app }: { app: SwiftApp }) {
           <span className="motion-surface-arrow" aria-hidden="true"><ArrowUpRight size={18} /></span>
         </Link>
 
-        <div className="flex flex-col flex-grow p-6">
+        <div className="flex flex-col flex-grow p-6" data-app-preview={app.screenshotSrc ? app.name : undefined}>
           <h3 className="stagger-child text-lg font-semibold transition-colors">
             {app.name}
           </h3>
@@ -388,6 +392,7 @@ export function Projects() {
           role="tabpanel"
           aria-labelledby={buildTabId(activeFilterId)}
         >
+        <AppCursorPreview items={PREVIEW_APPS}>
         {/* 注目アプリ */}
         {featuredApps.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -414,7 +419,7 @@ export function Projects() {
                 className="text-sm font-semibold tracking-widest text-subtle dark:text-night-subtle uppercase"
                 lang="en"
               >
-                Other Apps
+                <HoverShuffle text="Other Apps" />
               </h3>
             </Reveal>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -433,6 +438,7 @@ export function Projects() {
             </div>
           </>
         )}
+        </AppCursorPreview>
         </div>
       </div>
 
@@ -444,7 +450,7 @@ export function Projects() {
             className="text-sm font-semibold tracking-widest text-subtle dark:text-night-subtle uppercase"
             lang="en"
           >
-            Timeline
+            <HoverShuffle text="Timeline" />
           </p>
           <h3 className="mt-2 text-2xl font-semibold tracking-tight">開発の軌跡</h3>
           <p className="mt-2 text-sm text-subtle dark:text-night-subtle max-w-2xl leading-relaxed">

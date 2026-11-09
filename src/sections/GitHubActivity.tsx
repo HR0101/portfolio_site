@@ -273,6 +273,7 @@ export function GitHubActivity() {
             <button
               type="button"
               onClick={() => setIsShowingAllRepos((prev) => !prev)}
+              data-attract
               className="press-effect group inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold border border-soft dark:border-night-border text-ink dark:text-night-ink hover:border-ink dark:hover:border-night-ink hover:scale-105 transition-all duration-300"
               aria-expanded={isShowingAllRepos}
             >

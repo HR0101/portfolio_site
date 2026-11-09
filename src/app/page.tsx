@@ -1,5 +1,6 @@
 import { Hero } from '../sections/Hero';
 import { ProductShowcase } from '../sections/ProductShowcase';
+import { PlanetTail } from '../components/PlanetTail';
 import { About } from '../sections/About';
 import { Skills } from '../sections/Skills';
 import { Projects } from '../sections/Projects';
@@ -81,6 +82,8 @@ export default function HomePage() {
       <Hero />
       <ProductShowcase />
       <About />
+      {/* 自己紹介のあと，点描の惑星をページの最後まで残す（画面には何も出さない） */}
+      <PlanetTail />
       <section className="principle-section" aria-label="制作の姿勢">
         <div className="principle-inner">
           {/* 見出しが現れると，上の罫線が左から引かれる */}

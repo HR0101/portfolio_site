@@ -240,19 +240,62 @@ html.is-section-switching::view-transition-group(root) { animation: none; }
 #main-content { overflow-x: clip; }
 @media (prefers-reduced-motion: no-preference) {
   .reveal[data-card-reveal] {
-    --card-travel: -420px;
+    /* Start entirely outside the viewport (matches CARD_ENTRANCE_REACH in
+       cardMotion.ts): half the viewport plus half the card clears the near edge,
+       whatever the screen or card width. % here is the card's own width. */
+    --card-travel: calc(-1 * (50vw + 50% + 96px));
     --card-turn: -2deg;
-    opacity: .85;
+    opacity: 0;
     transform: translateX(var(--card-travel)) rotate(var(--card-turn)) scale(.985);
-    transition: transform 1.2s cubic-bezier(.22, .65, .2, 1.045), opacity .35s ease-out;
+    transition: transform 1.2s cubic-bezier(.22, .65, .2, 1.045), opacity .2s ease-out;
   }
-  .reveal[data-card-reveal='right'] { --card-travel: 420px; --card-turn: 2deg; }
+  .reveal[data-card-reveal='right'] { --card-travel: calc(50vw + 50% + 96px); --card-turn: 2deg; }
   .reveal.reveal-scene[data-card-reveal] { transform: translateX(var(--card-travel)) rotate(var(--card-turn)) scale(.985); transform-origin: 50% 50%; }
   .reveal.reveal-visible[data-card-reveal] { opacity: 1; transform: none; }
+
+  /* 光の筋：カードを画面の端から引いてくる．カードの来た側へ長く伸びて先導し，
+     カードが着くころには縮んで消える．カード本体には触れず ::before だけで描く．
+     隣のカードを横切る配置（中央の列など）は data-card-tow="off" で外す． */
+  .reveal[data-card-reveal]:not([data-card-tow='off']) { position: relative; }
+  .reveal[data-card-reveal]:not([data-card-tow='off'])::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    width: calc(100vw + 96px);
+    height: 18px;
+    margin-top: -9px;
+    /* 芯の細い線と，その周りのやわらかい光．カードに近いほど強く，遠ざかるほど薄れる */
+    background:
+      linear-gradient(to left, var(--site-accent), transparent 65%) center / 100% 2px no-repeat,
+      linear-gradient(to left, color-mix(in srgb, var(--site-accent) 30%, transparent), transparent 65%);
+    mask-image: linear-gradient(to bottom, transparent, #000 35%, #000 65%, transparent);
+    transform-origin: 100% 50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .reveal[data-card-reveal='right']:not([data-card-tow='off'])::before {
+    right: auto;
+    left: 100%;
+    background:
+      linear-gradient(to right, var(--site-accent), transparent 65%) center / 100% 2px no-repeat,
+      linear-gradient(to right, color-mix(in srgb, var(--site-accent) 30%, transparent), transparent 65%);
+    transform-origin: 0 50%;
+  }
+  .reveal.reveal-visible[data-card-reveal]:not([data-card-tow='off'])::before {
+    animation: card-tow-streak 1s cubic-bezier(.22, .65, .2, 1) both;
+    animation-delay: inherit;
+  }
+  @keyframes card-tow-streak {
+    0% { opacity: 0; transform: scaleX(1); }
+    15% { opacity: 1; }
+    55% { opacity: .8; transform: scaleX(1); }
+    100% { opacity: 0; transform: scaleX(.15); }
+  }
 }
 @media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
-  .reveal[data-card-reveal] { --card-travel: -180px; --card-turn: -1deg; }
-  .reveal[data-card-reveal='right'] { --card-travel: 180px; --card-turn: 1deg; }
+  .reveal[data-card-reveal] { --card-turn: -1deg; }
+  .reveal[data-card-reveal='right'] { --card-turn: 1deg; }
 }
 
 /* The controller selects fade / slide / scale / wipe / shared / morph for the

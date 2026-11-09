@@ -3,22 +3,18 @@
 import type { CSSProperties, ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight, Code2, Cpu, Globe2, Layers3, Terminal } from 'lucide-react';
+import { ArrowUpRight, Code2, Cpu, Globe2, Terminal } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { SectionHeading } from '../components/SectionHeading';
 import { AnimatedCounter } from '../components/AnimatedCounter';
 import { useTilt } from '../hooks/useTilt';
 import { SWIFT_APPS } from '../data/apps';
 import { siteConfig } from '../config/site';
+import { SkillExamples } from './SkillExamples';
 import styles from './Skills.module.css';
 
 const SHOWCASE_APPS = ['Subghost', 'BusTimeApp', 'Tsumugi'].map((name) => SWIFT_APPS.find((app) => app.name === name)!);
 const REPOSITORY_COUNT = SWIFT_APPS.reduce((total, app) => total + app.repositories.length, 0);
-const TOOL_GROUPS = [
-  { title: 'Interface & Experience', icon: Layers3, technologies: ['SwiftUI', 'WidgetKit', 'Live Activity', 'App Intents', 'React / Next.js', 'Tailwind CSS'] },
-  { title: 'Data & System', icon: Cpu, technologies: ['SwiftData', 'AVFoundation', 'Bonjour / Network.framework', 'ScreenCaptureKit', 'MediaPipe', 'MapKit'] },
-  { title: 'Everyday Tools', icon: Terminal, technologies: ['Git / GitHub', 'LaTeX'] },
-];
 
 function SkillCard({ children, className = '' }: { children: ReactNode; className?: string }) {
   const { ref, handlers } = useTilt<HTMLDivElement>();
@@ -77,7 +73,7 @@ export function Skills() {
               </div>
             </SkillCard>
           </Reveal>
-          <Reveal cardDirection="left" delayMs={150}>
+          <Reveal cardDirection="left" delayMs={150} tow={false}>
             <SkillCard className={styles.python}>
               <div className={styles.cardTop}><span className={styles.icon}><Terminal size={21} aria-hidden="true" /></span><span className={styles.category}>AUTOMATION</span></div>
               <h3>Python</h3>
@@ -98,14 +94,7 @@ export function Skills() {
           </Reveal>
         </div>
         <Reveal delayMs={100}>
-          <div className={styles.toolbox}>
-            {TOOL_GROUPS.map(({ title, icon: Icon, technologies }) => (
-              <div className={styles.toolGroup} key={title}>
-                <h3><Icon size={15} aria-hidden="true" />{title}</h3>
-                <ul aria-label={title}>{technologies.map((technology) => <li key={technology}>{technology}</li>)}</ul>
-              </div>
-            ))}
-          </div>
+          <SkillExamples />
         </Reveal>
       </div>
     </section>

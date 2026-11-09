@@ -35,6 +35,7 @@ export function CopyEmailButton({ email }: CopyEmailButtonProps) {
         type="button"
         onClick={handleCopy}
         aria-label="メールアドレスをコピーする"
+        data-attract
         className="press-effect inline-flex h-11 w-11 items-center justify-center rounded-full text-subtle dark:text-night-subtle hover:text-ink dark:hover:text-night-ink hover:bg-mist dark:hover:bg-night transition-colors"
       >
         {/* コピーできたら，回りながらチェックの印に入れ替わる */}

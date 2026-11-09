@@ -15,6 +15,7 @@ import { useTheme } from '../hooks/useTheme';
 import { siteConfig } from '../config/site';
 import { SWIFT_APPS } from '../data/apps';
 import { ALL_WORKS } from '../data/works';
+import { PRELOADING_CLASS } from '../lib/preloader';
 import { navigateToSection } from '../lib/sectionNavigation';
 import { navigateToPage } from '../lib/transitionEffects';
 
@@ -202,6 +203,10 @@ export function CommandPalette() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
+        // 読み込み画面が出ている間は開かない（背後は操作できない状態のため）
+        if (document.documentElement.classList.contains(PRELOADING_CLASS)) {
+          return;
+        }
         if (isOpenRef.current) {
           closePalette();
         } else {

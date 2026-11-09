@@ -12,6 +12,7 @@ import { Marquee } from '../components/Marquee';
 import { ScrambleText } from '../components/ScrambleText';
 import { SplitTextReveal } from '../components/SplitTextReveal';
 import { RollLabel } from '../components/RollLabel';
+import { ArrowSwap } from '../components/ArrowSwap';
 import { GitHubIcon } from '../components/icons/GitHubIcon';
 import { useInView } from '../hooks/useInView';
 import { siteConfig } from '../config/site';
@@ -62,10 +63,10 @@ function WorkLinks({ work }: { work: Work }) {
       {work.detailHref && (
         <Link
           href={work.detailHref}
-          className="roll-label-host inline-flex items-center gap-2 rounded-full bg-ink dark:bg-night-ink text-white dark:text-night px-5 py-2.5 text-sm font-semibold transition-transform hover:-translate-y-0.5"
+          className="arrow-swap-host inline-flex items-center gap-2 rounded-full bg-ink dark:bg-night-ink text-white dark:text-night px-5 py-2.5 text-sm font-semibold"
         >
-          <RollLabel text="紹介ページを見る" />
-          <span aria-hidden="true">→</span>
+          紹介ページを見る
+          <ArrowSwap />
         </Link>
       )}
       <a
@@ -83,10 +84,10 @@ function WorkLinks({ work }: { work: Work }) {
           href={buildRepositoryUrl(siteConfig.githubUsername, work.repository)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-2 py-2.5 text-sm text-subtle dark:text-night-subtle hover:text-ink dark:hover:text-night-ink transition-colors"
+          className="line-sweep-host inline-flex items-center gap-1.5 px-2 py-2.5 text-sm text-subtle dark:text-night-subtle hover:text-ink dark:hover:text-night-ink transition-colors"
         >
           <GitHubIcon className="w-4 h-4" />
-          ソースコード
+          <span className="line-sweep">ソースコード</span>
           <span className="sr-only">（GitHub・新しいタブで開きます）</span>
         </a>
       )}

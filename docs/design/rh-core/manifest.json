@@ -1,0 +1,26 @@
+{
+  "asset": "RH Core",
+  "format": "glTF 2.0 binary",
+  "axes": {
+    "up": "+Y",
+    "front": "+Z"
+  },
+  "origin": "Center of the porcelain body; suitable as the orbit origin.",
+  "bodyDimensions": [
+    2.8,
+    2.8,
+    0.38
+  ],
+  "nodes": [
+    "RH_Core",
+    "Core_Porcelain",
+    "Letter_R",
+    "Letter_H"
+  ],
+  "files": {
+    "rh-core.glb": 160048,
+    "rh-monogram.glb": 111708
+  },
+  "textures": 0,
+  "generator": "scripts/create-rh-model.py"
+}

@@ -1,0 +1,294 @@
+/* ===== 読み込み画面 =====
+   初回の訪問のときだけ出る．<head> の起動スクリプトが html に .is-preloading を付け，
+   PageLoader が画面を開くときに外す．付かなければ（2 回目以降・動きを減らす設定・JS 無効）何も出ない．
+
+   構成：ドットの世界地図（日本だけ青く光る）／左右に流れる文字の列／右上の進捗の数字．
+   100 になると地図と文字が薄れて名前だけが中央に残り，中央から円形に開いてページへつながる． */
+
+.page-loader {
+  display: none;
+}
+
+html.is-preloading .page-loader,
+.page-loader[data-phase='closing'],
+.page-loader[data-phase='opening'] {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+/* 読み込みの間は，下のページを動かさない */
+html.is-preloading {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+/* ページ側の CSS アニメーションを止めておく．画面が開くと一斉に始まり，ヒーローの登場につながる */
+html.is-preloading *,
+html.is-preloading *::before,
+html.is-preloading *::after {
+  animation-play-state: paused !important;
+}
+
+/* 読み込み画面自身の動きは止めない */
+html.is-preloading .page-loader *,
+html.is-preloading .page-loader *::before,
+html.is-preloading .page-loader *::after {
+  animation-play-state: running !important;
+}
+
+/* 円形に開くときの半径．JS（WAAPI）が .page-loader でこの値を 0 から画面の対角まで動かし，
+   面のくり抜きと輪の帯が，継承して同じ値を読む */
+@property --loader-iris {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* 画面全体を覆う面．ページの背景と同じ色だと開く縁が見えないので，
+   ページより少し沈んだ色（ライトは淡い灰色，ダークは濃い灰色）にする */
+.page-loader-panel {
+  position: absolute;
+  inset: 0;
+  background: var(--site-surface-soft, #f5f5f7);
+  color: var(--site-ink, #1d1d1f);
+}
+
+/* 開くとき，広がる縁に沿ってうっすら見える帯．面をくり抜く縁の少し内側に敷く */
+.page-loader-ring {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent calc(var(--loader-iris) - 14vmax),
+    color-mix(in srgb, var(--site-ink, #1d1d1f) 12%, transparent) var(--loader-iris),
+    transparent calc(var(--loader-iris) + 1px)
+  );
+}
+
+.page-loader[data-phase='opening'] .page-loader-ring {
+  opacity: 1;
+}
+
+.page-loader[data-phase='opening'] {
+  pointer-events: none;
+}
+
+/* 開くとき：中央から，縁をぼかした円で面をくり抜いていく */
+.page-loader[data-phase='opening'] .page-loader-panel {
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent calc(var(--loader-iris) - 14vmax),
+    #000 var(--loader-iris)
+  );
+  mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent calc(var(--loader-iris) - 14vmax),
+    #000 var(--loader-iris)
+  );
+}
+
+/* 中央の組：名前（左上）と進捗（右上）／左右の文字の列／中央の地図 */
+.page-loader-hud {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: min(86vw, 1480px);
+  height: min(44vh, 400px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 52%) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  column-gap: 24px;
+  font-family: var(--font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-loader-logo {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+  transition:
+    transform 0.5s var(--site-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    opacity 0.3s ease;
+}
+
+.page-loader-count {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.page-loader-spinner {
+  display: block;
+  animation: page-loader-spin 0.9s linear infinite;
+}
+
+@keyframes page-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 文字の列：1 行ずつ下に足され，古い行ほど薄くなる．高さは固定して，行が増えても揺れないようにする */
+.page-loader-feed {
+  grid-row: 2;
+  align-self: start;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  height: calc(9 * 24px);
+  overflow: hidden;
+  color: var(--site-muted, #646a73);
+}
+
+.page-loader-feed-left {
+  grid-column: 1;
+}
+
+.page-loader-feed-right {
+  grid-column: 3;
+  text-align: right;
+}
+
+.page-loader-feed li {
+  height: 24px;
+  line-height: 24px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: page-loader-feed-in 0.28s var(--site-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.page-loader-feed li span {
+  display: block;
+  transition: opacity 0.2s ease;
+}
+
+@keyframes page-loader-feed-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+
+.page-loader-map {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+.page-loader-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 150 / 60;
+}
+
+/* 閉じる：まず左右の行が，上から順に外側へ抜ける．そのあと地図と数字が薄れ，名前だけが画面の中央へ寄る */
+.page-loader-map,
+.page-loader-count {
+  transition: opacity 0.3s ease;
+}
+
+.page-loader[data-phase='closing'] .page-loader-map,
+.page-loader[data-phase='closing'] .page-loader-count,
+.page-loader[data-phase='opening'] .page-loader-map,
+.page-loader[data-phase='opening'] .page-loader-count {
+  opacity: 0;
+  transition-delay: 0.12s;
+}
+
+/* 行が抜ける動き：古い行（上）から 24ms ずつ遅らせる．最後の行まで 0.24 + 8 × 0.024 ≒ 0.43s で，閉じる時間（0.5s）に収まる */
+.page-loader[data-phase='closing'] .page-loader-feed li,
+.page-loader[data-phase='opening'] .page-loader-feed li {
+  animation: page-loader-feed-out 0.24s var(--site-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation-delay: calc(var(--row, 0) * 24ms);
+}
+
+@keyframes page-loader-feed-out {
+  to {
+    opacity: 0;
+    translate: -14px 0;
+  }
+}
+
+/* 右の列は，右の外側へ抜ける */
+.page-loader[data-phase='closing'] .page-loader-feed-right li,
+.page-loader[data-phase='opening'] .page-loader-feed-right li {
+  animation-name: page-loader-feed-out-right;
+}
+
+@keyframes page-loader-feed-out-right {
+  to {
+    opacity: 0;
+    translate: 14px 0;
+  }
+}
+
+.page-loader[data-phase='closing'] .page-loader-logo,
+.page-loader[data-phase='opening'] .page-loader-logo {
+  transform: translate(var(--logo-dx, 0), var(--logo-dy, 0));
+}
+
+/* 開き始めたら，名前も消える */
+.page-loader[data-phase='opening'] .page-loader-logo {
+  opacity: 0;
+}
+
+/* 狭い画面：地図を上に，文字の列を左右に並べて下へ */
+@media (max-width: 760px) {
+  .page-loader-hud {
+    height: fit-content;
+    width: calc(100vw - 40px);
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    row-gap: 20px;
+  }
+
+  .page-loader-count {
+    grid-column: 2;
+  }
+
+  .page-loader-map {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .page-loader-feed {
+    grid-row: 3;
+    margin-top: 0;
+    height: calc(7 * 24px);
+  }
+
+  .page-loader-feed-left {
+    grid-column: 1;
+  }
+
+  .page-loader-feed-right {
+    grid-column: 2;
+  }
+}
+
+/* 動きを減らす設定では出さない（<head> のスクリプトも付けないが，念のため） */
+@media (prefers-reduced-motion: reduce) {
+  .page-loader {
+    display: none !important;
+  }
+
+  html.is-preloading {
+    overflow: auto;
+  }
+}

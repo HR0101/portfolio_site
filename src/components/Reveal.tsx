@@ -27,6 +27,9 @@ interface RevealProps {
   className?: string;
   layoutKey?: string;
   cardDirection?: 'left' | 'right';
+  // カードが画面の外から入るとき，来た側へ伸びる光の筋を出すか（既定は出す）．
+  // 隣のカードの上を横切ってしまう配置（中央の列など）では false にする
+  tow?: boolean;
 }
 
 export function Reveal({
@@ -36,18 +39,22 @@ export function Reveal({
   className = '',
   layoutKey,
   cardDirection,
+  tow = true,
 }: RevealProps) {
   const { ref, isInView } = useInView<HTMLDivElement>(0.15, Boolean(cardDirection));
+  const delay = `${cardDirection ? Math.min(delayMs * 1.4, 420) : delayMs}ms`;
 
   return (
     <div
       ref={ref}
       data-layout-key={layoutKey}
       data-card-reveal={cardDirection}
+      data-card-tow={cardDirection && !tow ? 'off' : undefined}
       className={`reveal ${VARIANT_CLASS_NAMES[variant]} ${
         isInView ? 'reveal-visible' : ''
       } ${className}`}
-      style={{ transitionDelay: `${cardDirection ? Math.min(delayMs * 1.4, 420) : delayMs}ms` }}
+      // 光の筋（::before）の動き出しをカードの遅延にそろえる（animation-delay: inherit で受け取る）
+      style={{ transitionDelay: delay, animationDelay: cardDirection ? delay : undefined }}
     >
       {children}
     </div>

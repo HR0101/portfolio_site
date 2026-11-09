@@ -1,0 +1,11 @@
+.app-cursor-preview { position:fixed; top:0; left:0; z-index:40; width:240px; pointer-events:none; opacity:0; transition:opacity 160ms var(--site-ease); }
+.app-cursor-preview[data-visible='true'] { opacity:1; }
+.app-cursor-preview-figure { margin:0; padding:10px; border:1px solid var(--site-line); border-radius:16px; background:var(--site-surface-raised); color:var(--site-ink); box-shadow:var(--site-shadow-raised); }
+.app-cursor-preview-figure[hidden] { display:none; }
+.app-cursor-preview-figure:not([data-loaded='true']) { visibility:hidden; }
+.app-cursor-preview-figure img { display:block; width:100%; height:min(160px, calc(100dvh - 160px)); object-fit:contain; border-radius:8px; }
+.app-cursor-preview-figure.is-portrait img { height:min(280px, calc(100dvh - 160px)); }
+.app-cursor-preview-figure figcaption { margin-top:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; line-height:1.4; }
+@media (max-width:1023px), (hover:none), (pointer:coarse), (prefers-reduced-motion:reduce) {
+  .app-cursor-preview { display:none; transition:none; }
+}

@@ -77,6 +77,14 @@ describe('トップページの基本構造', () => {
     assert.equal(h1Count, 1);
   });
 
+  it('自己紹介の4枚のカードが，初期のHTMLにすべて置かれ，点描の惑星はページ全体で1つだけ（共有）ある', () => {
+    const planetCount = (homePageHtml.match(/data-testid="showcase-dot-planet"/g) ?? []).length;
+    assert.equal(planetCount, 1);
+    for (const title of ['情報系の学生', 'iOS / macOSアプリ開発', '組込み・電子工作', '「Trust」を軸に']) {
+      assert.ok(homePageHtml.includes(title), `自己紹介のカード「${title}」が初期のHTMLにありません`);
+    }
+  });
+
   it('問い合わせフォームがメーラーを開くことを明示している', () => {
     assert.ok(homePageHtml.includes('メールソフトで確認する'));
     // React は textarea では maxLength をそのままの表記で出力するため，大文字小文字を無視して照合する
@@ -479,6 +487,23 @@ describe('テーマとマニフェスト', () => {
     const manifest = await response.json();
     assert.equal(manifest.lang, 'ja');
     assert.ok(manifest.icons.length > 0);
+  });
+});
+
+describe('読み込み画面', () => {
+  it('初回だけ出すための起動スクリプトと，画面の土台が HTML に含まれる', () => {
+    // 起動スクリプトは，初回の訪問のときだけ html に is-preloading を付ける．
+    // 動きを減らす設定と 2 回目以降（sessionStorage）では付けない
+    assert.ok(homePageHtml.includes('is-preloading'));
+    assert.ok(homePageHtml.includes('portfolio:preloaded'));
+    assert.ok(homePageHtml.includes('prefers-reduced-motion: reduce'));
+    // 画面の土台．読み上げ向けに状態（role="status"）を持つ
+    assert.match(homePageHtml, /class="page-loader"[^>]*role="status"/);
+  });
+
+  it('サーバーが返す html には is-preloading が付いていない（JS が無ければ何も出ない）', () => {
+    // 付けるのはブラウザ側の起動スクリプトだけ．付かなければ読み込み画面は display: none のまま
+    assert.ok(!/<html[^>]*class="[^"]*\bis-preloading\b/.test(homePageHtml));
   });
 });
 

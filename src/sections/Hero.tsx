@@ -1,15 +1,15 @@
 "use client";
 
+import { ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
 import { siteConfig } from '../config/site';
 import { SWIFT_APPS } from '../data/apps';
+import { HERO_PLANET_APPS } from '../data/heroPlanetApps';
 import { RollingNumber } from '../components/RollingNumber';
 import { TypingTerminal, type TerminalLine } from '../components/TypingTerminal';
 import { RotatingWords } from '../components/RotatingWords';
 import { useHeroMotion } from '../hooks/useHeroMotion';
-import { useHeroPointer } from '../hooks/useHeroPointer';
 import styles from './Hero.module.css';
 
 const TERMINAL_LINES: TerminalLine[] = [
@@ -36,12 +36,6 @@ const TERMINAL_LINES: TerminalLine[] = [
   },
 ];
 
-const SPOTLIGHT_NAMES = ['Subghost', 'BusTimeApp', 'Tsumugi', 'TeleDeck'];
-const spotlightApps = SPOTLIGHT_NAMES.flatMap(name => {
-  const app = SWIFT_APPS.find(item => item.name === name);
-  return app?.imageSrc ? [app] : [];
-});
-
 function AssembledLine({ text, accent = false }: { text: string; accent?: boolean }) {
   return <span className={`${styles.line} ${accent ? styles.accent : ''}`} aria-hidden="true">{Array.from(text).map((character, index) => (
     <span key={index} className={styles.charMask}><span className={styles.char} data-hero-char>{character}</span></span>
@@ -50,12 +44,12 @@ function AssembledLine({ text, accent = false }: { text: string; accent?: boolea
 
 export function Hero() {
   const ref = useHeroMotion();
-  useHeroPointer(ref);
   return (
+    <>
     <section ref={ref} id="hero" data-testid="hero-section" className={styles.runway}>
       <div className={styles.stage} data-hero-stage>
-        <div className={`${styles.wash} ${styles.blue}`} data-hero-blue aria-hidden="true" />
-        <div className={`${styles.wash} ${styles.peach}`} data-hero-peach aria-hidden="true" />
+        <div className={`${styles.wash} ${styles.blue}`} data-hero-blue data-attract="decor" aria-hidden="true" />
+        <div className={`${styles.wash} ${styles.peach}`} data-hero-peach data-attract="decor" aria-hidden="true" />
         <div className={styles.rule} data-hero-rule aria-hidden="true" />
         <div className={styles.layout}>
           <div className={styles.copy}>
@@ -78,25 +72,7 @@ export function Hero() {
               <a className={styles.source} href={siteConfig.githubUrl} target="_blank" rel="noopener noreferrer" data-magnetic>GitHubでコードを見る <ArrowUpRight size={15} aria-hidden="true" /></a>
             </div>
           </div>
-          <div className={styles.universe} data-hero-universe aria-label="注目のアプリ">
-            <div className={styles.pointerCore} data-hero-pointer-core aria-hidden="true"><div className={styles.core} data-hero-core><div /><span>RH</span></div></div>
-            <div className={styles.orbitPath} aria-hidden="true" />
-            {spotlightApps.map((app, index) => (
-              <div className={styles.orbit} data-orbit-depth={[1, -1, .6, -.5][index]} key={app.name}>
-                <div className={styles.pointerOrbit} data-orbit-pointer>
-                <div data-orbit-intro>
-                  <div className={styles.appFloat} style={{ animationDelay: `${index * -0.9}s` }}>
-                    <Link href={app.detailHref ?? '#projects'} className={styles.app}>
-                      <Image src={app.imageSrc!} alt="" width={112} height={112} priority={index < 2} />
-                      <span>{app.name}</span>
-                    </Link>
-                  </div>
-                </div>
-                </div>
-              </div>
-            ))}
-            <span className={styles.coordinate} aria-hidden="true">DESIGN × CODE × CURIOSITY</span>
-          </div>
+          <div className={styles.universe} data-hero-universe data-planet-start aria-hidden="true" />
         </div>
         <div className={styles.bottom}>
           <a className={styles.scrollCue} href="#showcase" data-hero-cue><span>SCROLL TO EXPLORE</span><i aria-hidden="true" /></a>
@@ -108,5 +84,16 @@ export function Hero() {
         </div>
       </div>
     </section>
+    <nav className="planet-hero-apps" data-planet-apps aria-label="地球上の注目アプリ">
+      {HERO_PLANET_APPS.map(app => (
+        <Link key={app.name} className="planet-hero-app" href={app.href} aria-label={`${app.name}の紹介を見る`}>
+          <Image src={app.imageSrc} alt="" width={60} height={60} sizes="(max-width: 760px) 44px, 60px" />
+          <span>{app.name}</span>
+        </Link>
+      ))}
+    </nav>
+    {/* 同じ点描の惑星が、右側から中央の展示へ移るための宇宙の続き。 */}
+    <div className={styles.skyBridge} aria-hidden="true" />
+    </>
   );
 }

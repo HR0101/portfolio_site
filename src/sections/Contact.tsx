@@ -136,14 +136,14 @@ export function Contact() {
                 <div className="tile group flex items-center gap-4 p-4 hover:border-ink/25 dark:hover:border-night-ink/25 hover:translate-x-1 hover:shadow-soft transition-all duration-300">
                 <a
                   href={`mailto:${siteConfig.email}`}
-                  className="flex items-center gap-4 min-w-0 flex-grow"
+                  className="line-sweep-host flex items-center gap-4 min-w-0 flex-grow"
                 >
                   <span className="w-10 h-10 rounded-full bg-mist dark:bg-night flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                     <Mail className="animate-wiggle w-5 h-5 text-ink dark:text-night-ink" />
                   </span>
                   <div className="min-w-0">
                     <p className="font-semibold transition-colors">
-                      Email
+                      <span className="line-sweep">Email</span>
                     </p>
                     <p className="text-sm text-subtle dark:text-night-subtle truncate">
                       {siteConfig.email}
@@ -156,14 +156,14 @@ export function Contact() {
                   href={siteConfig.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="tile group flex items-center gap-4 p-4 hover:border-ink/25 dark:hover:border-night-ink/25 hover:translate-x-1 hover:shadow-soft transition-all duration-300"
+                  className="line-sweep-host tile group flex items-center gap-4 p-4 hover:border-ink/25 dark:hover:border-night-ink/25 transition-colors duration-200"
                 >
                   <span className="w-10 h-10 rounded-full bg-mist dark:bg-night flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                     <GitHubIcon className="animate-wiggle w-5 h-5 text-ink dark:text-night-ink" />
                   </span>
                   <div className="min-w-0">
                     <p className="font-semibold transition-colors">
-                      GitHub
+                      <span className="line-sweep">GitHub</span>
                     </p>
                     <p className="text-sm text-subtle dark:text-night-subtle truncate">
                       github.com/{siteConfig.githubUsername}
@@ -283,6 +283,7 @@ export function Contact() {
 
               <button
                 type="submit"
+                data-attract
                 className="contact-submit press-effect group relative overflow-hidden inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white bg-accent-strong hover:bg-accent-hover shadow-soft hover:shadow-soft-lg hover:scale-105 transition-all duration-300"
               >
                 <span className="shimmer-sweep absolute inset-0 overflow-hidden rounded-full" aria-hidden="true" />

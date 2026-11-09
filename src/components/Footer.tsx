@@ -2,13 +2,14 @@ import { Mail } from 'lucide-react';
 import { GitHubIcon } from './icons/GitHubIcon';
 import { siteConfig } from '../config/site';
 import { FooterWordmark, JapanClock } from './FooterMotion';
+import { RollLabel } from './RollLabel';
 import './Footer.css';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="site-footer">
+    <footer id="footer" className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-top">
           <div className="site-footer-brand">
@@ -16,11 +17,11 @@ export function Footer() {
             <p>アイデアを形に。使う人に、信頼を。</p>
           </div>
           <nav className="site-footer-nav" aria-label="フッターナビゲーション">
-            <a href="/#about">About</a>
-            <a href="/#skills">Skills</a>
-            <a href="/#projects">Apps</a>
-            <a href="/#works">Works</a>
-            <a href="/#contact">Contact</a>
+            <a href="/#about" className="roll-label-host"><RollLabel text="About" /></a>
+            <a href="/#skills" className="roll-label-host"><RollLabel text="Skills" /></a>
+            <a href="/#projects" className="roll-label-host"><RollLabel text="Apps" /></a>
+            <a href="/#works" className="roll-label-host"><RollLabel text="Works" /></a>
+            <a href="/#contact" className="roll-label-host"><RollLabel text="Contact" /></a>
           </nav>
         </div>
         <FooterWordmark text={`${siteConfig.displayName}.`} />

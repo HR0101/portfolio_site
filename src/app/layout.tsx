@@ -3,6 +3,7 @@ import './globals.css';
 import './design-tokens.css';
 import './refinements.css';
 import './motion.css';
+import './link-motion.css';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { CursorRing } from '../components/CursorRing';
 import { Navbar } from '../components/Navbar';
@@ -13,6 +14,8 @@ import { CommandPalette } from '../components/CommandPalette';
 import { NavigationTransitions } from '../components/NavigationTransitions';
 import { ImageReveal } from '../components/ImageReveal';
 import { SectionTransitions } from '../components/SectionTransitions';
+import { PageLoader } from '../components/PageLoader';
+import { preloaderBootScript } from '../lib/preloader';
 import { siteConfig } from '../config/site';
 
 
@@ -100,8 +103,13 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* 読み込み画面の起動スクリプト．初回の訪問のときだけ html に is-preloading を付ける．
+            最初の描画から読み込み画面を出すため，<head> の先頭側で実行する（lib/preloader.ts） */}
+        <script dangerouslySetInnerHTML={{ __html: preloaderBootScript }} />
       </head>
       <body className="bg-cream dark:bg-night text-ink dark:text-night-ink antialiased transition-colors min-h-screen flex flex-col">
+        {/* 初めて開いたときだけ出る読み込み画面（2 回目以降は何も出ない） */}
+        <PageLoader />
         <ThemeProvider>
           {/* キーボード操作でヘッダーを読み飛ばすためのリンク */}
           <a
