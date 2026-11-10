@@ -21,6 +21,7 @@ export function Footer() {
             <a href="/#skills" className="roll-label-host"><RollLabel text="Skills" /></a>
             <a href="/#projects" className="roll-label-host"><RollLabel text="Apps" /></a>
             <a href="/#works" className="roll-label-host"><RollLabel text="Works" /></a>
+            <a href="/#profile" className="roll-label-host"><RollLabel text="Profile" /></a>
             <a href="/#contact" className="roll-label-host"><RollLabel text="Contact" /></a>
           </nav>
         </div>

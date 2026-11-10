@@ -11,19 +11,20 @@
 .portfolio-hero h1 { margin: 26px 0; font-size: clamp(48px, 7vw, 88px); font-weight: 700; line-height: 1.17; letter-spacing: -.055em; }
 .portfolio-hero h1 .hero-accent { color: #417fa9; }
 .dark .portfolio-hero h1 .hero-accent { color: #93c8eb; }
-.portfolio-hero-lead { font-size: clamp(17px, 2vw, 23px); font-weight: 500; }
+.portfolio-hero-lead { font-size: clamp(17px, 2vw, 23px); font-weight: 400; }
 .portfolio-hero-description { margin-top: 12px; font-size: 15px; color: var(--color-subtle); }
 .dark .portfolio-hero-description { color: #a1a1a6; }
 .portfolio-hero-actions { display: flex; justify-content: center; align-items: center; gap: 28px; margin-top: 30px; flex-wrap: wrap; }
-.portfolio-primary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; padding: 10px 24px; border-radius: 999px; background: var(--color-accent-strong); color: #fff; font-size: 15px; transition: background .2s, transform .2s; }
-.portfolio-primary:hover { background: var(--color-accent-hover); transform: translateY(-2px); }
+.portfolio-primary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 11px 22px; border-radius: 999px; background: var(--color-accent); color: #fff; font-size: 17px; font-weight: 400; transition: background .2s, transform .2s; }
+.portfolio-primary:hover { background: var(--color-accent-strong); transform: translateY(-2px); }
+.portfolio-primary:active { transform: scale(.95); }
 .portfolio-text-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; color: var(--color-accent); }
 .portfolio-text-link:hover { text-decoration: underline; text-underline-offset: 4px; }
 .dark .portfolio-text-link { color: var(--color-accent-dark); }
 .portfolio-app-shelf { display: flex; justify-content: center; align-items: end; gap: clamp(20px, 4vw, 62px); margin: 66px auto 54px; max-width: 840px; }
 .portfolio-app-link { display: flex; align-items: center; flex-direction: column; gap: 18px; min-width: 0; font-size: 11px; color: var(--color-subtle); }
-.portfolio-app-link img { width: clamp(62px, 8vw, 106px); height: auto; aspect-ratio: 1; border-radius: 23%; box-shadow: 0 18px 30px -18px #203b5b70, inset 0 0 0 1px #0001; transition: transform .45s var(--portfolio-ease), box-shadow .45s; }
-.portfolio-app-link:hover img, .portfolio-app-link:focus-visible img { transform: translateY(-7px); box-shadow: 0 26px 38px -18px #203b5b70; }
+.portfolio-app-link img { width: clamp(62px, 8vw, 106px); height: auto; aspect-ratio: 1; border-radius: 23%; box-shadow: var(--site-shadow-product), inset 0 0 0 1px #0001; transition: transform .45s var(--portfolio-ease); }
+.portfolio-app-link:hover img, .portfolio-app-link:focus-visible img { transform: translateY(-7px); }
 .dark .portfolio-app-link { color: #a1a1a6; }
 .portfolio-stats { display: flex; justify-content: center; gap: 48px; max-width: 850px; margin: auto; padding-top: 30px; border-top: 1px solid #86868b26; }
 .portfolio-stats > div { display: flex; flex-direction: column-reverse; gap: 5px; }
@@ -31,31 +32,36 @@
 .portfolio-stats dd { font-size: 19px; font-weight: 600; letter-spacing: -.025em; }
 .dark .portfolio-stats dt { color: #a1a1a6; }
 .portfolio-section-heading { margin-bottom: clamp(40px, 5vw, 64px); }
-.portfolio-section-heading h2 { margin-top: 16px; font-size: clamp(32px, 4.5vw, 54px); letter-spacing: -.04em; line-height: 1.3; font-weight: 650; }
+.portfolio-section-heading h2 { margin-top: 16px; font-size: clamp(32px, 4.5vw, 54px); letter-spacing: -.03em; line-height: 1.3; font-weight: 600; }
 .portfolio-section-description { margin-top: 24px; max-width: 700px; font-size: 17px; line-height: 1.9; color: var(--site-muted); }
 :is(#about, #skills, #projects, #github, #contact) { padding-block: var(--site-section-space); }
 .principle-section { overflow:hidden; padding:clamp(90px, 11vw, 160px) 24px; background:var(--site-surface); }
 /* 上の罫線は背景の線として引き，見出しが現れたところで左から伸ばす */
-.principle-inner { position:relative; isolation:isolate; max-width:1120px; margin:auto; padding:32px 0 0; background:linear-gradient(var(--site-line), var(--site-line)) 0 0 / 0% 1px no-repeat; transition:background-size 1.6s var(--site-ease); }
-.principle-inner:has(> .principle-heading.reveal-visible) { background-size:100% 1px; }
+.principle-inner { position:relative; isolation:isolate; max-width:1120px; margin:auto; padding:32px 0 0;  }
+.principle-inner::before, .principle-footer::before { content:''; position:absolute; inset:0 0 auto; height:1px; background:var(--site-line); transform:scaleX(0); transform-origin:left; transition:transform var(--dur-enter) var(--ease-out); }
+.principle-inner:has(> .principle-heading.reveal-visible)::before, .principle-footer.reveal-visible::before { transform:scaleX(1); }
 .principle-heading { display:flex; justify-content:space-between; gap:16px; color:var(--site-muted); font:10px/1.5 var(--font-mono); letter-spacing:.14em; }
 .principle-heading span:last-child { color:var(--site-accent); }
 .principle-watermark { position:absolute; z-index:-1; right:-.08em; top:32px; color:color-mix(in srgb, var(--site-ink) 4%, transparent); font-size:clamp(100px, 22vw, 300px); font-weight:750; letter-spacing:-.09em; line-height:1; pointer-events:none; }
 .principle-copy { max-width:900px; margin:clamp(80px, 10vw, 150px) 0 clamp(75px, 9vw, 120px); font-size:clamp(25px, 3.5vw, 44px); font-weight:600; line-height:1.8; letter-spacing:-.04em; }
-.principle-footer { display:flex; align-items:center; flex-wrap:wrap; gap:clamp(12px, 2.5vw, 32px); padding-top:24px; background:linear-gradient(var(--site-line), var(--site-line)) 0 0 / 0% 1px no-repeat; color:var(--site-muted); font:10px/1.5 var(--font-mono); letter-spacing:.12em; }
-/* Reveal の浮かび上がりに，罫線を引く時間を足す（.reveal の時間の指定より詳細度を上げる） */
-.reveal.principle-footer { transition:background-size 1.4s var(--site-ease), opacity .65s var(--portfolio-ease), transform .65s var(--portfolio-ease); }
-.principle-footer.reveal-visible { background-size:100% 1px; }
-/* 流れの語は，罫線を追いかけて左から順に灯る */
-.principle-footer > span { opacity:.2; transition:opacity .5s ease, color .5s ease; }
-.principle-footer.reveal-visible > span { opacity:1; }
-.principle-footer.reveal-visible > span:nth-child(2) { transition-delay:.15s; }
-.principle-footer.reveal-visible > span:nth-child(3) { transition-delay:.3s; }
-.principle-footer.reveal-visible > span:nth-child(4) { transition-delay:.45s; }
-.principle-footer.reveal-visible > span:nth-child(5) { transition-delay:.6s; }
-.principle-footer.reveal-visible > span:nth-child(6) { transition-delay:.75s; }
-.principle-footer.reveal-visible > span:nth-child(7) { transition-delay:.9s; color:var(--site-accent); }
-.principle-footer span:nth-child(even) { color:var(--site-accent); }
+.principle-evidence { margin-bottom:48px; }
+.principle-evidence-list { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:32px; margin:16px 0 0; padding:0; list-style:none; }
+.principle-evidence-list li { display:flex; flex-direction:column; min-width:0; padding-top:20px; border-top:1px solid var(--site-line); }
+.principle-evidence-list p { margin:0 0 16px; color:var(--site-ink); font-size:15px; font-weight:400; line-height:1.9; overflow-wrap:anywhere; }
+.principle-evidence-link { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; min-height:44px; margin-top:auto; color:var(--site-accent); font-size:13px; line-height:1.8; }
+.principle-evidence-link:hover { text-decoration:underline; text-underline-offset:4px; }
+.principle-evidence-year { color:var(--site-muted); font:12px/1.8 var(--font-mono); }
+@media (max-width: 760px) {
+  .principle-evidence-list { grid-template-columns:1fr; gap:24px; }
+}
+.principle-footer { position:relative; display:flex; align-items:center; flex-wrap:wrap; gap:clamp(12px, 2.5vw, 32px); padding-top:24px; color:var(--site-muted); font:10px/1.5 var(--font-mono); letter-spacing:.12em; }
+/* 語と直後の矢印を一緒に灯し，4工程を90msずつでたどります． */
+.principle-footer > span { opacity:.2; transition:opacity var(--dur-slow) ease, color var(--dur-slow) ease; }
+.principle-footer.reveal-visible > span { opacity:1; transition-delay:calc(var(--flow-step, 0) * 90ms); }
+.principle-footer > span:nth-child(3), .principle-footer > span:nth-child(4) { --flow-step:1; }
+.principle-footer > span:nth-child(5), .principle-footer > span:nth-child(6) { --flow-step:2; }
+.principle-footer > span:nth-child(7) { --flow-step:3; }
+.principle-footer.reveal-visible > span:last-child, .principle-footer span:nth-child(even) { color:var(--site-accent); }
 [data-testid='navbar'] { background: rgb(255 255 255 / .86); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid #86868b1f; }
 .dark [data-testid='navbar'] { background: rgb(18 18 20 / .86); border-bottom-color: #ffffff1a; }
 [data-testid='navbar'] nav a { font-size: 12px; }
@@ -100,8 +106,6 @@
 .dark #contact .tile { background: var(--color-night-soft); }
 footer { border-top: 1px solid #86868b26; }
 /* Motion supports reading: one short reveal, no looping ornament on cards. */
-.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-flip, .reveal-blur { transform: translateY(18px); filter: none; transition-duration: .65s; transition-timing-function: var(--portfolio-ease); }
-.reveal-visible { transform: none; }
 .tile .animate-wiggle, .tile .animate-spin-slow, .tile .animate-glow-pulse { animation: none; }
 .tile .shimmer-sweep::after { display: none; }
 @media (max-width: 600px) {
@@ -123,8 +127,76 @@ footer { border-top: 1px solid #86868b26; }
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-flip, .reveal-blur { opacity: 1; transform: none; transition: none; }
-  .principle-inner, .principle-footer, .reveal.principle-footer { background-size:100% 1px; transition:none; }
+  .principle-inner::before, .principle-footer::before { transform:none; transition:none; }
   .principle-footer > span { opacity:1; transition:none; }
   .portfolio-app-link img, .portfolio-primary { transition: none; }
   .portfolio-app-link:hover img, .portfolio-primary:hover { transform: none; }
+}
+
+/* 外枠は動かさず，Revealの一つの合図で見出し全体の読み順をそろえます． */
+.reveal.portfolio-section-heading { opacity:1; transform:none; transition:none; }
+.portfolio-section-heading .portfolio-eyebrow { opacity:0; transition:opacity var(--dur-fast) ease var(--heading-label-delay); }
+.portfolio-section-heading.reveal-visible .portfolio-eyebrow { opacity:1; }
+.portfolio-section-heading .portfolio-section-number { opacity:0; transition:opacity var(--dur-fast) ease var(--heading-line-delay); }
+.portfolio-section-heading.reveal-visible .portfolio-section-number { opacity:1; }
+/* 内部のIntersectionObserverより，見出し共通の合図を優先します． */
+.portfolio-section-heading .reveal-line { transform:scaleX(0); transition:transform var(--dur-slow) var(--ease-out) var(--heading-line-delay); }
+.portfolio-section-heading.reveal-visible .reveal-line { transform:scaleX(1); }
+.portfolio-section-heading h2 [aria-hidden] > span {
+  --heading-character-index:var(--heading-last-character);
+  display:inline-block;
+  opacity:0;
+  animation:none;
+}
+.portfolio-section-heading.reveal-visible h2 [aria-hidden] > span {
+  animation:heading-character-in var(--heading-character-duration) var(--ease-out) both;
+  /* SplitTextRevealの通常の32ms/文字は他の用途に残し，ここだけ上限を持たせます． */
+  animation-delay:calc(var(--heading-title-delay) + var(--heading-character-index) * var(--heading-character-step)) !important;
+}
+/* 33文字目以降は32文字目と一緒に出し，長い見出しでも600msで読み終えられます． */
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(1) { --heading-character-index:0; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(2) { --heading-character-index:1; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(3) { --heading-character-index:2; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(4) { --heading-character-index:3; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(5) { --heading-character-index:4; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(6) { --heading-character-index:5; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(7) { --heading-character-index:6; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(8) { --heading-character-index:7; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(9) { --heading-character-index:8; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(10) { --heading-character-index:9; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(11) { --heading-character-index:10; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(12) { --heading-character-index:11; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(13) { --heading-character-index:12; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(14) { --heading-character-index:13; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(15) { --heading-character-index:14; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(16) { --heading-character-index:15; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(17) { --heading-character-index:16; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(18) { --heading-character-index:17; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(19) { --heading-character-index:18; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(20) { --heading-character-index:19; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(21) { --heading-character-index:20; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(22) { --heading-character-index:21; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(23) { --heading-character-index:22; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(24) { --heading-character-index:23; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(25) { --heading-character-index:24; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(26) { --heading-character-index:25; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(27) { --heading-character-index:26; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(28) { --heading-character-index:27; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(29) { --heading-character-index:28; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(30) { --heading-character-index:29; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(31) { --heading-character-index:30; }
+.portfolio-section-heading h2 [aria-hidden] > span:nth-child(32) { --heading-character-index:31; }
+@keyframes heading-character-in {
+  from { opacity:0; transform:translateY(.5em); }
+  to { opacity:1; transform:none; }
+}
+.portfolio-section-heading .portfolio-section-description { opacity:0; transition:opacity var(--heading-description-duration) ease var(--heading-description-delay); }
+.portfolio-section-heading.reveal-visible .portfolio-section-description { opacity:1; }
+.portfolio-section-heading .phrase-reveal { opacity:0; filter:none; transition:opacity var(--dur-slow) ease calc(var(--heading-description-delay) + min(var(--phrase-delay, 0ms), 120ms)); }
+.portfolio-section-heading.reveal-visible .phrase-reveal { opacity:1; }
+@media (prefers-reduced-motion:reduce) {
+  .portfolio-section-heading :is(.portfolio-eyebrow, .portfolio-section-number, .portfolio-section-description, .phrase-reveal) { opacity:1; filter:none; transition:none; }
+  .portfolio-section-heading .reveal-line { transform:none; transition:none; }
+  .portfolio-section-heading h2 [aria-hidden] > span { opacity:1; animation:none !important; transform:none; }
+  .product-card { transition:none; }
 }

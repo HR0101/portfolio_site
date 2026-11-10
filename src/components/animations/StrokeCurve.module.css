@@ -1,0 +1,74 @@
+/* 章の間を横切る太い曲線．曲線は文字の背後（z-index 0），children は前面（z-index 1）．
+   動かすのは path の stroke-dashoffset だけ（JS が style へ書く）．色はトークンから． */
+.host {
+  --curve-band-height: clamp(280px, 38vw, 480px);
+  --curve-primary: var(--site-accent);
+  /* 水色．文字（墨色）が上に載っても読めるだけの明るさ */
+  --curve-sky: #5ac8fa;
+
+  position: relative;
+  /* 曲線と文字の重なりは，この親の中だけで完結させる */
+  isolation: isolate;
+  width: 100%;
+  min-height: var(--curve-band-height);
+  /* 左右の外へ出る曲線の端で横スクロールを出さない（縦は切らない）．中に sticky の子は置かない */
+  overflow-x: clip;
+  pointer-events: none;
+}
+
+.host[data-tone="primary"] { --curve-color: var(--curve-primary); }
+.host[data-tone="sky"] { --curve-color: var(--curve-sky); }
+
+.svg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.path {
+  fill: none;
+  stroke: var(--curve-color);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* JS が帯の幅から決めた太さを上書きする．これは JS が届くまでの値 */
+  stroke-width: 56px;
+  /* 描き始める前は，隙間の中（何も見えない）．JS が進みに合わせて書き換える */
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  min-height: var(--curve-band-height);
+  pointer-events: none;
+}
+
+/* 曲線の上に載る帯（StatementBand など）は，面を敷かず曲線を透かす */
+.host .content > * {
+  background: transparent;
+}
+
+:global(.dark) .host {
+  /* ダークの水色は，白い文字が上に載っても読めるよう，黒へ沈める */
+  --curve-sky: color-mix(in srgb, #64d2ff 38%, transparent);
+}
+
+@media (max-width: 760px) {
+  .host { --curve-band-height: 260px; }
+  .path { stroke-width: 28px; }
+}
+
+/* 動きを減らす設定：描き終えた静止の線を出す（JS の値より優先する） */
+@media (prefers-reduced-motion: reduce) {
+  .path {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}

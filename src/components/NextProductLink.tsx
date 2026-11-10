@@ -7,6 +7,7 @@ import { Reveal } from './Reveal';
 import { RollLabel } from './RollLabel';
 import { SWIFT_APPS } from '../data/apps';
 import { WEB_WORKS } from '../data/works';
+import { getNextReason } from '../lib/nextProduct';
 import './NextProductLink.css';
 import type { TransitionEffect } from '../lib/transitionEffects';
 
@@ -15,10 +16,10 @@ const NEXT_EFFECTS: TransitionEffect[] = ['slide', 'wipe', 'scale', 'morph', 'fa
 // 紹介ページを持つプロダクト（apps.ts / works.ts に detailHref を足せば，ここにも自動で並ぶ）
 const DETAIL_PAGES = [
   ...SWIFT_APPS.flatMap((app) =>
-    app.detailHref ? [{ name: app.name, tagline: app.tagline, href: app.detailHref, iconSrc: app.imageSrc }] : [],
+    app.detailHref ? [{ name: app.name, tagline: app.tagline, href: app.detailHref, iconSrc: app.imageSrc, product: app }] : [],
   ),
   ...WEB_WORKS.flatMap((work) =>
-    work.detailHref ? [{ name: work.name, tagline: work.tagline, href: work.detailHref, iconSrc: work.iconSrc }] : [],
+    work.detailHref ? [{ name: work.name, tagline: work.tagline, href: work.detailHref, iconSrc: work.iconSrc, product: work }] : [],
   ),
 ];
 
@@ -26,8 +27,7 @@ const DETAIL_PAGES = [
 // 利用規約などの紹介ページ以外では何も出さない
 export function NextProductLink() {
   const pathname = usePathname();
-  // Static hosting uses trailing slashes; match the same product before and
-  // after hydration, regardless of which URL spelling opened the page.
+  // 静的ホスティングの末尾スラッシュの有無によらず，同じ作品として照合する．
   const currentPath = pathname.replace(/\/+$/, '') || '/';
   const currentIndex = DETAIL_PAGES.findIndex((page) => page.href.replace(/\/+$/, '') === currentPath);
   if (currentIndex < 0) {
@@ -35,6 +35,7 @@ export function NextProductLink() {
   }
   const nextIndex = (currentIndex + 1) % DETAIL_PAGES.length;
   const nextPage = DETAIL_PAGES[nextIndex];
+  const reason = getNextReason(DETAIL_PAGES[currentIndex].product, nextPage.product);
   // 次に開くプロダクトが，紹介ページ全体の何番目か
   const position = `${String(nextIndex + 1).padStart(2, '0')} / ${String(DETAIL_PAGES.length).padStart(2, '0')}`;
 
@@ -56,6 +57,7 @@ export function NextProductLink() {
             </span>
           </span>
           <span className="next-product-tagline">{nextPage.tagline}</span>
+          {reason && <span className="next-product-reason" data-testid="next-product-reason">{reason}</span>}
         </Link>
       </Reveal>
     </nav>

@@ -38,3 +38,7 @@ out/
 # Raw screenshot assets and design candidates
 BusTimeApp-screenshots/
 public/favicon-candidates/
+
+# ローカルの Pages Secrets と MusicKit 署名鍵
+.dev.vars
+AuthKey_*.p8

@@ -4,8 +4,9 @@
  *   npm run build:static
  *
  * サーバーを動かせない場所（S3 + CloudFront など）へ置くための形式で書き出す．
- * GitHub の API ルートはサーバーが必要なため，書き出しの間だけ退避させる．
- * 画面側は，代わりにビルド時のスナップショット（src/data/github-snapshot.json）を読む．
+ * Next の API ルート全体を，書き出しの間だけ退避させる（音楽も同じ扱い）．
+ * 公開時の API はルート直下の functions/（Pages Functions）が受け持つ．
+ * GitHub の取得失敗時は同梱 snapshot に戻り，音楽の取得失敗時は何も描画しない．
  */
 
 import { rename, rm, access } from 'node:fs/promises';

@@ -4,27 +4,44 @@
   --site-surface-raised: #fff;
   --site-surface-soft: #f5f5f7;
   --site-ink: #1d1d1f;
-  --site-muted: #646a73;
-  --site-line: #dfe2e8;
-  --site-accent: #396da9;
+  --site-muted: #6e6e73;
+  --site-line: #e0e0e0;
+  /* 操作できるものは，この 1 色の青だけ（Action Blue）．キーボードの輪郭だけ少し明るい青 */
+  --site-accent: #0066cc;
+  --site-focus: #0071e3;
   --site-accent-soft: #e9f0fa;
   --site-radius-card: 28px;
   --site-radius-panel: 36px;
-  --site-shadow-card: 0 14px 40px -30px rgb(24 39 67 / 24%);
+  /* カードに影は付けない（面の色の差と 1px の細い線で分ける）．影は製品の画像が面に置かれているときだけ，この 1 つ */
+  --site-shadow-card: none;
   --site-shadow-raised: 0 22px 45px -28px rgb(24 39 67 / 30%);
+  --site-shadow-product: 3px 5px 30px 0 rgb(0 0 0 / 22%);
   --site-section-space: clamp(80px, 8vw, 112px);
   --site-ease: cubic-bezier(.22, 1, .36, 1);
+  /* 動きの共通の道具（2026-11-09．登場・状態の変化・押した反応で，同じ曲線と時間を使う）．
+     登場・退場は ease-out，画面の中での移動は ease-in-out，シートの滑りは drawer．ease-in は使わない */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-press: 120ms;
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+  --dur-enter: 640ms;
+  /* 段階表示の 1 つあたりの遅れ．style={{ '--i': index }} と transition-delay: calc(var(--i) * var(--stagger-step)) で使う */
+  --stagger-step: 50ms;
 }
 
 .dark {
   --site-surface: #000;
-  --site-surface-raised: #1d1d1f;
-  --site-surface-soft: #141519;
+  --site-surface-raised: #272729;
+  --site-surface-soft: #1d1d1f;
   --site-ink: #f5f5f7;
-  --site-muted: #b1b5be;
-  --site-line: #383b43;
-  --site-accent: #a9c8f0;
+  --site-muted: #aeaeb2;
+  --site-line: #38383a;
+  --site-accent: #2997ff;
+  --site-focus: #2997ff;
   --site-accent-soft: #182d47;
-  --site-shadow-card: 0 14px 40px -30px rgb(0 0 0 / 65%);
+  --site-shadow-card: none;
   --site-shadow-raised: 0 22px 45px -28px rgb(0 0 0 / 75%);
 }

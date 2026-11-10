@@ -1,0 +1,68 @@
+/* ゲームのタイル．配色（--work-accent）と画面の寸法は，これまでの .works-game-shot と同じ．
+   変えたのはホバー・フォーカスの返事だけ：枠は動かさず，中身の画像だけが枠の中でゆっくり寄る．
+   題名の文字の回転は RollTitle.css（合図は .panel の data-roll-host）． */
+.shot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+  background: color-mix(in srgb, var(--work-accent) 14%, var(--color-mist));
+}
+.shot:focus-visible { outline: 2px solid var(--site-focus); outline-offset: -4px; }
+.media {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-origin: 50% 50%;
+  transition: transform var(--dur-enter) var(--ease-out);
+}
+@media (min-width: 1024px) {
+  .shot { height: 100%; min-height: 0; }
+  .shot:not(.portrait) .media { height: 100%; object-fit: cover; object-position: 50% 50%; }
+}
+/* 縦長の画面は，枠の中に端末のように収める（影は製品の画像だけ） */
+.portrait { padding: 28px 0; }
+.portrait .media {
+  width: auto;
+  max-width: 78%;
+  max-height: min(520px, 62vh);
+  border-radius: 16px;
+  box-shadow: 0 24px 50px -24px rgb(0 0 0 / 0.45);
+}
+/* タッチとキーボードの人にも「押せる」と伝える矢印．マウスのときは，カーソルの「VIEW」の札が同じ役目をする */
+.arrow {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.85);
+  color: #344966;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+/* キーボードのフォーカスにも，ホバーと同じ水準の返事 */
+.panel:has(:focus-visible) .media { transform: scale(1.05); }
+.panel:has(:focus-visible) .arrow { transform: translate(2px, -2px); }
+/* 押した瞬間は，画面の中身がわずかに戻る（枠は動かさない） */
+.shot:active .media { transform: scale(1.025); transition-duration: var(--dur-press); }
+@media (hover: hover) and (pointer: fine) {
+  .panel:hover .media { transform: scale(1.05); }
+  .panel:hover .arrow { transform: translate(2px, -2px); }
+  .shot:active .media { transform: scale(1.025); }
+}
+
+/* 動きを減らす設定：画像は寄せず，矢印も動かさない．題名の文字も回さないので（RollTitle.css），不透明度の短い変化で返事をする */
+@media (prefers-reduced-motion: reduce) {
+  .media, .arrow { transition: none; }
+  .panel:hover .media, .panel:has(:focus-visible) .media, .shot:active .media { transform: none; }
+  .panel:hover .arrow, .panel:has(:focus-visible) .arrow { transform: none; }
+  .title { transition: opacity var(--dur-fast) ease; }
+  .panel:hover .title, .panel:has(:focus-visible) .title { opacity: 0.7; }
+}

@@ -52,6 +52,9 @@ export interface SwiftApp {
   screenshotAlt?: string;
   // 縦長画面をカード内で切り抜く際の焦点位置
   screenshotPosition?: string;
+  // 実画面の見どころ．領域は画像の幅・高さに対する 0〜1 の割合．
+  // 印が近づく領域だけ，画像に対する割合で印の位置を補正する．
+  focusAreas?: { id: string; label: string; note: string; region: { x: number; y: number; w: number; h: number }; markerPosition?: { x: number; y: number } }[];
   // カードヘッダーのグラデーション
   gradient: string;
   // 大きなカードで目立たせるかどうか
@@ -93,6 +96,12 @@ export const SWIFT_APPS: SwiftApp[] = [
     screenshotSrc: '/projects/bustimeapp-screens/morning.webp',
     screenshotAlt: 'BusTimeAppで次に乗れるバスを案内しているホーム画面',
     screenshotPosition: '50% 31%',
+    focusAreas: [
+      { id: 'route', label: '現在地ボタン', region: { x: 0.536, y: 0.244, w: 0.361, h: 0.056 }, note: '位置を示す矢印と「現在地に合わせる」の文字を表示しています．' },
+      { id: 'when', label: '選択中の条件', region: { x: 0.083, y: 0.392, w: 0.417, h: 0.124 }, note: '「今日」と「出発時間」が青いボタンで選択されています．' },
+      { id: 'result', label: '検索結果の文頭', region: { x: 0.090, y: 0.600, w: 0.469, h: 0.056 }, note: 'チェックの印と「2便見つかりました」の文字を表示しています．' },
+      { id: 'next', label: '次の便の待ち時間', region: { x: 0.090, y: 0.770, w: 0.300, h: 0.082 }, note: '「あと8分」の「8」を大きく表示しています．' },
+    ],
     gradient: 'from-sky-300 to-blue-400',
     featured: true,
     repositories: [{ name: 'BusTimeApp' }],
@@ -127,9 +136,9 @@ export const SWIFT_APPS: SwiftApp[] = [
     screenshotPosition: '50% 40%',
     gradient: 'from-amber-300 to-sky-400',
     featured: true,
-    // GitHub のリポジトリ名は，改名するまで旧名のまま（改名後は，ここと arkserver/page.tsx の ARK_REPOSITORY を直す）
+    // GitHub のリポジトリは ArkServer に改名済み（旧名 AllServerForMac は GitHub が転送する）．名前を変えるときは，ここと arkserver/page.tsx の ARK_REPOSITORY を直す
     repositories: [
-      { name: 'AllServerForMac', role: 'macOS サーバー（Ark Server）' },
+      { name: 'ArkServer', role: 'macOS サーバー（Ark Server）' },
       { name: 'VideoPlayer', role: 'iOS クライアント' },
     ],
     detailHref: '/apps/arkserver',
@@ -167,6 +176,12 @@ export const SWIFT_APPS: SwiftApp[] = [
     screenshotSrc: '/projects/tsumugi-screens/item-summary.png',
     screenshotAlt: 'Tsumugiが記事の要約と信頼度・鮮度を表示している画面',
     screenshotPosition: '50% 34%',
+    focusAreas: [
+      { id: 'weave', label: '織りと凡例', region: { x: 0.041, y: 0.266, w: 0.400, h: 0.096 }, note: '織りの下に，経糸は信頼度，緯糸は鮮度を示す凡例があります．' },
+      { id: 'credibility', label: '信頼度56点', region: { x: 0.041, y: 0.383, w: 0.444, h: 0.142 }, markerPosition: { x: 0.041, y: 0.450 }, note: '信頼度は「56点」で，「注意が必要」と表示されています．' },
+      { id: 'freshness', label: '鮮度0点', region: { x: 0.516, y: 0.383, w: 0.444, h: 0.142 }, markerPosition: { x: 0.516, y: 0.450 }, note: '鮮度は「0点」で，「陳腐化の可能性が高い」と表示されています．' },
+      { id: 'summary', label: '要約の冒頭', region: { x: 0.041, y: 0.640, w: 0.480, h: 0.106 }, markerPosition: { x: 0.041, y: 0.668 }, note: '「TL;DR」の見出しと，要約の冒頭を表示しています．' },
+    ],
     gradient: 'from-cyan-300 to-sky-400',
     featured: true,
     repositories: [{ name: 'Tsumugi' }],
@@ -325,6 +340,16 @@ export const SWIFT_APPS: SwiftApp[] = [
     repositories: [{ name: 'BusTime' }],
   },
 ];
+
+// アイコンの素材（imageSrc）を持つアプリ．トップの Apps セクション（アイコンの壁）に並べる．
+// アイコンを用意して imageSrc を足せば，自動で壁に加わる
+export const WALL_APPS: SwiftApp[] = SWIFT_APPS.filter((app) => Boolean(app.imageSrc));
+
+// アイコンの素材がないアプリ．トップには並べず，別ページ（OTHER_APPS_PATH）でまとめて紹介する
+export const OTHER_APPS: SwiftApp[] = SWIFT_APPS.filter((app) => !app.imageSrc);
+
+// 「その他のアプリ」ページのパス
+export const OTHER_APPS_PATH = '/apps/others';
 
 // プラットフォーム絞り込みタブの定義
 export interface PlatformFilter {

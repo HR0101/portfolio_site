@@ -1,0 +1,114 @@
+/* CornerMarks：画面の枠の四隅と上下の辺に置く，細い「＋」の印と，下辺中央の小さな英字ラベル．製図のトンボのような静かな飾り．
+   印は絶対配置で，枠の外へはみ出す（レイアウトは変えない）．動かすのは transform と opacity だけ．
+   構造：.set（枠いっぱいの層）> .mark（枠いっぱいの層．登場でここが動く）> .cross（＋の本体．ホバーで離れる）．
+   .mark が枠と同じ大きさなので，transform の % が「枠の幅・高さ」になり，中央寄りの位置を枠の大きさに合わせて指せる． */
+.root { position: relative; display: block; }
+
+.set {
+  --mark-size: 10px;
+  /* 枠と印の中心との距離（斜めの四隅は，縦横ともこの値） */
+  --mark-gap: 10px;
+  /* ホバーで，枠から外へ離れる距離 */
+  --mark-lift: 4px;
+  /* 登場の出発点：所定の位置から，枠の中央へ向けて戻した割合 */
+  --mark-spread: 60%;
+  /* 登場で，移動より少し遅れて現れ始める時間（枠の中身の上を，薄いまま横切らないように） */
+  --mark-fade-lag: 120ms;
+  --mark-color: var(--site-muted);
+  /* 1 = 枠の外側，-1 = 枠の内側 */
+  --mark-side: 1;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.set[data-placement='inside'] { --mark-side: -1; --mark-gap: 14px; z-index: 1; }
+/* 画像の上に置くとき：白い線を「差の絶対値」で重ねる．明るい画面では暗く，暗い画面では明るく見えるので，どの画面でも消えない．
+   層（.set）ごと重ねるので，中の動き（transform・opacity）には影響しない．親が isolation（または別の重なり）を持つこと */
+.set[data-tone='overlay'] { --mark-color: #fff; mix-blend-mode: difference; }
+
+.mark { position: absolute; inset: 0; }
+
+.cross {
+  position: absolute;
+  left: calc(var(--mx) * 100% + var(--dx) * var(--mark-side) * var(--mark-gap));
+  top: calc(var(--my) * 100% + var(--dy) * var(--mark-side) * var(--mark-gap));
+  width: var(--mark-size);
+  height: var(--mark-size);
+  margin: calc(var(--mark-size) / -2) 0 0 calc(var(--mark-size) / -2);
+  color: var(--mark-color);
+}
+/* 横線と縦線．どちらも 1px */
+.cross::before,
+.cross::after { content: ''; position: absolute; background: currentColor; }
+.cross::before { left: 0; right: 0; top: calc(50% - 0.5px); height: 1px; }
+.cross::after { top: 0; bottom: 0; left: calc(50% - 0.5px); width: 1px; }
+
+/* 下辺の中央のラベル（印と同じ高さに並ぶ）．字間を広げた分，左へ寄って見えないよう，左にも同じだけ余白を置く */
+.label {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + var(--mark-side) * var(--mark-gap));
+  padding-left: 0.16em;
+  color: var(--mark-color);
+  font: 400 11px/1 var(--font-mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+
+/* ===== 動きを減らさない設定のときだけ動かす ===== */
+@media (prefers-reduced-motion: no-preference) {
+  /* 登場前：中央寄りの位置に，透明で置く．合図が来ると，所定の位置へ広がる（印ごとに少しずつ遅れる） */
+  .set[data-trigger='view'] .mark,
+  .set[data-trigger='host'] .mark {
+    opacity: 0;
+    transform: translate(
+      calc((0.5 - var(--mx)) * var(--mark-spread)),
+      calc((0.5 - var(--my)) * var(--mark-spread))
+    );
+    transition: transform var(--dur-slow) var(--ease-out), opacity var(--dur-base) var(--ease-out);
+  }
+  .set[data-trigger='view'] .label,
+  .set[data-trigger='host'] .label {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 6px));
+    transition: transform var(--dur-slow) var(--ease-out), opacity var(--dur-base) var(--ease-out);
+  }
+  .set[data-trigger='view'][data-visible='true'] .mark { opacity: 1; transform: none; transition-delay: var(--mark-delay), calc(var(--mark-delay) + var(--mark-fade-lag)); }
+  .set[data-trigger='view'][data-visible='true'] .label { opacity: 1; transform: translate(-50%, -50%); transition-delay: var(--mark-delay), calc(var(--mark-delay) + var(--mark-fade-lag)); }
+
+  /* 祖先（data-corner-host）のキーボードフォーカスでも，同じ返事をする．戻るときは遅れを置かない */
+  :global([data-corner-host]:has(:focus-visible)) .set[data-trigger='host'] .mark { opacity: 1; transform: none; transition-delay: var(--mark-delay), calc(var(--mark-delay) + var(--mark-fade-lag)); }
+  :global([data-corner-host]:has(:focus-visible)) .set[data-trigger='host'] .label { opacity: 1; transform: translate(-50%, -50%); transition-delay: var(--mark-delay), calc(var(--mark-delay) + var(--mark-fade-lag)); }
+
+  /* ホバー（と，枠の中のキーボードフォーカス）で，印が枠から離れる */
+  .cross { transition: transform var(--dur-base) var(--ease-out); }
+  :has(:focus-visible) > .set[data-trigger='view'] .cross {
+    transform: translate(
+      calc(var(--dx) * var(--mark-side) * var(--mark-lift)),
+      calc(var(--dy) * var(--mark-side) * var(--mark-lift))
+    );
+  }
+}
+
+/* ホバーはマウスのときだけ */
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  :hover > .set[data-trigger='view'] .cross {
+    transform: translate(
+      calc(var(--dx) * var(--mark-side) * var(--mark-lift)),
+      calc(var(--dy) * var(--mark-side) * var(--mark-lift))
+    );
+  }
+  :global([data-corner-host]:hover) .set[data-trigger='host'] .mark { opacity: 1; transform: none; transition-delay: var(--mark-delay), calc(var(--mark-delay) + var(--mark-fade-lag)); }
+  :global([data-corner-host]:hover) .set[data-trigger='host'] .label { opacity: 1; transform: translate(-50%, -50%); transition-delay: var(--mark-delay), calc(var(--mark-delay) + var(--mark-fade-lag)); }
+}
+
+/* ===== 動きを減らす設定：印は最初から所定の位置にある．祖先の合図で出すものは，不透明度の短い変化だけ ===== */
+@media (prefers-reduced-motion: reduce) {
+  .set[data-trigger='host'] :is(.mark, .label) { opacity: 0; transition: opacity var(--dur-fast) linear; }
+  :global([data-corner-host]:has(:focus-visible)) .set[data-trigger='host'] :is(.mark, .label) { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+  :global([data-corner-host]:hover) .set[data-trigger='host'] :is(.mark, .label) { opacity: 1; }
+}

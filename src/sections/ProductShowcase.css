@@ -91,7 +91,7 @@
 .showcase-note-intro { margin:0 0 20px; color:var(--showcase-secondary); font-size:13px; line-height:1.8; }
 .showcase-notes dl { margin:0; }
 .showcase-notes dl > div { padding:14px 0; border-top:1px solid var(--showcase-rule); }
-.showcase-notes dt { font-size:11px; font-weight:500; }
+.showcase-notes dt { font-size:11px; font-weight:600; }
 .showcase-notes dd { margin:5px 0 0; color:var(--showcase-muted); font-size:11px; line-height:1.8; }
 .showcase-technology { margin:16px 0 0; color:var(--showcase-muted); font-size:10px; line-height:1.8; overflow-wrap:anywhere; }
 .showcase-source-link { display:inline-flex; align-items:center; gap:8px; min-height:44px; margin-top:20px; padding:9px 0; color:var(--showcase-ink); font-size:12px; line-height:1.7; border-bottom:1px solid var(--showcase-muted); }

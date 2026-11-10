@@ -15,6 +15,7 @@ import { NavigationTransitions } from '../components/NavigationTransitions';
 import { ImageReveal } from '../components/ImageReveal';
 import { SectionTransitions } from '../components/SectionTransitions';
 import { PageLoader } from '../components/PageLoader';
+import { FluidCursor } from '../components/animations/fluid/FluidCursor';
 import { preloaderBootScript } from '../lib/preloader';
 import { siteConfig } from '../config/site';
 
@@ -114,7 +115,7 @@ export default function RootLayout({
           {/* キーボード操作でヘッダーを読み飛ばすためのリンク */}
           <a
             href="#main-content"
-            className="skip-link inline-flex min-h-11 items-center px-4 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border text-sm font-medium shadow-soft"
+            className="skip-link inline-flex min-h-11 items-center px-4 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border text-sm font-semibold shadow-soft"
           >
             本文へスキップ
           </a>
@@ -123,6 +124,8 @@ export default function RootLayout({
           <CommandPalette />
           <Navbar />
           <CursorRing />
+          {/* 何もない所でマウスに合わせて流れる流体の背景（FEATURES.fluidCursor．最初のマウスの動きまで何も作らない） */}
+          <FluidCursor />
           {/* 紹介ページへ移るとき，押したカードの画面を移動先の画面へ変形させる */}
           <NavigationTransitions />
           {/* 遅延読み込みの画像を，読み込み終わったところでふわりと現す */}

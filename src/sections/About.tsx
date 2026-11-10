@@ -33,7 +33,7 @@ const ABOUT_CARDS: AboutCardData[] = [
   {
     icon: Smartphone,
     title: 'iOS / macOSアプリ開発',
-    description: `2025年6月から，Swift / SwiftUI で iPhone・Mac のアプリを${SWIFT_APPS.length}本つくり，ソースコードを公開しています．`,
+    description: `2025年6月から Swift / SwiftUI での個人開発を本格化し，iPhone・Mac 向けに${SWIFT_APPS.length}本のプロダクトを制作．企画から設計・実装・公開まで一貫して1人で手がけ，すべてのソースコードを GitHub に公開しています．`,
     accent: '#9a86c5', kind: 'apps', label: 'APP DEVELOPMENT',
   },
   {

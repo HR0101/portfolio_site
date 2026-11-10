@@ -1,0 +1,21 @@
+/* 流体の背景の canvas．位置・大きさ・重なり（操作を通す・染料を置くまで隠す）は FluidCanvas.tsx のインラインにもある．
+   ここでは，層ごとのブレンドと，動きを減らす設定のときの退避を持つ（出す条件に合わなければそもそも描画されない） */
+.canvas {
+  display: block;
+}
+
+/* 本文の上に重ねる層：ライトは乗算で白い面を淡く染め，ダークは加算気味のスクリーンで暗い面を淡く光らせる．
+   文字は乗算で濃くなる方向にしか変わらず，スクリーンでは白い文字が変わらないので，読みやすさは落ちない */
+.canvas[data-layer='overlay'] {
+  mix-blend-mode: multiply;
+}
+
+:global(.dark) .canvas[data-layer='overlay'] {
+  mix-blend-mode: screen;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas {
+    display: none;
+  }
+}

@@ -45,8 +45,8 @@ export const metadata: Metadata = {
 
 const SCREEN_DIR = '/projects/arkserver-screens';
 
-// GitHub のリポジトリ名．改名するまでは旧名（AllServerForMac）のまま．改名したら，ここと data/apps.ts の repositories を直す
-const ARK_REPOSITORY = 'AllServerForMac';
+// GitHub のリポジトリ名（旧名 AllServerForMac から改名済み）．変えるときは，ここと data/apps.ts の repositories を直す
+const ARK_REPOSITORY = 'ArkServer';
 
 // ヒーローに添える，この Mac アプリの前提
 const HERO_CHIPS = ['macOS 15.5 以降', '6桁の PIN で保護', 'Bonjour で自動検出'];

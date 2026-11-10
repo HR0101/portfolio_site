@@ -1,0 +1,189 @@
+.section {
+  margin-top: 56px;
+  color: var(--site-ink);
+}
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 24px;
+  margin-bottom: 16px;
+}
+
+.heading h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.heading p {
+  color: var(--site-muted);
+  font-size: 12px;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 24px;
+  padding: 24px 0;
+  border-top: 1px solid var(--site-line);
+}
+
+.entry time {
+  color: var(--site-muted);
+  font: 12px/2 var(--font-mono);
+}
+
+.entry h4 {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.entry p {
+  max-width: 800px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+.entry .benefit {
+  margin-top: 8px;
+  color: var(--site-muted);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 8px;
+  color: var(--site-accent);
+  font-size: 13px;
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 640px) {
+  .entry {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+}
+
+/* GitHub の表示だけに使う．無効化中の制作記録の規則は変更しない． */
+.repoStage { display:grid; }
+.repoSkeleton, .repoContent { grid-area:1 / 1; transition:opacity var(--dur-fast) ease; }
+.repoSkeleton { pointer-events:none; }
+.skeletonCard, .repoCard { min-block-size:184px; }
+.repoStage[data-loading='true'] .repoContent { opacity:0; visibility:hidden; }
+.repoStage[data-loading='false'] .repoSkeleton { opacity:0; }
+.repoCard { transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) ease; }
+.repoCard:focus-visible { outline:2px solid var(--site-focus); outline-offset:4px; transform:translateY(-3px); }
+.repoNameText { position:relative; }
+.repoNameText::after { content:''; position:absolute; inset:auto 0 -2px; height:1px; background:currentColor; transform:scaleX(0); transform-origin:left; transition:transform var(--dur-fast) var(--ease-out); }
+.repoName > svg { opacity:0; transition:opacity var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); }
+.repoCard:focus-visible .repoNameText::after { transform:scaleX(1); }
+.repoCard:focus-visible .repoName > svg { opacity:1; transform:translate(2px, -2px); }
+.repoDescription { min-block-size:2.5rem; }
+.repoMetadata { min-block-size:1rem; }
+.repoDisclosure { display:grid; grid-template-rows:0fr; opacity:0; visibility:hidden; transition:grid-template-rows var(--dur-press) var(--ease-out), opacity var(--dur-press) ease, visibility 0s var(--dur-press); }
+.repoDisclosure[data-open='true'] { grid-template-rows:1fr; opacity:1; visibility:visible; transition-duration:var(--dur-base), var(--dur-fast), 0s; transition-delay:0s; }
+.repoDisclosureInner { min-height:0; overflow:hidden; }
+.repoToggleSlot { min-block-size:50px; }
+.repoToggle { transition:transform var(--dur-press) var(--ease-out), border-color var(--dur-fast) ease; }
+.repoToggle > svg { transform:rotate(0); transition:transform var(--dur-base) var(--ease-in-out); }
+.repoToggle[aria-expanded='true'] > svg { transform:rotate(180deg); }
+.repoToggle:focus-visible { outline:2px solid var(--site-focus); outline-offset:4px; border-color:var(--site-ink); }
+.noticeSlot { display:grid; grid-template-rows:0fr; transition:grid-template-rows var(--dur-fast) var(--ease-out); }
+.noticeSlot[data-open='true'] { grid-template-rows:1fr; }
+.noticeSlot > div { min-height:0; overflow:hidden; }
+.notice { margin-bottom:32px; opacity:0; transform:translateY(-4px); transition:opacity var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); }
+.noticeSlot[data-open='true'] .notice { opacity:1; transform:none; }
+.contributions { min-block-size:244px; }
+.graphTile { min-block-size:204px; }
+.contributionWipe { opacity:1; transition:opacity var(--dur-fast) ease; }
+.contributions[data-loading='true'] .contributionWipe { opacity:0; }
+.contributionCell { transition:transform var(--dur-press) var(--ease-out), opacity var(--dur-fast) ease; }
+.activityList { min-block-size:480px; }
+.activity[data-loading='true'] .activityList { opacity:0; }
+.activityList { transition:opacity var(--dur-fast) ease; }
+.eventRow { position:relative; isolation:isolate; }
+.eventRow::before { content:''; position:absolute; inset:0; z-index:-1; border-radius:inherit; pointer-events:none; background:var(--site-accent-soft); opacity:0; transition:opacity var(--dur-fast) ease; }
+.eventRow time { transition:color var(--dur-fast) ease; }
+.eventRow:focus-within::before { opacity:1; }
+.eventRow:focus-within time { color:var(--site-ink); }
+
+/* 位置はマスへ即座に合わせ，面だけを起点（下辺の中央）から開く． */
+.tooltip { position:absolute; z-index:5; pointer-events:none; translate:-50% calc(-100% - 10px); transform-origin:50% calc(100% + 10px); opacity:0; transform:scale(.96); transition:opacity 80ms ease, transform 80ms var(--ease-out); }
+.tooltip[data-open='true'] { opacity:1; transform:scale(1); transition-duration:var(--dur-press); }
+.tooltip::after { content:''; position:absolute; left:50%; bottom:-4px; width:8px; height:8px; background:var(--site-ink); transform:translateX(-50%) rotate(45deg); border-radius:1px; }
+.tooltipBody { position:relative; z-index:1; display:flex; flex-direction:column; gap:1px; padding:6px 10px; border-radius:10px; background:var(--site-ink); color:var(--site-surface); font-size:11px; line-height:1.4; white-space:nowrap; box-shadow:0 10px 24px -14px rgb(0 0 0 / 45%); }
+.tooltipBody strong { font-weight:600; }
+.tooltipBody > span { opacity:.75; font-size:10px; }
+@starting-style { .tooltip[data-open='true'] { opacity:0; transform:scale(.96); } }
+
+@media (hover:hover) and (pointer:fine) {
+  .repoCard:hover { transform:translateY(-3px); border-color:color-mix(in srgb, var(--site-ink) 25%, var(--site-line)); }
+  .repoCard:hover .repoNameText::after { transform:scaleX(1); }
+  .repoCard:hover .repoName > svg { opacity:1; transform:translate(2px, -2px); }
+  .repoToggle:hover { border-color:var(--site-ink); }
+  .contributionCell:hover { transform:scale(1.2); outline:1px solid var(--site-accent); }
+  .eventRow:hover::before { opacity:1; }
+  .eventRow:hover time { color:var(--site-ink); }
+}
+.repoCard:active { transform:scale(.95); transition-duration:var(--dur-press); }
+
+@media (prefers-reduced-motion:no-preference) {
+  .repoEntrance { --repo-delay:var(--repo-delay-1); }
+  .repoStage[data-repos-visible='false'] .repoEntrance { opacity:0; }
+  .repoStage[data-repos-visible='true'][data-loading='false'] .repoEntrance { animation:repoArrive var(--dur-slow) var(--ease-out) var(--repo-delay) backwards; }
+  .repoStage[data-repos-visible='true'][data-loading='false'] :is(.repoName, .repoDescription, .repoMetadata) { animation:repoContentArrive var(--dur-fast) ease backwards; animation-delay:var(--repo-delay); }
+  .repoStage[data-repos-visible='true'][data-loading='false'] .repoDescription { animation-delay:calc(var(--repo-delay) + var(--repo-inner-step)); }
+  .repoStage[data-repos-visible='true'][data-loading='false'] .repoMetadata { animation-delay:calc(var(--repo-delay) + var(--repo-inner-step) * 2); }
+  /* 展開は CSS transition．途中の連打でも現在の位置から戻せる． */
+  .repoEntrance[data-extra-repo='true'] { opacity:0; transform:translateY(8px); transition:opacity var(--dur-press) ease, transform var(--dur-press) var(--ease-out); }
+  .repoDisclosure[data-open='true'] .repoEntrance { opacity:1; transform:none; transition-duration:var(--dur-press); transition-delay:var(--extra-delay); }
+  .repoDisclosure[data-open='true'] :is(.repoName, .repoDescription, .repoMetadata) { opacity:1; }
+  .contributionWipe { clip-path:inset(0 var(--contribution-clip, 100%) 0 0); }
+  .contributions[data-graph-visible='false'] .contributionCell { opacity:0; transform:scale(.6); }
+  .contributions[data-graph-visible='true'] .contributionCell { animation:contributionArrive var(--dur-base) var(--ease-out) var(--cell-delay) backwards; }
+  .graphLabels { opacity:0; transition:opacity var(--dur-fast) ease 200ms; }
+  .contributions[data-graph-visible='true'] .graphLabels { opacity:1; }
+  .activity[data-activity-visible='false'] .eventRow { opacity:0; }
+  .activity[data-activity-visible='true'] .eventRow { animation:eventArrive var(--dur-base) var(--ease-out) var(--event-delay) backwards; }
+  .activity[data-activity-visible='true'] .eventIcon { animation:eventIconArrive var(--dur-base) var(--ease-out) calc(var(--event-delay) + 60ms) backwards; }
+}
+@media (min-width:768px) { .repoEntrance { --repo-delay:var(--repo-delay-2); } }
+@media (min-width:1024px) { .repoEntrance { --repo-delay:var(--repo-delay-3); } }
+
+@keyframes repoArrive { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+@keyframes repoContentArrive { from { opacity:0; } to { opacity:1; } }
+@keyframes contributionArrive { from { opacity:0; transform:scale(.6); } to { opacity:1; transform:scale(1); } }
+@keyframes eventArrive { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:none; } }
+@keyframes eventIconArrive { from { opacity:0; transform:scale(.9); } to { opacity:1; transform:scale(1); } }
+
+@media (prefers-reduced-motion:reduce) {
+  .repoEntrance, .repoName, .repoDescription, .repoMetadata, .eventRow, .eventIcon, .contributionCell { animation:none !important; opacity:1; transform:none; }
+  .repoCard:is(:hover, :focus-visible, :active), .repoToggle:active, .repoName > svg, .contributionCell:hover { transform:none; }
+  .repoDisclosure, .noticeSlot { transition:none; }
+  .notice { transform:none; transition:opacity var(--dur-fast) ease; }
+  .contributionWipe { clip-path:none; }
+  .graphLabels { opacity:1; transition:none; }
+  .repoCard, .repoToggle { transition:border-color var(--dur-fast) ease; }
+  .repoToggle > svg { transition:none; }
+  .repoNameText::after { transform:none; opacity:0; transition:opacity var(--dur-fast) ease; }
+  .repoCard:is(:hover, :focus-visible) .repoNameText::after { opacity:1; }
+  .tooltip, .tooltip[data-open='true'] { transform:none; transition-property:opacity; }
+  @starting-style { .tooltip[data-open='true'] { transform:none; } }
+}

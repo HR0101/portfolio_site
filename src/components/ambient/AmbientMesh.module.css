@@ -1,0 +1,34 @@
+.mesh {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  image-rendering: auto;
+  mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
+}
+
+.mono {
+  --ambient-color-one: var(--site-ink);
+  --ambient-color-two: var(--site-ink);
+}
+
+.blue {
+  --ambient-color-one: var(--site-accent);
+  --ambient-color-two: #54b9cf;
+}
+
+.violet {
+  --ambient-color-one: #8b72c4;
+  --ambient-color-two: #65b7ce;
+}
+
+.warm {
+  --ambient-color-one: #b29b72;
+  --ambient-color-two: var(--site-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh { image-rendering: auto; }
+}

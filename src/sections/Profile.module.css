@@ -1,0 +1,359 @@
+.section {
+  padding-block: var(--site-section-space);
+  color: var(--site-ink);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+  word-break: auto-phrase;
+}
+
+.layout {
+  display: grid;
+  gap: 48px;
+}
+
+.identityColumn,
+.content {
+  min-width: 0;
+}
+
+.identity {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.identity h3 {
+  font-size: clamp(32px, 4vw, 40px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.03em;
+}
+
+.japaneseName {
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.japaneseName span,
+.role {
+  color: var(--site-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
+  color: var(--site-accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.content {
+  display: grid;
+  gap: 48px;
+}
+
+.specs {
+  margin: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 16px;
+  padding-block: 12px;
+  position: relative;
+  border-bottom: 1px solid transparent;
+}
+
+.row dt,
+.additional h4 {
+  color: var(--site-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.row dd {
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.additional {
+  margin-top: 24px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.additional ul {
+  margin-top: 8px;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.additional .socialLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.socialLinks li {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  margin: 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 12px;
+  min-width: 0;
+  padding-top: 16px;
+  position: relative;
+  border-top: 1px solid transparent;
+}
+
+.stat dt {
+  color: var(--site-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.stat dd {
+  order: -1;
+  margin: 0;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat .languages {
+  font-size: 16px;
+  line-height: 1.8;
+  letter-spacing: normal;
+}
+
+.timeline h3,
+.narrative h3 {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -.02em;
+}
+
+.timelineDescription,
+.narrative p {
+  margin-top: 12px;
+  color: var(--site-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.timelineDescription {
+  margin-bottom: 32px;
+}
+
+.narrative p {
+  white-space: pre-line;
+}
+
+.closing {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--site-line);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
+    gap: 64px;
+  }
+}
+
+@media (max-width: 760px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .row {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+/* 本人名を主役にし，補足は短い移動で重ねて出します． */
+.wordMask,
+.dateMask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.wordMask { white-space: pre; }
+.wordMask > span,
+.dateMask > span { display: inline-block; }
+.identity[data-entered='false'] .wordMask > span { transform: translateY(100%); opacity: 0; }
+.identity[data-entered='true'] .wordMask > span {
+  animation: profile-word-in var(--dur-enter) var(--ease-out) var(--profile-delay) both;
+}
+.identity[data-entered='false'] :is(.handleText, .role) { opacity: 0; transform: translateY(8px); }
+.identity[data-entered='true'] :is(.handleText, .role) {
+  animation: profile-support-in var(--dur-base) var(--ease-out) both;
+}
+.identity[data-entered='true'] .handleText { animation-delay: 120ms; }
+.identity[data-entered='true'] .role { animation-delay: 200ms; }
+.handleText { display: inline-block; }
+.handle { position: relative; text-decoration: none; }
+.handle::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 8px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.handle:focus-visible::after { transform: scaleX(1); }
+.textLink {
+  text-decoration-thickness: 1px;
+  transition: color var(--dur-fast) ease, text-decoration-thickness var(--dur-fast) ease;
+}
+.textLink:focus-visible { color: var(--site-ink); text-decoration-thickness: 2px; }
+.row::after,
+.stat::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  height: 1px;
+  background: var(--site-line);
+  transform-origin: left;
+}
+.row::after { bottom: -1px; }
+.stat::before { top: -1px; }
+[data-entered='false'] .row::after,
+.stats[data-entered='false'] .stat::before { transform: scaleX(0); }
+[data-entered='true'] .row::after,
+.stats[data-entered='true'] .stat::before {
+  animation: profile-rule-in var(--dur-slow) var(--ease-out) var(--profile-delay) both;
+}
+[data-entered='false'] .row :is(dt, dd) { opacity: 0; transform: translateY(6px); }
+[data-entered='true'] .row :is(dt, dd) {
+  animation: profile-row-in var(--dur-base) var(--ease-out) var(--profile-delay) both;
+}
+[data-entered='true'] .row dd { animation-delay: calc(var(--profile-delay) + 40ms); }
+.stat :global(.digit-roll-track) {
+  transition-duration: var(--dur-enter);
+  transition-timing-function: var(--ease-out);
+  /* RollingNumber の桁の開始を，上の罫線の開始にそろえます． */
+  transition-delay: var(--profile-delay) !important;
+}
+.stat :global(.digit-roll):nth-child(2) :global(.digit-roll-track) {
+  transition-delay: calc(var(--profile-delay) + 60ms) !important;
+}
+.stats[data-entered='false'] .dateMask > span { opacity: 0; transform: translateY(-100%); }
+.stats[data-entered='true'] .dateMask > span {
+  animation: profile-date-in var(--dur-slow) var(--ease-out) calc(var(--profile-delay) + var(--digit-delay)) both;
+}
+.stats[data-entered='false'] .languageWords { opacity: 0; transform: translateY(6px); }
+.languageWords { display: inline-block; }
+.stats[data-entered='true'] .languageWords {
+  animation: profile-row-in var(--dur-base) var(--ease-out) var(--profile-delay) both;
+}
+.closingArrow { display: inline-block; transition: transform var(--dur-fast) var(--ease-out); }
+.closing a:focus-visible .closingArrow { transform: translateY(3px); }
+@media (hover: hover) and (pointer: fine) {
+  .handle:hover::after { transform: scaleX(1); }
+  .textLink:hover { color: var(--site-ink); text-decoration-thickness: 2px; }
+  .closing a:hover .closingArrow { transform: translateY(3px); }
+}
+@keyframes profile-word-in { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes profile-support-in { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes profile-row-in { from { transform: translateY(6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes profile-date-in { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes profile-rule-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .section .identity :is(.wordMask > span, .handleText, .role),
+  .section .row :is(dt, dd),
+  .section .stat :is(.dateMask > span, .languageWords),
+  .section .row::after,
+  .section .stat::before {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .stat :global(.digit-roll-track) { transition: none; }
+  .handle::after { transition: opacity var(--dur-press) ease; transform: none; opacity: 0; }
+  .handle:focus-visible::after { opacity: 1; }
+  .closingArrow { transition: none; }
+  .closing a:focus-visible .closingArrow { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+  .handle:hover::after { opacity: 1; }
+  .closing a:hover .closingArrow { transform: none; }
+}
+
+/* 年表：配置の transform と点灯の transform は別要素へ割り当てます． */
+.timelineLine { transition: none; }
+.timelineTip { transition: opacity var(--dur-fast) ease; }
+.timelineDot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--site-line);
+  border-radius: 50%;
+  background: var(--site-surface);
+  transition: background-color var(--dur-fast) ease;
+}
+.timelineDot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 1px solid var(--site-ink);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+.timelineCore { width: 6px; height: 6px; border-radius: 50%; background: var(--site-line); transition: background-color var(--dur-fast) ease; }
+.milestone[data-reached='true'] .timelineDot { background: var(--site-ink); }
+.milestone[data-reached='true'] .timelineCore { background: var(--site-surface); }
+.timelinePeriod { color: var(--site-muted); transition: color var(--dur-fast) ease; }
+.milestone[data-reached='true'] .timelinePeriod { color: var(--site-ink); }
+.milestone[data-entered='false'] .timelineCard { opacity: 0; transform: translateX(var(--card-offset)); }
+.milestone[data-entered='false'] :is(.milestoneDescription, .timelineTag) { opacity: 0; }
+.milestone[data-entered='true'] .timelineCard { animation: timeline-card-in var(--dur-slow) var(--ease-out) both; }
+.milestone[data-entered='true'] .milestoneDescription { animation: timeline-copy-in var(--dur-base) ease 40ms both; }
+.milestone[data-entered='true'] .timelineTag { animation: timeline-copy-in var(--dur-base) ease var(--tag-delay) both; }
+.milestone[data-entered='true'] .timelineDot { animation: timeline-dot-land 360ms var(--ease-out) both; }
+.milestone[data-entered='true'] .timelineDot::after { animation: timeline-ring-out 360ms var(--ease-out) both; }
+@keyframes timeline-card-in { from { opacity: 0; transform: translateX(var(--card-offset)); } to { opacity: 1; transform: translateX(0); } }
+@keyframes timeline-copy-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes timeline-dot-land { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.25); } }
+@keyframes timeline-ring-out { from { opacity: .45; transform: scale(1); } to { opacity: 0; transform: scale(1.8); } }
+@media (prefers-reduced-motion: reduce) {
+  .timelineRoot .milestone :is(.timelineCard, .milestoneDescription, .timelineTag, .timelineDot) { animation: none; opacity: 1; transform: none; }
+  .timelineRoot .timelineDot::after { animation: none; opacity: 0; }
+  .timelineTip { display: none; }
+  .timelineRoot .timelineLine { transform: scaleY(1) !important; }
+}

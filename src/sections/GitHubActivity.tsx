@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import Link from 'next/link';
 import {
   Activity,
   AlertTriangle,
@@ -12,16 +13,21 @@ import {
   GitPullRequest,
   Star,
 } from 'lucide-react';
-import { Reveal } from '../components/Reveal';
-import { AnimatedCounter } from '../components/AnimatedCounter';
+import { RollingNumber } from '../components/RollingNumber';
 import { ContributionTooltip } from '../components/ContributionTooltip';
-import { useScrollLinked } from '../hooks/useScrollLinked';
+import { useInView } from '../hooks/useInView';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { clamp, subscribeToScroll } from '../lib/scrollObserver';
+import { diagonalDelay, staggerDelay } from '../lib/choreography';
+import { contributionCellDelay } from '../lib/worksGithubMotion';
 import { SectionHeading } from '../components/SectionHeading';
 import { siteConfig } from '../config/site';
 import { formatRelativeTime } from '../lib/format';
 import { findTaglineByRepository } from '../data/apps';
 import githubSnapshot from '../data/github-snapshot.json';
-import './GitHubActivityMotion.css';
+import { devLog } from '../data/devLog';
+import { FEATURES } from '../config/features';
+import devLogStyles from './DevLog.module.css';
 import {
   fetchActivity,
   fetchContributions,
@@ -79,10 +85,12 @@ const INITIAL_DISPLAY_REPOS = 6;
 const MAX_DISPLAY_EVENTS = 6;
 // ローディング中に表示するスケルトンカードの数
 const SKELETON_COUNT = 6;
-// カードの段階表示に使う遅延間隔（ミリ秒）
-const STAGGER_DELAY_MS = 80;
-// 段階表示の遅延を適用する最大インデックス（全件表示時に遅延が長くなりすぎるのを防ぐ）
-const MAX_STAGGER_INDEX = 5;
+const REPO_INNER_STEP_MS = 30;
+const EXTRA_REPO_STEP_MS = 30;
+const EXTRA_REPO_CAP_MS = 180;
+const ACTIVITY_STEP_MS = 40;
+const NOTICE_EXIT_MS = 160;
+const CONTRIBUTION_ENTER_RATIO = 0.55;
 const STATIC_EXPORT = process.env.NEXT_PUBLIC_STATIC_EXPORT === '1';
 const snapshotDate = new Intl.DateTimeFormat('ja-JP', {
   timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric',
@@ -114,6 +122,50 @@ function eventIcon(eventType: string) {
     default:
       return Activity;
   }
+}
+
+// 登場は外側，ホバー・押下はリンク本体が担当する．
+function RepositoryCard({ repo, index, extra = false }: { repo: GitHubRepo; index: number; extra?: boolean }) {
+  const languageColor = LANGUAGE_COLORS[repo.language] ?? DEFAULT_LANGUAGE_COLOR;
+  const delayStyle = {
+    '--repo-delay-1': `${diagonalDelay(index, 1)}ms`,
+    '--repo-delay-2': `${diagonalDelay(index, 2)}ms`,
+    '--repo-delay-3': `${diagonalDelay(index, 3)}ms`,
+    '--extra-delay': `${staggerDelay(index, { stepMs: EXTRA_REPO_STEP_MS, capMs: EXTRA_REPO_CAP_MS })}ms`,
+    '--repo-inner-step': `${REPO_INNER_STEP_MS}ms`,
+  } as CSSProperties;
+
+  return (
+    <div className={`${devLogStyles.repoEntrance} h-full`} style={delayStyle} data-extra-repo={extra}>
+      <a href={repo.htmlUrl} target="_blank" rel="noopener noreferrer" className={`${devLogStyles.repoCard} github-repo press-effect tile group relative overflow-hidden h-full flex flex-col p-5`}>
+        <div className={`${devLogStyles.repoName} flex items-center justify-between gap-2`}>
+          <h3 className="font-semibold truncate">
+            <span className={devLogStyles.repoNameText}>{repo.name}</span>
+            <span className="sr-only">（新しいタブで開く）</span>
+          </h3>
+          <ExternalLink className="w-4 h-4 shrink-0 text-slate-400" aria-hidden="true" />
+        </div>
+        <p className={`${devLogStyles.repoDescription} mt-2 text-sm text-subtle dark:text-night-subtle line-clamp-2 flex-grow`}>
+          {repo.description || findTaglineByRepository(repo.name) || '説明はまだありません．'}
+        </p>
+        <div className={`${devLogStyles.repoMetadata} mt-4 flex items-center gap-4 text-xs text-subtle dark:text-night-subtle`}>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: languageColor }} aria-hidden="true" />
+            {repo.language}
+          </span>
+          <span className="flex items-center gap-1">
+            <Star className="w-3.5 h-3.5" aria-hidden="true" />
+            <RollingNumber value={repo.stargazersCount} />
+          </span>
+          <span className="flex items-center gap-1">
+            <GitFork className="w-3.5 h-3.5" aria-hidden="true" />
+            <RollingNumber value={repo.forksCount} />
+          </span>
+          <span className="ml-auto">{formatRelativeTime(repo.updatedAt)}</span>
+        </div>
+      </a>
+    </div>
+  );
 }
 
 export function GitHubActivity() {
@@ -153,17 +205,47 @@ export function GitHubActivity() {
     loadData();
   }, [loadData]);
 
-  // Contribution Graph をスクロールに連動して現すための進捗
-  const { ref: contributionRef, progress: contributionProgress } =
-    useScrollLinked<HTMLDivElement>('enter');
+  const { ref: repoRef, isInView: reposVisible } = useInView<HTMLDivElement>();
+  const { ref: contributionRef, isInView: contributionVisible } = useInView<HTMLDivElement>();
+  const { ref: activityRef, isInView: activityVisible } = useInView<HTMLDivElement>();
+  const contributionClipRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = usePrefersReducedMotion();
   // マスに重ねたときの吹き出しを置く枠
   const contributionTileRef = useRef<HTMLDivElement | null>(null);
 
   const isLoading = apiStatus === 'loading';
-  const isDegraded = apiStatus === 'offline' || apiStatus === 'rate_limited';
-  // 折りたたみ時は先頭数件のみ表示する
-  const visibleRepos = isShowingAllRepos ? repos : repos.slice(0, INITIAL_DISPLAY_REPOS);
+  const [noticeStatus, setNoticeStatus] = useState<ApiStatus | null>(null);
+  const [noticeVisible, setNoticeVisible] = useState(false);
   const hasMoreRepos = repos.length > INITIAL_DISPLAY_REPOS;
+
+  useEffect(() => {
+    if (apiStatus === 'offline' || apiStatus === 'rate_limited') {
+      setNoticeStatus(apiStatus);
+      const frame = requestAnimationFrame(() => setNoticeVisible(true));
+      return () => cancelAnimationFrame(frame);
+    }
+    setNoticeVisible(false);
+    const timer = window.setTimeout(() => setNoticeStatus(null), NOTICE_EXIT_MS);
+    return () => window.clearTimeout(timer);
+  }, [apiStatus]);
+
+  useEffect(() => {
+    const node = contributionClipRef.current;
+    const container = contributionRef.current;
+    if (!node || !container) return;
+    if (reducedMotion) {
+      node.style.removeProperty('--contribution-clip');
+      return;
+    }
+    // スクロールで React を再描画しない．見えた列は戻るスクロールでも隠さない．
+    let revealed = 0;
+    return subscribeToScroll(() => {
+      const bounds = container.getBoundingClientRect();
+      const progress = clamp((window.innerHeight - bounds.top) / (window.innerHeight * CONTRIBUTION_ENTER_RATIO + bounds.height));
+      revealed = Math.max(revealed, clamp(progress + CONTRIBUTION_REVEAL_LEAD));
+      node.style.setProperty('--contribution-clip', `${((1 - revealed) * 100).toFixed(1)}%`);
+    });
+  }, [contributionRef, reducedMotion, isLoading]);
 
   return (
     <section
@@ -181,139 +263,85 @@ export function GitHubActivity() {
         />
 
         {/* API 接続状態の通知バナー */}
-        {isDegraded && (
-          <Reveal className="mb-8">
-            <div
-              className="flex items-start gap-3 p-4 rounded-2xl bg-mist dark:bg-night-soft border border-soft dark:border-night-border text-subtle dark:text-night-subtle"
-              role="status"
-            >
-              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-              <p className="text-sm leading-relaxed">
-                GitHub API に接続できないため（
-                {apiStatus === 'rate_limited' ? 'レート制限' : 'オフライン'}
-                ），取得できない箇所には保存済みの実在データを表示しています．
-              </p>
-            </div>
-          </Reveal>
-        )}
+        <div className={devLogStyles.noticeSlot} data-open={noticeVisible}>
+          <div>
+            {noticeStatus && (
+              <div
+                className={`${devLogStyles.notice} flex items-start gap-3 p-4 rounded-2xl bg-mist dark:bg-night-soft border border-soft dark:border-night-border text-subtle dark:text-night-subtle`}
+                role="status"
+              >
+                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                <p className="text-sm leading-relaxed">
+                  GitHub API に接続できないため（
+                  {noticeStatus === 'rate_limited' ? 'レート制限' : 'オフライン'}
+                  ），取得できない箇所には保存済みの実在データを表示しています．
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
-        {/* リポジトリ一覧（カード形式） */}
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-          aria-busy={isLoading}
-          aria-live="polite"
-        >
-          {isLoading
-            ? Array.from({ length: SKELETON_COUNT }, (_, index) => (
-                <div
-                  key={index}
-                  className="tile h-40 animate-pulse"
-                  aria-hidden="true"
-                />
-              ))
-            : visibleRepos.map((repo, index) => {
-                const languageColor =
-                  LANGUAGE_COLORS[repo.language] ?? DEFAULT_LANGUAGE_COLOR;
-                return (
-                  <Reveal
-                    key={repo.id}
-                    cardDirection={index % 3 === 0 ? 'left' : index % 3 === 2 ? 'right' : undefined}
-                    delayMs={Math.min(index, MAX_STAGGER_INDEX) * STAGGER_DELAY_MS}
-                    className="h-full"
-                  >
-                    <a
-                      href={repo.htmlUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="github-repo tile group relative overflow-hidden h-full flex flex-col p-5 hover:border-ink/25 dark:hover:border-night-ink/25 hover:-translate-y-1 hover:shadow-soft transition-all duration-300"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold truncate transition-colors">
-                          {repo.name}
-                          <span className="sr-only">（新しいタブで開く）</span>
-                        </h3>
-                        <ExternalLink
-                          className="w-4 h-4 shrink-0 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <p className="mt-2 text-sm text-subtle dark:text-night-subtle line-clamp-2 flex-grow">
-                        {repo.description ||
-                          findTaglineByRepository(repo.name) ||
-                          '説明はまだありません．'}
-                      </p>
-                      <div className="mt-4 flex items-center gap-4 text-xs text-subtle dark:text-night-subtle">
-                        <span className="flex items-center gap-1.5">
-                          <span
-                            className="w-2.5 h-2.5 rounded-full"
-                            style={{ backgroundColor: languageColor }}
-                            aria-hidden="true"
-                          />
-                          {repo.language}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5" aria-hidden="true" />
-                          {repo.stargazersCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <GitFork className="w-3.5 h-3.5" aria-hidden="true" />
-                          {repo.forksCount}
-                        </span>
-                        <span className="ml-auto">{formatRelativeTime(repo.updatedAt)}</span>
-                      </div>
-                    </a>
-                  </Reveal>
-                );
-              })}
+        {/* 骨格と取得後のカードは同じグリッド領域を使い，交差させる． */}
+        <div ref={repoRef} className={devLogStyles.repoStage} data-loading={isLoading} data-repos-visible={reposVisible} aria-busy={isLoading} aria-live="polite">
+          <div className={`${devLogStyles.repoSkeleton} grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5`}>
+            {Array.from({ length: SKELETON_COUNT }, (_, index) => (
+              <div key={index} className={`${devLogStyles.skeletonCard} tile`} aria-hidden="true" />
+            ))}
+          </div>
+          <div className={`${devLogStyles.repoContent} grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5`}>
+            {repos.slice(0, INITIAL_DISPLAY_REPOS).map((repo, index) => <RepositoryCard key={repo.id} repo={repo} index={index} />)}
+          </div>
+        </div>
+        <div className={devLogStyles.repoDisclosure} data-open={isShowingAllRepos} inert={!isShowingAllRepos ? true : undefined}>
+          <div className={devLogStyles.repoDisclosureInner}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-5">
+              {repos.slice(INITIAL_DISPLAY_REPOS).map((repo, index) => <RepositoryCard key={repo.id} repo={repo} index={index} extra />)}
+            </div>
+          </div>
         </div>
 
         {/* すべて表示 / 折りたたみの切替ボタン */}
-        {!isLoading && hasMoreRepos && (
-          <div className="mt-8 text-center">
+        <div className={`${devLogStyles.repoToggleSlot} mt-8 text-center`}>
+          {!isLoading && hasMoreRepos && (
             <button
               type="button"
               onClick={() => setIsShowingAllRepos((prev) => !prev)}
               data-attract
-              className="press-effect group inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold border border-soft dark:border-night-border text-ink dark:text-night-ink hover:border-ink dark:hover:border-night-ink hover:scale-105 transition-all duration-300"
+              className={`${devLogStyles.repoToggle} press-effect group inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold border border-soft dark:border-night-border text-ink dark:text-night-ink`}
               aria-expanded={isShowingAllRepos}
             >
-              {isShowingAllRepos
-                ? '表示を減らす'
-                : `すべてのリポジトリを表示（全${repos.length}件）`}
-              <ChevronDown
-                className={`w-4 h-4 transition-transform duration-300 ${
-                  isShowingAllRepos ? 'rotate-180' : ''
-                }`}
-              />
+              {isShowingAllRepos ? '表示を減らす' : `すべてのリポジトリを表示（全${repos.length}件）`}
+              <ChevronDown className="w-4 h-4" />
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Contribution Graph（草） */}
-        <Reveal className="mt-14">
+        <div ref={contributionRef} className={`${devLogStyles.contributions} mt-14`} data-graph-visible={contributionVisible && !isLoading} data-loading={isLoading}>
           <h3 className="flex items-center gap-2 font-semibold mb-4">
             <Activity className="w-4 h-4 text-ink dark:text-night-ink" />
             Contributions
           </h3>
+          <div ref={contributionClipRef} className={devLogStyles.contributionWipe}>
           {calendar ? (
-            <div ref={contributionTileRef} className="tile relative p-5">
+            <div ref={contributionTileRef} className={`${devLogStyles.graphTile} tile relative p-5`}>
               <ContributionTooltip containerRef={contributionTileRef} />
               <p className="text-sm text-subtle dark:text-night-subtle mb-4">
                 直近1年間で{' '}
-                <AnimatedCounter
+                <RollingNumber
                   value={calendar.totalContributions}
                   className="font-semibold text-ink dark:text-night-ink tabular-nums"
                 />{' '}
                 contributions
               </p>
-              <div ref={contributionRef} className="overflow-x-auto pb-2">
+              <div className="overflow-x-auto pb-2">
                 <div
                   className="w-max"
                   role="img"
                   aria-label={`GitHub Contribution Graph．直近1年間で${calendar.totalContributions} contributions`}
                 >
                   {/* 月ラベル（本家と同じく，月が変わる週の上に置く） */}
-                  <div className="flex gap-[3px] ml-[26px] mb-1 h-[13px]">
+                  <div className={`${devLogStyles.graphLabels} flex gap-[3px] ml-[26px] mb-1 h-[13px]`}>
                     {calendar.weeks.map((week, weekIndex) => (
                       <div key={weekIndex} className="relative w-[10px]">
                         {shouldShowMonthLabel(calendar.weeks, weekIndex) && (
@@ -327,7 +355,7 @@ export function GitHubActivity() {
 
                   <div className="flex gap-[3px]">
                     {/* 曜日ラベル（本家と同じく Mon / Wed / Fri のみ） */}
-                    <div className="flex flex-col gap-[3px] w-[23px] shrink-0">
+                    <div className={`${devLogStyles.graphLabels} flex flex-col gap-[3px] w-[23px] shrink-0`}>
                       {WEEKDAY_LABELS.map((label, dayIndex) => (
                         <span
                           key={dayIndex}
@@ -339,39 +367,25 @@ export function GitHubActivity() {
                     </div>
 
                     {/* 週ごとの列 */}
-                    {calendar.weeks.map((week, weekIndex) => {
-                      // スクロールが進むほど，左の週から順に現れる
-                      const weekPosition = weekIndex / calendar.weeks.length;
-                      const isRevealed =
-                        contributionProgress + CONTRIBUTION_REVEAL_LEAD >= weekPosition;
-                      return (
-                        <div
-                          key={weekIndex}
-                          className="flex flex-col gap-[3px] transition-all duration-500 ease-out"
-                          style={{
-                            opacity: isRevealed ? 1 : 0,
-                            transform: isRevealed
-                              ? 'translateY(0) scale(1)'
-                              : 'translateY(8px) scale(0.7)',
-                          }}
-                        >
-                          {week.map((day) => (
-                            <div
-                              key={day.date}
-                              data-contribution-date={day.date}
-                              data-contribution-count={day.count}
-                              className={`w-[10px] h-[10px] rounded-[2px] hover:scale-150 hover:ring-1 hover:ring-emerald-500 transition-transform duration-150 contrib-${day.level}`}
-                              aria-hidden="true"
-                            />
-                          ))}
-                        </div>
-                      );
-                    })}
+                    {calendar.weeks.map((week, weekIndex) => (
+                      <div key={weekIndex} className="flex flex-col gap-[3px]">
+                        {week.map((day) => (
+                          <div
+                            key={day.date}
+                            data-contribution-date={day.date}
+                            data-contribution-count={day.count}
+                            className={`${devLogStyles.contributionCell} w-[10px] h-[10px] rounded-[2px] contrib-${day.level}`}
+                            style={{ '--cell-delay': `${contributionCellDelay(weekIndex, day.level)}ms` } as CSSProperties}
+                            aria-hidden="true"
+                          />
+                        ))}
+                      </div>
+                    ))}
                   </div>
                 </div>
 
                 {/* 凡例（本家と同じ Less → More） */}
-                <div className="contribution-legend flex items-center justify-end gap-1 mt-3 text-[11px] text-subtle dark:text-night-subtle">
+                <div className={`${devLogStyles.graphLabels} contribution-legend flex items-center justify-end gap-1 mt-3 text-[11px] text-subtle dark:text-night-subtle`}>
                   <span className="mr-1">Less</span>
                   {[0, 1, 2, 3, 4].map((level) => (
                     <span
@@ -387,18 +401,9 @@ export function GitHubActivity() {
           ) : (
             // GITHUB_TOKEN 未設定時は外部サービスの画像で代替表示する
             <div
-              ref={contributionRef}
-              className="tile p-5 overflow-x-auto"
+              className={`${devLogStyles.graphTile} tile p-5 overflow-x-auto`}
             >
-              {/* スクロールに合わせて左から右へ拭き出すように現す */}
-              <div
-                className="transition-[clip-path] duration-300 ease-out"
-                style={{
-                  clipPath: `inset(0 ${(
-                    Math.max(1 - contributionProgress - CONTRIBUTION_REVEAL_LEAD, 0) * 100
-                  ).toFixed(1)}% 0 0)`,
-                }}
-              >
+              <div>
                 <img
                   src={`https://ghchart.rshah.org/40c463/${siteConfig.githubUsername}`}
                   alt={`${siteConfig.githubUsername} の GitHub Contribution Graph`}
@@ -413,16 +418,44 @@ export function GitHubActivity() {
               </div>
             </div>
           )}
-        </Reveal>
+          </div>
+        </div>
+
+        {/* 手動の制作記録は API の取得状態にかかわらず表示する． */}
+        {FEATURES.devLog && (
+        <section className={devLogStyles.section} aria-labelledby="dev-log-heading" data-testid="dev-log">
+          <header className={devLogStyles.heading}>
+            <h3 id="dev-log-heading">最近の制作記録</h3>
+            <p>手動で更新しています</p>
+          </header>
+          <ol className={devLogStyles.list}>
+            {devLog.map((entry) => (
+              <li key={entry.id} className={devLogStyles.entry}>
+                <time dateTime={entry.date}>{entry.date}</time>
+                <div>
+                  <h4>{entry.title}</h4>
+                  <p>{entry.change}</p>
+                  <p className={devLogStyles.benefit}>{entry.benefit}</p>
+                  {entry.link && (
+                    <Link href={entry.link.href} className={devLogStyles.link}>
+                      {entry.link.label}
+                    </Link>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+        )}
 
         {/* 最近のアクティビティ */}
-        <Reveal className="mt-14">
+        <div ref={activityRef} className={`${devLogStyles.activity} mt-14`} data-activity-visible={activityVisible && !isLoading} data-loading={isLoading}>
           <h3 className="flex items-center gap-2 font-semibold mb-4">
             <GitCommit className="w-4 h-4 text-ink dark:text-night-ink" />
             Recent Activity
           </h3>
-          <ul className="github-events space-y-3">
-            {events.length === 0 && (
+          <ul className={`${devLogStyles.activityList} github-events space-y-3`}>
+            {!isLoading && events.length === 0 && (
               <li className="tile p-4 text-sm text-subtle dark:text-night-subtle">
                 最近の公開アクティビティはありません．
               </li>
@@ -432,12 +465,12 @@ export function GitHubActivity() {
               return (
                 <li
                   key={event.id}
-                  style={{ '--event-index': Math.min(index, 6) } as CSSProperties}
-                  className="group flex items-center gap-4 tile p-4 hover:border-ink/25 dark:hover:border-night-ink/25 hover:translate-x-1 transition-all duration-300"
+                  style={{ '--event-delay': `${staggerDelay(index, { stepMs: ACTIVITY_STEP_MS })}ms` } as CSSProperties}
+                  className={`${devLogStyles.eventRow} group flex items-center gap-4 tile p-4`}
                 >
-                  <span className="w-9 h-9 shrink-0 rounded-full bg-mist dark:bg-night flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span className={`${devLogStyles.eventIcon} w-9 h-9 shrink-0 rounded-full bg-mist dark:bg-night flex items-center justify-center`}>
                     <Icon
-                      className="animate-wiggle w-4 h-4 text-ink dark:text-night-ink"
+                      className="w-4 h-4 text-ink dark:text-night-ink"
                       aria-hidden="true"
                     />
                   </span>
@@ -454,7 +487,7 @@ export function GitHubActivity() {
               );
             })}
           </ul>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

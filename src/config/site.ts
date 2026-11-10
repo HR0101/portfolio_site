@@ -1,3 +1,5 @@
+import { githubUsername } from './github';
+
 // サイト全体で使用する設定値．
 const deploymentHost =
   process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
@@ -11,7 +13,7 @@ const siteUrlWithProtocol = /^https?:\/\//i.test(configuredSiteUrl)
 
 export const siteConfig = {
   // GitHub のユーザー名（プレースホルダー：自身のアカウント名に変更可能）
-  githubUsername: 'HR0101',
+  githubUsername,
   // 画面に表示する名前
   displayName: 'Ryuto Hara',
   // 肩書き

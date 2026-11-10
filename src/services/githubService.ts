@@ -3,10 +3,6 @@
 import { fetchWithTimeout } from '../lib/fetchWithTimeout';
 import githubSnapshot from '../data/github-snapshot.json';
 
-// 静的書き出し（S3 などへ置く形）ではサーバー側の API ルートが存在しないため，
-// ビルド時に取得して同梱したスナップショットをそのまま使う．
-const IS_STATIC_EXPORT = process.env.NEXT_PUBLIC_STATIC_EXPORT === '1';
-
 // スナップショットの中身（JSON なので，使う側で型を与える）
 const snapshotRepos = githubSnapshot.repos as GitHubRepo[];
 const snapshotEvents = githubSnapshot.events as GitHubEvent[];
@@ -71,8 +67,8 @@ export interface ContributionsResponse {
 export const staticRepos: GitHubRepo[] = [
   {
     id: 1,
-    name: 'AllServerForMac',
-    htmlUrl: 'https://github.com/HR0101/AllServerForMac',
+    name: 'ArkServer',
+    htmlUrl: 'https://github.com/HR0101/ArkServer',
     description: '自宅の Mac を個人用メディアサーバーにする macOS アプリ',
     language: 'Swift',
     stargazersCount: 0,
@@ -141,8 +137,8 @@ export const staticEvents: GitHubEvent[] = [
   {
     id: 'static-1',
     type: 'PushEvent',
-    repoName: 'HR0101/AllServerForMac',
-    summary: 'AllServerForMac にコミットをプッシュ',
+    repoName: 'HR0101/ArkServer',
+    summary: 'ArkServer にコミットをプッシュ',
     createdAt: '2026-09-03T03:54:56Z',
   },
   {
@@ -186,9 +182,10 @@ export const staticEvents: GitHubEvent[] = [
 // localStorage キャッシュ（有効期限つき）
 // ─────────────────────────────────────
 
+const ACTIVITY_CACHE_LIMIT_MS = 10 * 60 * 1000;
 const CACHE_LIMIT_MS = 60 * 60 * 1000; // キャッシュ有効期間：1時間
 const REPOS_CACHE_KEY = 'github_repos_cache_v4';
-const ACTIVITY_CACHE_KEY = 'github_activity_cache_v2';
+const ACTIVITY_CACHE_KEY = 'github_activity_cache_v3';
 const CONTRIB_CACHE_KEY = 'github_contrib_cache_v1';
 
 function safeGetItem(key: string): string | null {
@@ -228,7 +225,7 @@ interface CacheEnvelope<T> {
 }
 
 // 有効期限内のキャッシュを読み出す（期限切れ・破損時は null）
-function readCache<T>(key: string): T | null {
+function readCache<T>(key: string, ttl = CACHE_LIMIT_MS): T | null {
   const raw = safeGetItem(key);
   if (!raw) {
     return null;
@@ -238,7 +235,8 @@ function readCache<T>(key: string): T | null {
     const isFresh =
       parsed &&
       typeof parsed.timestamp === 'number' &&
-      Date.now() - parsed.timestamp < CACHE_LIMIT_MS;
+      Date.now() - parsed.timestamp >= 0 &&
+      Date.now() - parsed.timestamp < ttl;
     if (isFresh && parsed.data !== undefined) {
       return parsed.data;
     }
@@ -254,94 +252,60 @@ function writeCache<T>(key: string, data: T): void {
 }
 
 // ─────────────────────────────────────
-// クライアント側フェッチ処理
-// （キャッシュ → API → 静的モック の順でフォールバック）
+// キャッシュ → 同じオリジンの API → 同梱 snapshot の順で取得する．
+// 静的書き出しでも Pages Functions が動いていれば最新データを使う．
 // ─────────────────────────────────────
 
-// リポジトリ一覧を取得する
 export async function fetchRepos(): Promise<ReposResponse> {
-  if (IS_STATIC_EXPORT) {
-    return { repos: snapshotRepos.length > 0 ? snapshotRepos : staticRepos, apiStatus: 'success' };
-  }
   const cached = readCache<GitHubRepo[]>(REPOS_CACHE_KEY);
-  if (cached) {
-    return { repos: cached, apiStatus: 'success' };
-  }
-
+  if (cached) return { repos: cached, apiStatus: 'success' };
+  const repos = snapshotRepos.length > 0 ? snapshotRepos : staticRepos;
   try {
     const response = await fetchWithTimeout('/api/github');
-    if (!response.ok) {
-      throw new Error(`HTTPエラー: ${response.status}`);
-    }
+    if (!response.ok) return { repos, apiStatus: 'offline' };
     const data: ReposResponse = await response.json();
     if (data.apiStatus === 'success' && Array.isArray(data.repos)) {
       writeCache(REPOS_CACHE_KEY, data.repos);
+      return data;
     }
-    return {
-      repos: Array.isArray(data.repos) ? data.repos : staticRepos,
-      apiStatus: data.apiStatus,
-    };
+    return { repos, apiStatus: data.apiStatus ?? 'offline' };
   } catch {
-    return { repos: staticRepos, apiStatus: 'offline' };
+    return { repos, apiStatus: 'offline' };
   }
 }
 
-// 最近のアクティビティを取得する
 export async function fetchActivity(): Promise<ActivityResponse> {
-  if (IS_STATIC_EXPORT) {
-    return {
-      events: snapshotEvents.length > 0 ? snapshotEvents : staticEvents,
-      apiStatus: 'success',
-    };
-  }
-  const cached = readCache<GitHubEvent[]>(ACTIVITY_CACHE_KEY);
-  if (cached) {
-    return { events: cached, apiStatus: 'success' };
-  }
-
+  const cached = readCache<GitHubEvent[]>(ACTIVITY_CACHE_KEY, ACTIVITY_CACHE_LIMIT_MS);
+  if (cached) return { events: cached, apiStatus: 'success' };
+  const events = snapshotEvents.length > 0 ? snapshotEvents : staticEvents;
   try {
     const response = await fetchWithTimeout('/api/github/activity');
-    if (!response.ok) {
-      throw new Error(`HTTPエラー: ${response.status}`);
-    }
+    if (!response.ok) return { events, apiStatus: 'offline' };
     const data: ActivityResponse = await response.json();
     if (data.apiStatus === 'success' && Array.isArray(data.events)) {
       writeCache(ACTIVITY_CACHE_KEY, data.events);
+      return data;
     }
-    return {
-      events: Array.isArray(data.events) ? data.events : staticEvents,
-      apiStatus: data.apiStatus,
-    };
+    return { events, apiStatus: data.apiStatus ?? 'offline' };
   } catch {
-    return { events: staticEvents, apiStatus: 'offline' };
+    return { events, apiStatus: 'offline' };
   }
 }
 
-// Contribution Graph（草）のデータを取得する
 export async function fetchContributions(): Promise<ContributionsResponse> {
-  if (IS_STATIC_EXPORT) {
-    return {
-      calendar: snapshotCalendar,
-      apiStatus: snapshotCalendar ? 'success' : 'no_token',
-    };
-  }
   const cached = readCache<ContributionCalendar>(CONTRIB_CACHE_KEY);
-  if (cached) {
-    return { calendar: cached, apiStatus: 'success' };
-  }
-
+  if (cached) return { calendar: cached, apiStatus: 'success' };
   try {
     const response = await fetchWithTimeout('/api/github/contributions');
-    if (!response.ok) {
-      throw new Error(`HTTPエラー: ${response.status}`);
-    }
+    if (!response.ok) return { calendar: snapshotCalendar, apiStatus: snapshotCalendar ? 'success' : 'offline' };
     const data: ContributionsResponse = await response.json();
-    if (data.apiStatus === 'success' && data.calendar) {
+    if (data.apiStatus === 'success' && data.calendar && Array.isArray(data.calendar.weeks)) {
       writeCache(CONTRIB_CACHE_KEY, data.calendar);
+      return data;
     }
-    return data;
+    // snapshot がない場合の no_token は，既存の ghchart 画像へ委ねる．
+    return { calendar: snapshotCalendar, apiStatus: snapshotCalendar ? 'success' : data.apiStatus ?? 'offline' };
   } catch {
-    // 取得失敗時は画像フォールバック表示に切り替えてもらう
-    return { calendar: null, apiStatus: 'offline' };
+    return { calendar: snapshotCalendar, apiStatus: snapshotCalendar ? 'success' : 'offline' };
   }
 }

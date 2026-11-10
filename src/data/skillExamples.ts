@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
+import { Cpu, Terminal, type LucideIcon } from 'lucide-react';
 import { SWIFT_APPS, buildRepositoryUrl } from './apps';
 import { WEB_WORKS } from './works';
 import { siteConfig } from '../config/site';
@@ -15,7 +15,7 @@ export interface SkillExample {
 
 export const SKILL_TOOL_GROUPS = [
   { title: 'Interface & Experience', technologies: ['SwiftUI', 'WidgetKit', 'Live Activity', 'App Intents', 'React / Next.js', 'Tailwind CSS'] },
-  { title: 'Data & System', technologies: ['SwiftData', 'AVFoundation', 'Bonjour / Network.framework', 'ScreenCaptureKit', 'MediaPipe', 'MapKit'] },
+  { title: 'Data & System', technologies: ['SwiftData', 'AVFoundation', 'Bonjour / Network.framework', 'ScreenCaptureKit', 'MediaPipe', 'MapKit', 'Python', 'C / Arduino'] },
   { title: 'Everyday Tools', technologies: ['Git / GitHub', 'LaTeX'] },
 ];
 
@@ -36,6 +36,14 @@ const portfolio = (technology: string, description: string): SkillExample => ({
 });
 const ekihub = WEB_WORKS.find(work => work.id === 'ekihub')!;
 
+// アプリのカタログにない公開リポジトリ．README に書かれている内容だけを，1行の説明にする．
+const publicRepository = (technology: string, name: string, description: string, icon: LucideIcon): SkillExample => ({
+  technology, name, description, icon,
+  href: buildRepositoryUrl(siteConfig.githubUsername, name),
+  external: true,
+});
+
+
 // Only link a technology to a concrete use documented in the product catalogue.
 export const SKILL_EXAMPLES: SkillExample[] = [
   appExample('SwiftUI', 'BusTimeApp', '次に乗れる便を、iPhoneの画面とウィジェットでわかりやすく案内。'),
@@ -53,4 +61,6 @@ export const SKILL_EXAMPLES: SkillExample[] = [
   appExample('MediaPipe', 'Fomura', '33関節の骨格推定から、筋トレのフォームを採点。'),
   appExample('MapKit', 'CIT-Campus-3D', '講義と建物を結びつけ、次の教室へ案内するキャンパスマップ。'),
   portfolio('Git / GitHub', 'ソースコードと変更履歴を公開し、実装を確かめられるように。'),
+  publicRepository('Python', 'FraTerm', '動画をターミナル上でASCII文字やANSIカラーとして再生するCLIツール。', Terminal),
+  publicRepository('C / Arduino', 'hackathon_42', 'マスタ機が赤外線で送る同期信号に合わせ、最大5台のスレーブ機が輪唱で合奏するシステム。', Cpu),
 ];

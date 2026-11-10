@@ -27,7 +27,7 @@
 }
 @media(max-width:760px) { #showcase { margin-top:-24px; border-radius:26px 26px 0 0; } }
 
-.reveal-scene { transform:perspective(1000px) translateY(95px) rotateX(16deg) scale(.92); transform-origin:50% 100%; transition-duration:1.1s; transition-timing-function:cubic-bezier(.16,1,.3,1); }
+.reveal-scene { transform:perspective(1000px) translateY(clamp(16px, 8%, 48px)) rotateX(12deg) scale(.96); transform-origin:50% 100%; transition-duration:var(--dur-enter); transition-timing-function:var(--ease-out); }
 .reveal-scene.reveal-visible { transform:none; }
 @media(prefers-reduced-motion:reduce) { .reveal-scene { opacity:1; transform:none; transition:none; } }
 @media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
@@ -37,7 +37,7 @@
 
 /* スマホでは奥行きの強い回転を避け、縦スクロールとタップに合わせる。 */
 @media(max-width:760px) and (prefers-reduced-motion:no-preference) {
-  .reveal-scene { transform:translateY(32px) scale(.98); transform-origin:50% 100%; transition-duration:.75s; }
+  .reveal-scene { transform:translateY(clamp(12px, 5%, 24px)) scale(.98); transform-origin:50% 100%; transition-duration:var(--dur-enter); }
   .reveal-scene.reveal-visible { transform:none; }
   .scroll-zoom-inner { transform:none!important; }
   .reveal-visible .motion-work-surface [data-motion-parallax] { animation:mobile-work-arrive .9s cubic-bezier(.22,1,.36,1) backwards; }
@@ -62,7 +62,7 @@
   pointer-events: none;
 }
 .motion-tabs > .motion-tab-line[data-ready] {
-  transition: translate .48s cubic-bezier(.22, 1, .36, 1), width .4s cubic-bezier(.22, 1, .36, 1), opacity .2s;
+  transition: translate var(--dur-base) var(--ease-in-out), opacity var(--dur-fast) ease;
 }
 
 .motion-disclosure {
@@ -70,7 +70,7 @@
   grid-template-rows: 0fr;
   visibility: hidden;
   opacity: 0;
-  transition: grid-template-rows .42s cubic-bezier(.22, 1, .36, 1), opacity .25s, visibility 0s .42s;
+  transition: grid-template-rows var(--dur-base) var(--ease-out), opacity var(--dur-fast) ease, visibility 0s var(--dur-base);
 }
 .motion-disclosure[data-open='true'] {
   grid-template-rows: 1fr;
@@ -82,11 +82,11 @@
 
 /* Keep the reveal directions distinct; refinements.css used to flatten them. */
 @media (prefers-reduced-motion: no-preference) {
-  .reveal.reveal-left { transform: translateX(-34px); }
-  .reveal.reveal-right { transform: translateX(34px); }
-  .reveal.reveal-scale { transform: translateY(16px) scale(.93); }
-  .reveal.reveal-blur { transform: translateY(22px); filter: blur(7px); }
-  .reveal.reveal-flip { transform: perspective(900px) translateY(24px) rotateX(12deg); transform-origin: 50% 100%; }
+  .reveal.reveal-left { transform: translateX(clamp(-48px, -8%, -12px)); }
+  .reveal.reveal-right { transform: translateX(clamp(12px, 8%, 48px)); }
+  .reveal.reveal-scale { transform: translateY(var(--reveal-rise)) scale(.96); }
+  .reveal.reveal-blur { transform: translateY(var(--reveal-rise)); filter: none; }
+  .reveal.reveal-flip { transform: perspective(900px) translateY(var(--reveal-rise)) rotateX(12deg); transform-origin: 50% 100%; }
   .reveal.reveal-visible { transform: none; filter: none; }
 
   [data-product-page] a > .lucide-arrow-up-right,
@@ -157,9 +157,9 @@
   [data-motion-card]:hover { translate: 0 -4px; box-shadow: 0 14px 30px -20px rgb(15 23 42 / .25); }
 }
 @media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
-  .reveal.reveal-left { transform: translate(-14px, 14px); }
-  .reveal.reveal-right { transform: translate(14px, 14px); }
-  .reveal.reveal-blur { filter: blur(3px); }
+  .reveal.reveal-left { transform: translate(clamp(-20px, -4%, -8px), var(--reveal-rise)); }
+  .reveal.reveal-right { transform: translate(clamp(8px, 4%, 20px), var(--reveal-rise)); }
+  .reveal.reveal-blur { filter: none; }
   .reveal.reveal-visible { transform: none; filter: none; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -196,10 +196,10 @@ html.is-section-switching #hero[data-section-landing] :is([data-hero-title], [da
 html.is-section-switching #hero[data-section-landing] :is([data-hero-blue], [data-hero-cue]) { opacity: 1 !important; }
 html.is-section-switching #hero[data-section-landing] [data-hero-peach] { opacity: 0 !important; }
 html.is-section-switching::view-transition-old(root) {
-  animation: section-viewport-out .36s cubic-bezier(.4, 0, 1, 1) both;
+  animation: section-viewport-out var(--dur-base) var(--ease-out) both;
 }
 html.is-section-switching::view-transition-new(root) {
-  animation: section-viewport-in .72s cubic-bezier(.22, 1, .36, 1) .08s both;
+  animation: section-viewport-in 320ms var(--ease-out) both;
 }
 html.is-section-switching::view-transition-group(root) { animation: none; }
 @keyframes section-viewport-out {
@@ -247,7 +247,7 @@ html.is-section-switching::view-transition-group(root) { animation: none; }
     --card-turn: -2deg;
     opacity: 0;
     transform: translateX(var(--card-travel)) rotate(var(--card-turn)) scale(.985);
-    transition: transform 1.2s cubic-bezier(.22, .65, .2, 1.045), opacity .2s ease-out;
+    transition: transform 720ms var(--ease-out), opacity var(--dur-fast) ease;
   }
   .reveal[data-card-reveal='right'] { --card-travel: calc(50vw + 50% + 96px); --card-turn: 2deg; }
   .reveal.reveal-scene[data-card-reveal] { transform: translateX(var(--card-travel)) rotate(var(--card-turn)) scale(.985); transform-origin: 50% 50%; }
@@ -283,7 +283,7 @@ html.is-section-switching::view-transition-group(root) { animation: none; }
     transform-origin: 0 50%;
   }
   .reveal.reveal-visible[data-card-reveal]:not([data-card-tow='off'])::before {
-    animation: card-tow-streak 1s cubic-bezier(.22, .65, .2, 1) both;
+    animation: card-tow-streak 720ms var(--ease-out) both;
     animation-delay: inherit;
   }
   @keyframes card-tow-streak {
@@ -318,18 +318,30 @@ html.is-route-switching #main-content :is(.reveal, .phrase-reveal, .kinetic-char
 }
 html.is-route-switching #main-content h1 [aria-hidden] > span { opacity: 1 !important; transform: none !important; filter: none !important; }
 [data-morph-icon] { border-radius: 22%; }
-::view-transition-group(product-morph),
-::view-transition-group(product-title),
-::view-transition-group(product-surface) {
-  animation-duration: 1.15s;
-  animation-timing-function: cubic-bezier(.22, 1, .36, 1);
+
+/* 紹介ページへ移るとき：押した画面が，角丸を保ったまま育って移動先の画面の位置へ着く（ProductMorph が名前を付ける）．
+   共有するのはこの画面だけ．見出しや背後のカードは，ほかの面と同じく退き，後から現れる（transitionEffects.ts の 'shared'）．
+   時間と曲線は transitionEffects.ts の PRODUCT_MORPH_*（480ms・--ease-in-out）とそろえる．
+   主役の画面は常に最前面（ナビゲーションの 100 の下） */
+:root { --morph-duration: 480ms; }
+::view-transition-group(product-morph) {
+  z-index: 53;
+  animation-duration: var(--morph-duration);
+  animation-timing-function: var(--ease-in-out);
   overflow: clip;
 }
-::view-transition-group(product-morph) { z-index: 52; }
-::view-transition-group(product-title) { z-index: 53; }
-::view-transition-group(product-surface) { z-index: 51; }
-::view-transition-old(product-title), ::view-transition-old(product-surface) { animation: morphFadeOut .5s ease both; }
-::view-transition-new(product-title), ::view-transition-new(product-surface) { animation: morphFadeIn .65s .12s ease both; }
+/* 古い側と新しい側の画面を同じ枠いっぱいに敷いて交差させ，縦横比の違いを枠でなじませる．
+   フェードは UA 既定のまま（group の時間と曲線を引き継ぐ） */
+::view-transition-old(product-morph),
+::view-transition-new(product-morph) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* 古いページが薄れてから新しいページが現れるまでに見える面．押した位置のページの色を NavigationTransitions が書く */
+html.is-route-switching[data-route-effect='shared']::view-transition-group(root) {
+  background: var(--route-backdrop, var(--site-surface));
+}
 
 /* Rounded screenshot thumbnails grow into the modal's full-size image and
    return to exactly the same thumbnail when the modal is dismissed. */

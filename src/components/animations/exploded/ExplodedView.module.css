@@ -1,0 +1,52 @@
+/* 分解ビュー．外側の .stage は計測用（perspective を持ち，大きさは媒体欄と同じ）で，内側の .rig が 3D の回転を受ける．
+   各層は position:absolute; inset:0 の面で，奥行き（translateZ）・傾き・不透明度は ExplodedView.tsx が直接書く（動かすのは transform と opacity だけ）． */
+.stage { position:absolute; inset:0; perspective:1200px; }
+.rig { position:absolute; inset:0; transform-style:preserve-3d; }
+.layer { position:absolute; inset:0; }
+/* 動いている間だけ，合成層へ昇格させる */
+.stage[data-moving=true] :is(.rig, .layer, .shadow) { will-change:transform; }
+/* 板・枠・格子は，現れる前は隠す（JS が不透明度と visibility を書く．書かれる前も隠れている） */
+.plate, .frames, .guides, .shadow { opacity:0; visibility:hidden; pointer-events:none; }
+
+/* 層 0：背面の板 */
+.plate { box-sizing:border-box; border:1px solid var(--site-line); border-radius:calc(var(--site-radius-card) - 10px); background:var(--site-surface-soft); }
+
+/* 実画面の影：もともとの影（3px 5px 30px 0 / 22%）と同じ見た目を，ぼかした別要素で作る．分解が始まるまでは，実画面自身の影を使う */
+.shadow { position:absolute; background:#000; filter:blur(15px); }
+.stage[data-active=true] .shadow { visibility:visible; }
+
+/* 層 1：実画面．鏡面反射は，画像の範囲に重ねた淡い光（操作されていないあいだは不透明度 0） */
+.glare { position:absolute; opacity:0; pointer-events:none; background:linear-gradient(135deg, rgb(255 255 255 / .9) 0%, rgb(255 255 255 / 0) 58%); }
+
+/* 層 2：見どころの領域の枠と番号（既存の見どころの印と同じ見た目） */
+.frame { position:absolute; box-sizing:border-box; border:1.5px solid var(--site-accent); border-radius:4px; background:color-mix(in srgb, var(--site-accent) 8%, transparent); }
+.badge { position:absolute; display:grid; place-items:center; width:20px; height:20px; border-radius:50%; color:var(--site-accent); font-size:14px; line-height:1; }
+.badge > span { display:grid; place-items:center; width:100%; height:100%; border:1px solid var(--site-accent); border-radius:inherit; background:var(--site-surface); }
+
+/* 層 3：8px 格子と，領域ラベルの引き出し線 */
+.grid {
+  position:absolute; border-radius:var(--exploded-shot-radius, 12px);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--site-accent) 16%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--site-accent) 16%, transparent) 1px, transparent 1px);
+  background-size:8px 8px;
+}
+.leaders { position:absolute; left:0; top:0; overflow:visible; fill:none; stroke:var(--site-muted); stroke-width:1; }
+.leaders circle { fill:var(--site-surface); }
+.chip {
+  position:absolute; box-sizing:border-box; display:flex; align-items:center; padding:4px 5px; overflow:hidden;
+  border:1px solid var(--site-line); border-radius:6px; background:var(--site-surface); color:var(--site-ink); font-size:10px; font-weight:400; line-height:1.25;
+}
+.chip > span { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:3; line-clamp:3; }
+
+/* 3D を使わないとき（動きを減らす設定・キーボード操作）：層 2・3 を 160ms の不透明度で重ねて出す．板・影・光は出さない */
+.stage[data-mode=flat] :is(.frames, .guides) { transition:opacity var(--dur-fast) ease, visibility 0s linear var(--dur-fast); }
+.stage[data-mode=flat][data-target=true] :is(.frames, .guides) { opacity:1; visibility:visible; transition-delay:0s; }
+.stage[data-mode=flat] :is(.plate, .shadow, .glare) { display:none; }
+
+@media (prefers-reduced-motion:reduce) {
+  /* JS が切り替わる前も，傾け・奥行きは使わない */
+  .stage { perspective:none; }
+  .rig, .layer, .shadow { transform:none !important; }
+  .glare, .plate, .shadow { display:none; }
+}

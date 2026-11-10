@@ -19,6 +19,7 @@
 .next-product-link:is(:hover, :focus-visible) .next-product-arrow::before { transform:scale(1); }
 .next-product-link:is(:hover, :focus-visible) .next-product-arrow svg { animation:next-product-arrow .6s var(--site-ease); }
 .next-product-tagline { max-width:620px; color:var(--site-muted); font-size:15px; line-height:1.8; }
+.next-product-reason { color:var(--site-ink); font-size:13px; line-height:1.7; }
 @keyframes next-product-arrow { 45% { translate:120% 0; opacity:0; } 46% { translate:-120% 0; opacity:0; } 100% { translate:0 0; opacity:1; } }
 @media (max-width:600px) {
   .next-product-link { gap:14px; }

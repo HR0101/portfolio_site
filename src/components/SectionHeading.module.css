@@ -1,0 +1,114 @@
+/* ===== セクション見出し：大きな語＋件数 =====
+   count / size="display" を渡した見出しだけが使う（渡さない見出しの HTML と見た目は変えない）．
+   考え方だけを借りている：大きな語と，その右肩の小さな件数．
+   見出しの動き（ラベル・罫線・文字の立ち上がり）は refinements.css が持ち，ここは大きさと件数だけを持つ． */
+
+/* --- 大きな語（size="display"） --- */
+.display {
+  --heading-display-size: clamp(2.5rem, 6vw, 5.5rem);
+}
+
+/* Apps の壁が固定表示のとき（Projects.tsx が data-pin を付ける）は，壁に使う高さを奪わないよう，画面の高さでも抑える */
+:global([data-pin]) .display {
+  --heading-display-size: clamp(2.25rem, min(6vw, 5.2svh), 5.5rem);
+}
+
+/* 各セクションの既存の指定（例：.heading .portfolio-section-heading h2 = 0,2,1）より強くするため，クラスを重ねている */
+.display:global(.portfolio-section-heading) .title {
+  font-size: var(--heading-display-size);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+
+/* 大きな語の下の説明文は，語に近すぎないように少し離す（固定表示のときは Projects.module.css の指定が勝つ） */
+.display:global(.portfolio-section-heading) :global(.portfolio-section-description) {
+  margin-top: clamp(16px, 1.6vw, 24px);
+}
+
+/* --- 件数（count） --- */
+/* 語と件数を横に並べる枠．固定表示の Apps では見出しが grid なので，h2 の代わりにこの枠を 1 列目に置く */
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  grid-column: 1;
+  min-width: 0;
+  margin-top: clamp(8px, 1vw, 12px);
+  column-gap: clamp(6px, 0.7vw, 14px);
+}
+
+/* 枠の外側に上の余白を持たせるので，h2 自身の上の余白（各セクションの指定．最大 0,4,1）は 0 にそろえる */
+.withCount:global(.reveal.portfolio-section-heading) .titleRow .title {
+  margin-top: 0;
+}
+
+.count {
+  /* 桁ごとの回り出しの間隔（先頭の桁から順に） */
+  --count-digit-step: 60ms;
+  flex: none;
+  align-self: flex-start;
+  /* 語の上端（字面）に件数の上端をそろえて，右肩に置く */
+  margin-top: calc(var(--heading-display-size, 2rem) * 0.12);
+  color: var(--site-muted);
+  font-family: var(--font-mono);
+  font-size: clamp(0.875rem, 1.5vw, 1.375rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  /* 見出しの文字の登場が終わるころ（--count-delay．SectionHeading.tsx が計算）に，下から少し浮かんで現れる */
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity var(--dur-base) var(--ease-out) var(--count-delay, 0ms),
+    transform var(--dur-slow) var(--ease-out) var(--count-delay, 0ms);
+}
+
+.digits {
+  display: inline-flex;
+}
+
+/* 桁ごとに 0〜最終値の数字を縦に並べ，最終値の位置まで滑らせて止める（RollingNumber と同じ考え方） */
+.digit {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  line-height: 1;
+  vertical-align: bottom;
+}
+
+.digitTrack {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(0);
+  transition: transform var(--dur-enter) var(--ease-out) calc(var(--count-delay, 0ms) + var(--digit-index, 0) * var(--count-digit-step));
+}
+
+.digitTrack > span {
+  height: 1em;
+  line-height: 1;
+}
+
+/* 見出しの Reveal が画面に入った合図（.reveal-visible）で，件数の登場と数字の回転を同時に始める */
+:global(.reveal-visible) .count {
+  opacity: 1;
+  transform: none;
+}
+
+:global(.reveal-visible) .digitTrack {
+  transform: translateY(calc(var(--digit, 0) * -1em));
+}
+
+/* 動きを減らす設定：数字は回さず，最終値を最初から出す */
+@media (prefers-reduced-motion: reduce) {
+  .count {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .digitTrack {
+    transform: translateY(calc(var(--digit, 0) * -1em));
+    transition: none;
+  }
+}

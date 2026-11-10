@@ -7,12 +7,13 @@ import { subscribeToScroll } from '../lib/scrollObserver';
 const DEFAULT_THRESHOLD = 0.15;
 
 // 要素が一度でもビューポートに入ったかどうかを判定するフック
-export function useInView<T extends HTMLElement>(threshold: number = DEFAULT_THRESHOLD, verticalOnly = false) {
+export function useInView<T extends HTMLElement>(threshold: number = DEFAULT_THRESHOLD, verticalOnly = false, targetSelector?: string, rootMargin = '0px') {
   const ref = useRef<T | null>(null);
   const [isInView, setIsInView] = useState(false);
 
   useEffect(() => {
-    const element = ref.current;
+    // 内容が未取得で DOM を持たない部品は，既存の隣接要素を監視できる．
+    const element = ref.current ?? (targetSelector ? document.querySelector<T>(targetSelector) : null);
     if (!element) {
       return;
     }
@@ -53,12 +54,12 @@ export function useInView<T extends HTMLElement>(threshold: number = DEFAULT_THR
           observer.disconnect();
         }
       },
-      { threshold },
+      { threshold, rootMargin },
     );
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [threshold, verticalOnly]);
+  }, [threshold, verticalOnly, targetSelector, rootMargin]);
 
   return { ref, isInView };
 }

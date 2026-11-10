@@ -2,30 +2,37 @@
 .heading { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:24px; }
 .heading h3 { font-size:14px; font-weight:600; }
 .heading p { color:var(--site-muted); font-size:11px; line-height:1.7; }
-.groups { display:grid; grid-template-columns:1.2fr 1.2fr .7fr; gap:24px; }
-.group h4 { display:flex; align-items:center; gap:8px; margin-bottom:12px; color:var(--site-muted); font-size:11px; font-weight:500; }
+.groups { position:relative; display:grid; grid-template-columns:1.2fr 1.2fr .7fr; gap:24px; }
+.groups::after { content:''; position:absolute; top:0; left:0; width:1px; height:2px; background:var(--site-ink); pointer-events:none; transform-origin:0 0; transform:var(--selection-transform); opacity:0; transition:transform var(--dur-base) var(--ease-in-out), opacity var(--dur-fast) ease; }
+.groups[data-indicator-ready=true]::after { opacity:1; }
+.group h4 { display:flex; align-items:center; gap:8px; margin-bottom:12px; color:var(--site-muted); font-size:11px; font-weight:600; }
 .group ul { display:flex; flex-wrap:wrap; gap:8px; list-style:none; margin:0; padding:0; }
 .group li { display:flex; min-width:0; }
 .technology, .staticTechnology { display:inline-flex; align-items:center; min-height:44px; max-width:100%; padding:8px 10px; border:1px solid var(--site-line); border-radius:8px; font-size:11px; line-height:1.5; overflow-wrap:anywhere; }
-.technology { background:transparent; color:var(--site-muted); transition:color 160ms, border-color 160ms, background-color 160ms; text-align:left; }
+.technology { background:transparent; color:var(--site-muted); transition:color var(--dur-fast) ease, border-color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out); text-align:left; }
 .technology[aria-pressed=true] { background:var(--site-ink); border-color:var(--site-ink); color:var(--site-surface); }
 .staticTechnology { color:var(--site-muted); border-style:dashed; }
 .technology:focus-visible, .link:focus-visible { outline:2px solid var(--site-accent); outline-offset:4px; }
 .example { display:grid; grid-template-columns:96px minmax(0,1fr) auto; align-items:center; gap:24px; min-height:170px; margin-top:24px; padding:24px; border:1px solid var(--site-line); border-radius:20px; background:var(--site-surface-raised); }
 .visual { position:relative; width:96px; height:96px; }
-.artwork { position:absolute; inset:0; display:grid; place-items:center; color:var(--site-accent); background:var(--site-surface-soft); border-radius:22%; opacity:0; }
-.artwork[data-active=true] { opacity:1; }
+.artwork { position:absolute; inset:0; display:grid; place-items:center; color:var(--site-accent); background:var(--site-surface-soft); border-radius:22%; opacity:0; transform:scale(.96); }
 .artwork img { width:96px; height:96px; border-radius:22%; object-fit:contain; }
-.copy { min-width:0; }
+.copyStack, .linkStack { display:grid; min-width:0; }
+.copy, .linkLayer { grid-area:1 / 1; min-width:0; opacity:0; transform:translateY(8px); pointer-events:none; }
+/* 退出後は透明なまま入口へ戻す．連打中は transition が現在値から引き継ぐ． */
+.copy[data-exiting=true], .linkLayer[data-exiting=true] { transform:translateY(-4px); }
+.artwork[data-exiting=true], .copy[data-exiting=true], .linkLayer[data-exiting=true] { transition:opacity var(--dur-press) ease, transform var(--dur-press) var(--ease-out); }
+.artwork[data-active=true], .copy[data-active=true], .linkLayer[data-active=true] { opacity:1; transform:none; pointer-events:auto; transition:opacity var(--dur-base) ease, transform var(--dur-base) var(--ease-out); }
 .technologyLabel { margin:0 0 5px; color:var(--site-muted); font-size:10px; line-height:1.5; }
 .copy h4 { margin:0; font-size:19px; line-height:1.5; font-weight:600; overflow-wrap:anywhere; }
 .description { margin:7px 0 0; font-size:12px; line-height:1.8; color:var(--site-muted); }
 .link { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:8px 0; color:var(--site-ink); font-size:12px; white-space:nowrap; }
+.link :global(.arrow-swap) { transition:transform var(--dur-fast) var(--ease-out); }
+.link:focus-visible :global(.arrow-swap) { transform:translate(2px, -2px); }
+.technology:focus-visible { border-color:var(--site-ink); }
 @media (hover:hover) and (pointer:fine) {
   .technology:hover { border-color:var(--site-ink); }
-}
-@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
-  .example[data-input=pointer] .artwork { transition:opacity 160ms var(--site-ease); }
+  .link:hover :global(.arrow-swap) { transform:translate(2px, -2px); }
 }
 @media (max-width:1023px) { .groups { grid-template-columns:1fr 1fr; } }
 @media (max-width:600px) {
@@ -34,10 +41,15 @@
   .groups { grid-template-columns:1fr; gap:24px; }
   .example { grid-template-columns:64px minmax(0,1fr); gap:16px; padding:20px; }
   .visual, .artwork img { width:64px; height:64px; }
-  .link { grid-column:2; justify-self:start; }
+  .linkStack { grid-column:2; justify-self:start; }
   .copy h4 { font-size:17px; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .technology { transition:none; }
-  .artwork { transition:none; }
+  .groups::after { transition:none; }
+  .technology { transition:color var(--dur-fast) ease, background-color var(--dur-fast) ease; }
+  .example .artwork, .example .copy, .example .linkLayer { transform:none; transition:opacity var(--dur-press) ease; }
+  .link :global(.arrow-swap), .link:focus-visible :global(.arrow-swap) { transform:none; transition:none; }
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:reduce) {
+  .link:hover :global(.arrow-swap) { transform:none; }
 }

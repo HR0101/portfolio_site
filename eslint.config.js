@@ -16,7 +16,7 @@ export default tseslint.config(
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx}', 'functions/**/*.ts', 'src/lib/edge/**/*.ts'],
     languageOptions: {
       ecmaVersion: 2022,
       globals: {

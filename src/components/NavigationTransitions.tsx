@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { animateViewportTransition, isTransitionEffect, replayHeaderClick, ROUTE_NAVIGATION_EVENT, TRANSITION_EASING, viewportFrames, type RouteNavigationRequest, type TransitionEffect } from '../lib/transitionEffects';
-import { animateProductTransition, attachProductTransition, captureProductTransition, clearProductTransition, type ProductTransition } from './ProductMorph';
+import { animateProductTransition, attachProductTransition, BACKDROP_PROPERTY, captureProductTransition, captureReturnTransition, clearProductTransition, settleReturnTransition, type ProductTransition } from './ProductMorph';
 
 interface NavigationRun {
   url: URL;
@@ -68,7 +68,12 @@ export function NavigationTransitions() {
         }
         heading.focus({ preventScroll: true });
       }
-      if (run.shared) attachProductTransition(run.shared, main);
+      if (run.shared) {
+        // 戻る向きでは，着地先（壁のタイル）が組まれるのを待ってから，対になる要素に名前を付ける
+        await settleReturnTransition(run.shared, main);
+        if (active.current !== run) return;
+        attachProductTransition(run.shared, main);
+      }
       // Decoding works while native rendering is paused; awaiting a frame does not.
       const images = Array.from(main.querySelectorAll<HTMLImageElement>('header img')).slice(0, 5);
       await Promise.race([
@@ -100,6 +105,7 @@ export function NavigationTransitions() {
       run.animations.forEach(animation => animation.cancel());
       active.current = null;
       root.classList.remove('is-route-switching');
+      root.style.removeProperty(BACKDROP_PROPERTY);
       delete root.dataset.routeEffect;
       delete root.dataset.routeDestination;
     };
@@ -140,7 +146,9 @@ export function NavigationTransitions() {
     const navigate = (url: URL, explicit?: TransitionEffect, anchor?: HTMLAnchorElement) => {
       cancel();
       const canAnimate = !media.matches && !root.classList.contains('is-theme-switching');
-      const shared = canAnimate && !explicit && anchor && !anchor.closest('.site-navbar') && url.pathname.startsWith('/apps/') ? captureProductTransition(anchor) : null;
+      // 紹介ページへ移るときは押した画面が育ち，紹介ページから一覧へ戻るときは主役の画面が元のタイルへ縮む
+      const sharable = canAnimate && !explicit && anchor && !anchor.closest('.site-navbar');
+      const shared = !sharable ? null : url.pathname.startsWith('/apps/') ? captureProductTransition(anchor) : captureReturnTransition(url);
       const effect = explicit ?? (shared ? 'shared' : url.pathname === '/' ? 'scale' : /\/(privacy|terms)\/?$/.test(url.pathname) ? 'fade' : anchor?.closest('.site-navbar') ? 'wipe' : 'morph');
       const run: NavigationRun = { url, effect, shared, direction: url.pathname === '/' ? -1 : 1, animations: new Set(), timer: 0, committed: false, preparing: false };
       active.current = run;
@@ -155,6 +163,8 @@ export function NavigationTransitions() {
         void fallback(run);
         return;
       }
+      // 古いページが薄れたあと，新しいページが現れるまでに見える面の色（motion.css の group(root) が読む）
+      if (shared?.backdrop) root.style.setProperty(BACKDROP_PROPERTY, shared.backdrop);
       try {
         run.native = document.startViewTransition(() => active.current === run ? move(run) : undefined);
         void run.native.ready.then(() => {

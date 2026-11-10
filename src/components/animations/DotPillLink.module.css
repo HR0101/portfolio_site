@@ -1,0 +1,74 @@
+/* DotPillLink：点つきの丸いボタン．左の小さな点から円が広がり，ピル全体を塗って，文字が反転する．
+   塗りは .fill（同じ並びの反転の層）を clip-path: circle() で切り出して見せる．動かすのは clip-path と transform だけ． */
+.pill {
+  --pill-pad-x: 20px;
+  --pill-font-size: 13px;
+  --pill-dot: 6px;
+  --pill-gap: 10px;
+  /* 塗りが広がる時間（240〜320ms の範囲） */
+  --pill-fill-ms: 320ms;
+  /* 塗りの最終の半径．点から，いちばん遠い隅までの距離をちょうど覆う値（clip-path の % は，枠の対角線 ÷ √2 に対する割合．
+     ラベルの長さが違っても 125〜136% になるので，135% で足りる．大きすぎると，広がりが最初の数十 ms で見えなくなる） */
+  --pill-fill-radius: 135%;
+  /* 点の中心の x（塗りの層の左端 = ボーダーの外側から数える） */
+  --pill-dot-x: calc(var(--pill-pad-x) + 1px + var(--pill-dot) / 2);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--site-line);
+  border-radius: 999px;
+  background: var(--site-surface-raised);
+  color: var(--site-ink);
+  font: 600 var(--pill-font-size) / 1.4 var(--font-sans);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+.pill[data-size='sm'] { --pill-pad-x: 16px; --pill-font-size: 12px; }
+
+.face { display: inline-flex; align-items: center; gap: var(--pill-gap); padding: 10px var(--pill-pad-x); }
+.dot { flex: none; width: var(--pill-dot); height: var(--pill-dot); border-radius: 50%; background: var(--site-ink); }
+.label { min-width: 0; text-wrap: balance; }
+.icon { display: inline-flex; flex: none; transition: transform var(--dur-fast) var(--ease-out); }
+
+/* 塗りの層：ボーダーの外側まで広げ（inset: -1px），文字の位置が通常の層と重なるよう左右の余白を 1px 足す．
+   はじめは半径 0 の円（見えない）．ホバーで，点の中心から広がる */
+.fill {
+  position: absolute;
+  inset: -1px;
+  padding: 0 calc(var(--pill-pad-x) + 1px);
+  border-radius: inherit;
+  background: var(--site-ink);
+  color: var(--site-surface);
+  clip-path: circle(0% at var(--pill-dot-x) 50%);
+  pointer-events: none;
+  user-select: none;
+  transition: clip-path var(--pill-fill-ms) var(--ease-out);
+}
+/* 反転の層の点は，塗りに溶けるので描かない（場所だけ残す） */
+.fill .dot { visibility: hidden; }
+
+.pill:focus-visible { outline: 2px solid var(--site-focus); outline-offset: 3px; }
+.pill:focus-visible .fill { clip-path: circle(var(--pill-fill-radius) at var(--pill-dot-x) 50%); }
+.pill:focus-visible .icon { transform: translate(2px, -2px); }
+
+@media (hover: hover) and (pointer: fine) {
+  .pill:hover .fill { clip-path: circle(var(--pill-fill-radius) at var(--pill-dot-x) 50%); }
+  .pill:hover .icon { transform: translate(2px, -2px); }
+}
+
+/* 動きを減らす設定：円は広げず，反転の層の不透明度だけを短く変える（色の交差）．アイコンも動かさない */
+@media (prefers-reduced-motion: reduce) {
+  .fill { clip-path: none; opacity: 0; transition: opacity var(--dur-fast) linear; }
+  .pill:focus-visible .fill { clip-path: none; opacity: 1; }
+  .icon { transition: none; }
+  .pill:focus-visible .icon { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+  .pill:hover .fill { clip-path: none; opacity: 1; }
+  .pill:hover .icon { transform: none; }
+}
