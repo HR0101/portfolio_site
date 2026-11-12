@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { usePageRevealed } from '../hooks/usePageRevealed';
 
 // 1文字を打つ間隔（ミリ秒）．人の打鍵に近づけるため，毎回少しだけ揺らす
 const TYPING_BASE_MS = 62;
@@ -36,6 +37,8 @@ type Phase = 'typing' | 'running' | 'cleared';
 // ターミナルにコマンドを打ち込み，Enter で結果が出て，画面を消して（⌘K）次のコマンドへ移る演出
 export function TypingTerminal({ lines, prompt = '%', accessibleText, className = '' }: TypingTerminalProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  // 読み込み画面が開くまでは打ち始めない（開いた瞬間から打鍵が見えるように）
+  const isPageRevealed = usePageRevealed();
   const [lineIndex, setLineIndex] = useState(0);
   const [typedCount, setTypedCount] = useState(0);
   const [phase, setPhase] = useState<Phase>('typing');
@@ -43,7 +46,7 @@ export function TypingTerminal({ lines, prompt = '%', accessibleText, className 
   const currentLine = lines[lineIndex];
 
   useEffect(() => {
-    if (prefersReducedMotion || !currentLine) {
+    if (prefersReducedMotion || !currentLine || !isPageRevealed) {
       return;
     }
 
@@ -75,7 +78,7 @@ export function TypingTerminal({ lines, prompt = '%', accessibleText, className 
       setPhase('typing');
     }, CLEAR_PAUSE_MS);
     return () => window.clearTimeout(timeoutId);
-  }, [currentLine, lines.length, phase, prefersReducedMotion, typedCount]);
+  }, [currentLine, isPageRevealed, lines.length, phase, prefersReducedMotion, typedCount]);
 
   if (!currentLine) {
     return null;

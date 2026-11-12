@@ -1,0 +1,37 @@
+.scene { position:absolute; inset:0; isolation:isolate; }
+.model { position:absolute; inset:0; z-index:2; pointer-events:none; }
+.canvas, .canvas canvas { position:absolute; inset:0; width:100%; height:100%; }
+.canvas { opacity:0; transition:opacity .45s; }
+.fallback { position:absolute; width:50%; height:auto; left:25%; top:25%; transform:rotate(-12deg); transition:opacity .45s; filter:drop-shadow(12px 24px 20px #22334c1a); }
+.scene[data-ready=true] .canvas { opacity:1; }
+.scene[data-ready=true] .fallback, .scene[data-ready=true] .fallbackOrbit { opacity:0; }
+.fallbackOrbit { position:absolute; inset:15% 8%; border:1px solid var(--site-line); border-radius:50%; transform:rotate(-14deg); pointer-events:none; }
+.satellite { position:absolute; left:50%; top:50%; width:clamp(56px,20%,100px); aspect-ratio:1; z-index:3; will-change:transform; }
+.position0 { transform:translate(-200%,-200%); }
+.position1 { transform:translate(120%,-150%); }
+.position2 { transform:translate(60%,100%); }
+.position3 { transform:translate(-240%,60%); }
+.app { position:relative; display:block; width:100%; min-width:44px; min-height:44px; border-radius:24%; }
+.app img { display:block; width:100%; height:auto; border-radius:24%; box-shadow:0 16px 30px -12px #1d232b40; transition:transform .3s,box-shadow .3s; }
+.app span { position:absolute; left:50%; top:calc(100% + 10px); transform:translateX(-50%); white-space:nowrap; color:var(--site-muted); font-size:12px; line-height:1.3; }
+.app:is(:hover,:focus-visible) img { transform:translateY(-4px) scale(1.07); box-shadow:0 22px 35px -12px #1d232b55; }
+.app:focus-visible { outline:2px solid var(--site-accent); outline-offset:6px; }
+.pause { position:absolute; z-index:4; left:0; bottom:0; display:grid; place-items:center; width:44px; height:44px; color:var(--site-muted); border:0; border-radius:50%; cursor:pointer; background:transparent; transition:background .2s; }
+.pause:hover { background:var(--site-surface-soft); }
+.scene[data-ready=false] .pause { display:none; }
+.dragControl { display:none; position:absolute; inset:30%; z-index:2; padding:0; border:0; border-radius:24px; background:transparent; touch-action:pan-y; user-select:none; }
+.dragControl:focus-visible { outline:2px solid var(--site-accent); outline-offset:6px; }
+.dragHint { position:absolute; left:50%; top:calc(100% + 8px); transform:translateX(-50%); white-space:nowrap; font-size:10px; line-height:1.4; color:var(--site-muted); opacity:.7; transition:opacity 160ms var(--site-ease); pointer-events:none; }
+.dragControl[data-dragging=true] .dragHint { opacity:0; }
+@media (hover:hover) and (pointer:fine) and (min-width:761px) and (prefers-reduced-motion:no-preference) {
+  .scene[data-ready=true] .dragControl { display:block; }
+  .dragControl:hover .dragHint, .dragControl:focus-visible .dragHint { opacity:1; }
+}
+@media(max-width:760px) {
+  .app span { font-size:11px; top:calc(100% + 8px); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .canvas, .fallback, .app img { transition:none; }
+  .app:is(:hover,:focus-visible) img { transform:none; }
+  .pause { display:none; }
+}

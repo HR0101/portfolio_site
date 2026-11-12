@@ -39,16 +39,16 @@ export function useHeroMotion() {
         hero.querySelectorAll('[data-orbit-intro]').forEach((element, index) => {
           play(element, [{ transform: compact.matches ? `translateY(${index % 2 ? 20 : 30}px) scale(.8)` : `translate(${index % 2 ? -135 : 115}px,${index > 1 ? -110 : 100}px) scale(.25) rotate(${index % 2 ? 40 : -40}deg)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: compact.matches ? 900 : 1450, delay: 180 + index * 120, fill: 'backwards' });
         });
-        play(hero.querySelector('[data-hero-core]'), [{ transform: 'rotate(25deg) scale(.2)', opacity: 0 }, { transform: 'rotate(-14deg) scale(1)', opacity: 1 }], { duration: 1300 });
+        play(hero.querySelector('[data-hero-core]'), [{ transform: 'rotate(25deg) scale(.2)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 1300 });
         play(hero.querySelector('[data-hero-rule]'), [{ transform: 'scaleX(0)', opacity: 1 }, { transform: 'scaleX(1)', opacity: 1, offset: .75 }, { transform: 'scaleX(1)', opacity: 0 }], { duration: 1100 });
       }
       const title = hero.querySelector<HTMLElement>('[data-hero-title]')!;
       const universe = hero.querySelector<HTMLElement>('[data-hero-universe]')!;
+      const sharedPlanet = universe.hasAttribute('data-planet-start');
       const blue = hero.querySelector<HTMLElement>('[data-hero-blue]')!;
       const peach = hero.querySelector<HTMLElement>('[data-hero-peach]')!;
       const cue = hero.querySelector<HTMLElement>('[data-hero-cue]')!;
-      const orbits = [...hero.querySelectorAll<HTMLElement>('[data-orbit-depth]')];
-      const modified = [title, universe, blue, peach, cue, ...orbits];
+      const modified = [title, universe, blue, peach, cue];
       const previousStyles = modified.map(element => element.getAttribute('style'));
       let frame = 0, previousTime = 0, progress = 0, target = 0;
       const request = () => { if (!frame && !document.hidden) frame = requestAnimationFrame(tick); };
@@ -58,20 +58,17 @@ export function useHeroMotion() {
         previousTime = now;
         progress += (target - progress) * (1 - Math.exp(-dt / 75));
         title.style.transform = `translate3d(0,${-progress * 100}px,0) rotateX(${progress * 15}deg)`;
-        universe.style.transform = `translate3d(0,${-progress * 150}px,0) rotateZ(${progress * 18}deg)`;
+        if (!sharedPlanet) universe.style.transform = `translate3d(0,${-progress * 150}px,0) rotateZ(${progress * 18}deg)`;
         blue.style.opacity = String(1 - progress * .7);
         peach.style.opacity = String(progress);
         cue.style.opacity = String(1 - progress);
-        orbits.forEach(element => {
-          const depth = Number(element.dataset.orbitDepth);
-          element.style.transform = `translate3d(${depth * progress * 55}px,${depth * progress * -125}px,0) rotate(${depth * progress * 25}deg)`;
-        });
         if (Math.abs(target - progress) > .0003) request();
         else previousTime = 0;
       }
       const update = () => {
         const rect = hero.getBoundingClientRect();
-        target = compact.matches ? 0 : clamp(-rect.top / Math.max(1, rect.height - innerHeight));
+        const travel = sharedPlanet ? Math.max(innerHeight * .8, rect.height - innerHeight) : Math.max(1, rect.height - innerHeight);
+        target = compact.matches ? 0 : clamp(-rect.top / travel);
         request();
       };
       // スマホではスクロールによるヒーローの変形を使わないため、購読もしない。

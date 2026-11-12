@@ -13,8 +13,12 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { siteConfig } from '../config/site';
-import { SWIFT_APPS } from '../data/apps';
-import { ALL_WORKS } from '../data/works';
+import { OTHER_APPS, OTHER_APPS_PATH, SWIFT_APPS } from '../data/apps';
+import { ALL_WORKS, GAMES_PATH } from '../data/works';
+import { LAB_PATH } from '../data/lab';
+import { NOTES_PATH } from '../data/notes';
+import { FEATURES } from '../config/features';
+import { PRELOADING_CLASS } from '../lib/preloader';
 import { navigateToSection } from '../lib/sectionNavigation';
 import { navigateToPage } from '../lib/transitionEffects';
 
@@ -38,8 +42,9 @@ const SECTION_ITEMS = [
   { id: 'about', label: '自己紹介へ移動', keywords: 'about jikoshoukai プロフィール' },
   { id: 'skills', label: '技術スタックへ移動', keywords: 'skills gijutsu スキル' },
   { id: 'projects', label: 'つくったアプリへ移動', keywords: 'apps projects アプリ 作品' },
-  { id: 'works', label: 'Web サービスとゲームへ移動', keywords: 'works web games ゲーム ekihub' },
+  { id: 'works', label: 'Web サービスへ移動', keywords: 'works web ウェブ ekihub' },
   { id: 'github', label: 'GitHub アクティビティへ移動', keywords: 'github activity 活動' },
+  { id: 'profile', label: 'プロフィールへ移動', keywords: 'profile 経歴 about プロフィール' },
   { id: 'contact', label: 'お問い合わせへ移動', keywords: 'contact mail 連絡' },
 ];
 
@@ -144,9 +149,63 @@ export function CommandPalette() {
       },
     }));
 
+    // アイコンの素材がないアプリをまとめたページへの移動
+    const otherAppsAction: PaletteAction = {
+      id: 'other-apps',
+      label: `その他のアプリ（${OTHER_APPS.length}本）を開く`,
+      hint: 'アプリ',
+      icon: Sparkles,
+      keywords: `other apps その他 アプリ 一覧 ${OTHER_APPS.map((app) => app.name).join(' ')}`,
+      run: () => {
+        closePalette();
+        window.setTimeout(() => navigateToPage(OTHER_APPS_PATH, 'wipe'), CLOSE_ANIMATION_MS);
+      },
+    };
+
+    // ゲームをまとめたページへの移動
+    const gamesAction: PaletteAction = {
+      id: 'games',
+      label: 'ゲームのページを開く',
+      hint: 'ゲーム',
+      icon: Sparkles,
+      keywords: 'games game ゲーム 遊ぶ ピッとマート ふしぎなどうぶつえん ホラー',
+      run: () => {
+        closePalette();
+        window.setTimeout(() => navigateToPage(GAMES_PATH, 'wipe'), CLOSE_ANIMATION_MS);
+      },
+    };
+
+    // 実験室・制作ノートへの移動
+    const labAction: PaletteAction = {
+      id: 'lab',
+      label: '実験室を開く',
+      hint: '実験',
+      icon: Sparkles,
+      keywords: 'lab 実験 実験室 experiments 点 粒子 物理',
+      run: () => {
+        closePalette();
+        window.setTimeout(() => navigateToPage(LAB_PATH, 'wipe'), CLOSE_ANIMATION_MS);
+      },
+    };
+    const notesAction: PaletteAction = {
+      id: 'notes',
+      label: '制作ノートを開く',
+      hint: '読み物',
+      icon: Sparkles,
+      keywords: 'notes 制作ノート 記事 ブログ 設計 判断',
+      run: () => {
+        closePalette();
+        window.setTimeout(() => navigateToPage(NOTES_PATH, 'wipe'), CLOSE_ANIMATION_MS);
+      },
+    };
+
     return [
       ...sectionActions,
       ...appActions,
+      otherAppsAction,
+      gamesAction,
+      ...(FEATURES.lab ? [labAction] : []),
+      ...(FEATURES.notes ? [notesAction] : []),
       {
         id: 'toggle-theme',
         label: theme === 'dark' ? 'ライトモードに切り替える' : 'ダークモードに切り替える',
@@ -202,6 +261,10 @@ export function CommandPalette() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
+        // 読み込み画面が出ている間は開かない（背後は操作できない状態のため）
+        if (document.documentElement.classList.contains(PRELOADING_CLASS)) {
+          return;
+        }
         if (isOpenRef.current) {
           closePalette();
         } else {

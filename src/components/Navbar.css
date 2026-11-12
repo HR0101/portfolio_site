@@ -1,214 +1,197 @@
 .site-navbar {
-  --nav-bg: 250 250 249;
-  --nav-text: #20282b;
-  --nav-muted: #687578;
-  --nav-line: rgb(32 40 43 / 9%);
+  --nav-bg: 245 245 247;
+  --nav-text: #1d1d1f;
+  --nav-muted: #6e6e73;
+  --nav-line: rgb(0 0 0 / 8%);
   color: var(--nav-text);
   border-bottom: 1px solid transparent;
-  transition: background-color 200ms, border-color 200ms, box-shadow 200ms;
+  transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease;
   /* ページを移る演出の間も，ナビゲーションだけはその場に留める（globals.css） */
   view-transition-name: site-navbar;
 }
 .dark .site-navbar {
-  --nav-bg: 14 20 32;
-  --nav-text: #edf1f5;
-  --nav-muted: #a3adbb;
-  --nav-line: rgb(237 241 245 / 10%);
+  --nav-bg: 22 22 23;
+  --nav-text: #f5f5f7;
+  --nav-muted: #aeaeb2;
+  --nav-line: rgb(255 255 255 / 12%);
 }
 .site-navbar.is-solid {
-  background: rgb(var(--nav-bg) / 96%);
-  backdrop-filter: blur(24px);
+  background: rgb(var(--nav-bg) / 80%);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
   border-color: var(--nav-line);
 }
-.site-navbar:has(.mega-trigger.is-open) { box-shadow: 0 24px 48px rgb(0 0 0 / 7%); }
+.site-navbar.is-solid:has(.mega-trigger.is-open) { background: rgb(var(--nav-bg) / 94%); }
 .mega-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   min-height: 44px;
   padding: 0 12px;
   border-radius: 24px;
   color: var(--nav-text);
   font-size: 13px;
-  font-weight: 500;
-  transition: background 180ms;
+  font-weight: 400;
+  transition: background var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out);
 }
-.mega-trigger:hover, .mega-trigger.is-open { background: var(--nav-line); }
-.mega-trigger svg { opacity: .5; transition: transform 200ms; }
+.mega-trigger.is-open, .mega-trigger:focus-visible { background: var(--nav-line); }
+.mega-trigger:active { transform:scale(.95); transition-duration:var(--dur-press); }
+.mega-trigger svg { opacity: .5; transition: transform var(--dur-fast) var(--ease-out); }
 .mega-trigger.is-open svg, .mobile-mega-trigger[aria-expanded='true'] svg { transform: rotate(180deg); }
 .mega-panel[hidden], .mobile-mega-details[hidden] { display: none; }
-.mega-panel { border-top: 1px solid var(--nav-line); animation: mega-reveal 200ms ease-out; }
+.mega-panel { transform:scale(.97); transform-origin:top; }
+.mega-panel.is-open { transform:scale(1); box-shadow:inset 0 1px var(--nav-line); }
 .mega-layout {
   display: grid;
   grid-template-columns: 1fr 1fr 280px;
   gap: 48px;
-  padding-top: 42px;
+  padding-top: 40px;
   padding-bottom: 48px;
   max-height: calc(100dvh - 64px);
   overflow-y: auto;
 }
-.mega-group-title { margin: 0 0 18px; color: var(--nav-muted); font-size: 12px; font-weight: 600; letter-spacing: .035em; }
+.mega-group-title { margin: 0 0 16px; color: var(--nav-muted); font-size: 12px; font-weight: 600; letter-spacing: .035em; }
 .site-navbar .mega-link {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 5px;
+  gap: 4px;
   width: fit-content;
   max-width: 100%;
   min-height: 44px;
   padding: 8px 0;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   color: var(--nav-text);
   font-size: 21px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.5;
-  transition: color 180ms, transform 180ms;
+  transition: color var(--dur-fast) ease;
 }
 .mega-link small { color: var(--nav-muted); font-size: 11px; font-weight: 400; overflow-wrap: anywhere; }
-.mega-link:hover { color: #2672db; transform: translateX(4px); }
+.mega-link:focus-visible { color:var(--site-accent); }
 .mega-feature { display: block; align-self: start; }
 .mega-feature-image { position: relative; aspect-ratio: 1.65; overflow: hidden; border-radius: 18px; background: linear-gradient(130deg, #e3eafb, #dfe7ee 55%, #e8e2f3); }
 .dark .mega-feature-image { background: linear-gradient(130deg, #1c2943, #222b3d 55%, #302a46); }
-.mega-feature-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 400ms; }
+.mega-feature-image img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-fast) var(--ease-out); }
 .mega-feature-image.is-icon { display: grid; place-items: center; }
 .mega-feature-image.is-icon img { width: 92px; height: 92px; object-fit: contain; border-radius: 22px; box-shadow: 0 14px 28px rgb(0 0 0 / 12%); }
-.mega-feature:hover img { transform: scale(1.05); }
 .mega-feature-arrow { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgb(var(--nav-bg) / 90%); }
-.mega-feature p { margin: 14px 0 4px; font-size: 18px; font-weight: 600; }
+.mega-feature p { margin: 16px 0 4px; font-size: 18px; font-weight: 600; }
 .mega-feature small { color: var(--nav-muted); font-size: 11px; }
-.site-navbar button:focus-visible, .site-navbar a:focus-visible { outline: 2px solid #2672db; outline-offset: 4px; border-radius: 6px; }
+.site-navbar button:focus-visible, .site-navbar a:focus-visible { outline: 2px solid var(--site-focus); outline-offset: 4px; border-radius: 6px; }
 .mobile-mega { max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain; padding: 12px 24px 24px; border-top: 1px solid var(--nav-line); }
 .mobile-mega-item { border-bottom: 1px solid var(--nav-line); }
-.mobile-mega-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 56px; font-size: 16px; font-weight: 500; }
-.mobile-mega-trigger svg { transition: transform 200ms; }
-.mobile-mega-details { padding: 12px 0 24px; animation: mega-reveal 180ms ease-out; }
+.mobile-mega-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 56px; font-size: 16px; font-weight: 400; }
+.mobile-mega-trigger svg { transition: transform var(--dur-fast) var(--ease-out); }
+.mobile-mega-details { padding: 12px 0 24px; }
 .mobile-mega-details .mega-group { margin-bottom: 24px; }
 .mobile-mega-details .mega-group-title { margin-bottom: 8px; }
 .site-navbar .mobile-mega-details .mega-link { font-size: 18px; }
 .mobile-mega-details .mega-feature { max-width: 320px; }
-@keyframes mega-reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 @media (min-width: 768px) and (max-width: 1023px) {
-  .mega-trigger { padding: 0 7px; font-size: 12px; }
+  .mega-trigger { padding: 0 8px; font-size: 12px; }
   .navbar-bar { padding-inline: 16px; }
   .mega-layout { grid-template-columns: 1fr 1fr 220px; gap: 24px; }
   .site-navbar .mega-link { font-size: 18px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .site-navbar *, .site-navbar { animation: none !important; transition: none !important; }
-}
 
-/* Opening and closing share the same layout, so the panel also eases shut. */
-.site-navbar { --nav-ease: var(--site-ease); }
-.navbar-bar { animation: nav-bar-arrive 650ms var(--nav-ease) both; }
-.navbar-bar > a { transition: transform 280ms var(--nav-ease); }
-.navbar-bar > a:hover { transform: translateY(-2px); }
-.mega-trigger { transition: background 220ms, transform 300ms var(--nav-ease); }
-.mega-trigger:active { transform: scale(.95); }
-.mega-trigger svg { transition: transform 380ms var(--nav-ease), opacity 220ms; }
-.mega-trigger.is-open svg { opacity: 1; }
-/* いま読んでいるセクションの項目の下を滑る短い線．文字（矢印を除いた部分）の中央に置く */
-.nav-section-marker {
-  position: absolute;
-  left: 0;
-  bottom: 3px;
-  width: 16px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--color-accent-strong);
-  pointer-events: none;
-  translate: calc(var(--marker-left) + var(--marker-width) / 2 - 16.5px) 0;
-  scale: 0 1;
-  transition: translate 520ms var(--nav-ease), scale 360ms var(--nav-ease);
-}
-.nav-section-marker[data-visible='true'] { scale: 1 1; }
-.dark .nav-section-marker { background: var(--color-accent-dark); }
+/* 常設のパネルは作り直さず，閉じるときは遅れを外して100msで戻します． */
 .nav-collapse {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: grid-template-rows 440ms var(--nav-ease), opacity 220ms ease, visibility 0s 440ms;
+  display:grid;
+  grid-template-rows:0fr;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:grid-template-rows 100ms var(--ease-out), opacity 100ms ease, transform 100ms var(--ease-out), visibility 0s 100ms;
 }
 .nav-collapse.is-open {
-  grid-template-rows: 1fr;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition-delay: 0s;
+  grid-template-rows:1fr;
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transition-duration:var(--dur-fast), var(--dur-fast), var(--dur-fast), 0s;
+  transition-delay:0s;
 }
-.nav-collapse-inner { min-height: 0; overflow: hidden; }
-.mega-panel { animation: none; border-top: 0; }
-.mega-panel.is-open { box-shadow: inset 0 1px var(--nav-line); }
-.mega-panel.is-open .mega-group-title,
-.mobile-detail-shell.is-open .mega-group-title {
-  animation: nav-content-arrive 560ms var(--nav-ease) both;
-  animation-delay: calc(60ms + var(--group-index, 0) * 65ms);
+.nav-collapse-inner { min-height:0; overflow:hidden; }
+.mega-panel .mega-link, .mega-panel .mega-group-title {
+  opacity:0;
+  transform:translateY(4px);
+  transition:opacity 100ms ease, transform 100ms var(--ease-out), color var(--dur-fast) ease;
 }
-.mega-panel.is-open .mega-link,
-.mobile-detail-shell.is-open .mega-link {
-  animation: nav-content-arrive 600ms var(--nav-ease) both;
-  animation-delay: calc(100ms + var(--group-index, 0) * 65ms + var(--link-index, 0) * 45ms);
+.mega-panel .mega-feature {
+  opacity:0;
+  transform:translateX(8px);
+  transition:opacity 100ms ease, transform 100ms var(--ease-out);
 }
-.site-navbar .mega-link { position: relative; transition: color 220ms, transform 350ms var(--nav-ease); }
-.site-navbar .mega-link > span { position: relative; }
+.mega-panel.is-open :is(.mega-link, .mega-group-title, .mega-feature) {
+  opacity:1;
+  transform:none;
+  transition-duration:var(--dur-fast);
+}
+.mega-panel.is-open .mega-link { transition-delay:var(--link-delay, 0ms), var(--link-delay, 0ms), 0ms; }
+.mega-panel.is-open .mega-feature { transition-delay:var(--feature-delay, 200ms); }
+/* 閉じた状態で内容が切り替わってから開く場合も，同じ初期値から始めます． */
+@starting-style {
+  .mega-panel.is-open :is(.mega-link, .mega-group-title) { opacity:0; transform:translateY(4px); }
+  .mega-panel.is-open .mega-feature { opacity:0; transform:translateX(8px); }
+}
+/* 隣へ移る場合は内容だけを短く差し替え，パネルの拡大と項目の段階表示を繰り返しません． */
+.mega-panel.is-open .mega-layout[data-switching='true'] { animation:nav-content-swap var(--dur-press) ease both; }
+.mega-panel.is-open .mega-layout[data-switching='true'] :is(.mega-link, .mega-group-title, .mega-feature) { opacity:1; transform:none; transition:none; }
+@keyframes nav-content-swap { from { opacity:0; } to { opacity:1; } }
+.site-navbar .mega-link { position:relative; }
+.site-navbar .mega-link > span { position:relative; }
 .mega-link > span::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0;
-  height: 1px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 350ms var(--nav-ease);
+  content:'';
+  position:absolute;
+  inset:auto 0 0;
+  height:1px;
+  background:currentColor;
+  transform:scaleX(0);
+  transform-origin:right;
+  transition:transform var(--dur-base) var(--ease-in-out);
 }
-.site-navbar .mega-link:is(:hover, :focus-visible) { color: #2672db; transform: translateX(7px); }
-.mega-link:is(:hover, :focus-visible) > span::after { transform: scaleX(1); transform-origin: left; }
-.mega-panel.is-open .mega-feature,
-.mobile-detail-shell.is-open .mega-feature { animation: nav-feature-arrive 750ms 140ms var(--nav-ease) both; }
-.mega-feature-image {
-  isolation: isolate;
-  transform: perspective(700px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
-  transition: transform 350ms var(--nav-ease), box-shadow 350ms;
+.mega-link:focus-visible > span::after { transform:scaleX(1); transform-origin:left; }
+.mega-feature-arrow { transition:background var(--dur-fast) ease, color var(--dur-fast) ease; }
+.mega-feature:focus-visible .mega-feature-arrow { background:var(--site-accent); color:white; }
+@media (hover:hover) and (pointer:fine) {
+  .mega-trigger:hover { background:var(--nav-line); }
+  .mega-link:hover { color:var(--site-accent); }
+  .mega-link:hover > span::after { transform:scaleX(1); transform-origin:left; }
+  .mega-feature:hover .mega-feature-arrow { background:var(--site-accent); color:white; }
 }
-.mega-feature-image::after {
-  content: '';
-  position: absolute;
-  inset: -60%;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(110deg, transparent 40%, rgb(255 255 255 / 35%) 50%, transparent 60%);
-  transform: translateX(-65%) rotate(-12deg);
-  transition: transform 800ms var(--nav-ease);
+/* スクロールスパイの位置と下線は，同じ240msの曲線で滑らせます． */
+.nav-section-marker {
+  position:absolute;
+  left:0;
+  bottom:3px;
+  width:16px;
+  height:2px;
+  border-radius:2px;
+  background:var(--color-accent-strong);
+  pointer-events:none;
+  translate:calc(var(--marker-left) + var(--marker-width) / 2 - 16.5px) 0;
+  scale:0 1;
+  transition:translate var(--dur-base) var(--ease-in-out), scale var(--dur-base) var(--ease-in-out);
 }
-.mega-feature:is(:hover, :focus-visible) .mega-feature-image::after { transform: translateX(65%) rotate(-12deg); }
-.mega-feature:is(:hover, :focus-visible) .mega-feature-image { box-shadow: 0 18px 32px rgb(0 0 0 / 12%); }
-.mega-feature-image img { transition: transform 650ms var(--nav-ease); }
-.mega-feature:is(:hover, :focus-visible) .mega-feature-image:not(.is-icon) img { transform: scale(1.08); }
-.mega-feature-image.is-icon img { animation: nav-icon-float 4.5s ease-in-out infinite; animation-play-state: paused; }
-.mega-panel.is-open .is-icon img, .mobile-detail-shell.is-open .is-icon img { animation-play-state: running; }
-.mega-feature-arrow { z-index: 2; transition: background 250ms, color 250ms, transform 400ms var(--nav-ease); overflow: hidden; }
-.mega-feature:is(:hover, :focus-visible) .mega-feature-arrow { background: #2672db; color: white; transform: rotate(8deg) scale(1.08); }
-.mega-feature:is(:hover, :focus-visible) .mega-feature-arrow svg { animation: nav-arrow-travel 450ms var(--nav-ease); }
-.mobile-mega-details { animation: none; }
-.mobile-mega-trigger { transition: color 200ms, padding 300ms var(--nav-ease); }
-.mobile-mega-trigger[aria-expanded='true'] { color: #2672db; padding-inline: 6px; }
-.mobile-menu-shell.is-open .mobile-mega-item { animation: nav-content-arrive 450ms var(--nav-ease) both; }
-.mobile-mega-item:nth-child(2) { animation-delay: 35ms !important; }
-.mobile-mega-item:nth-child(3) { animation-delay: 70ms !important; }
-.mobile-mega-item:nth-child(4) { animation-delay: 105ms !important; }
-.mobile-mega-item:nth-child(5) { animation-delay: 140ms !important; }
-.mobile-mega-item:nth-child(6) { animation-delay: 175ms !important; }
-.navbar-bar button[aria-controls='mobile-navigation'] svg { animation: nav-button-turn 300ms var(--nav-ease); }
-@keyframes nav-bar-arrive { from { opacity: 0; translate: 0 -12px; } to { opacity: 1; translate: 0 0; } }
-@keyframes nav-content-arrive { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
-@keyframes nav-feature-arrive { from { opacity: 0; translate: 0 20px; scale: .96; } to { opacity: 1; translate: 0 0; scale: 1; } }
-@keyframes nav-icon-float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
-@keyframes nav-arrow-travel { 0% { translate: 0 0; } 45% { translate: 18px -18px; opacity: 0; } 46% { translate: -18px 18px; } 100% { translate: 0 0; opacity: 1; } }
-@keyframes nav-button-turn { from { opacity: .4; transform: rotate(-80deg) scale(.65); } to { opacity: 1; transform: rotate(0) scale(1); } }
-@media (max-width: 767px) { .mega-panel { display: none; } }
-@media (min-width: 768px) { .mobile-menu-shell { display: none; } }
-@media (prefers-reduced-motion: reduce) {
-  .site-navbar *, .site-navbar, .site-navbar *::after { animation: none !important; transition: none !important; }
-  .site-navbar .mega-feature-image { transform: none; }
+.nav-section-marker[data-visible='true'] { scale:1 1; }
+.dark .nav-section-marker { background:var(--color-accent-dark); }
+.mobile-mega-trigger { transition:color var(--dur-fast) ease; }
+.mobile-mega-trigger[aria-expanded='true'] { color:var(--site-accent); }
+.mobile-mega-item { opacity:0; transform:translateY(4px); transition:opacity 100ms ease, transform 100ms var(--ease-out); }
+.mobile-menu-shell.is-open .mobile-mega-item { opacity:1; transform:none; transition-duration:var(--dur-fast); transition-delay:var(--mobile-delay, 0ms); }
+.mobile-mega-item:nth-child(2) { --mobile-delay:30ms; }
+.mobile-mega-item:nth-child(3) { --mobile-delay:60ms; }
+.mobile-mega-item:nth-child(4) { --mobile-delay:90ms; }
+.mobile-mega-item:nth-child(5) { --mobile-delay:120ms; }
+.mobile-mega-item:nth-child(6) { --mobile-delay:150ms; }
+/* 短い開閉ではアイコンの回転登場を重ねません． */
+.site-navbar .icon-swap { animation:none; }
+@media (max-width:767px) { .mega-panel { display:none; } }
+@media (min-width:768px) { .mobile-menu-shell { display:none; } }
+@media (prefers-reduced-motion:reduce) {
+  .site-navbar, .site-navbar *, .site-navbar *::after { animation:none !important; transition:none !important; }
+  .site-navbar :is(.mega-panel, .mega-link, .mega-group-title, .mega-feature, .mobile-mega-item, .mega-trigger svg, .mobile-mega-trigger svg) { transform:none; }
+  .mega-trigger:active { transform:none; }
+  .nav-section-marker { transition:none; }
 }

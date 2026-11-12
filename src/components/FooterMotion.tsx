@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useInView } from '../hooks/useInView';
-import { createPointerSpring } from '../lib/pointerSpring';
+import { createParticleWordmark, WORDMARK_PARTICLE_PADDING } from '../lib/particleWordmarkCanvas';
 
 // ワードマークが画面にこの割合だけ入ったら文字を起こし始める
 const WORDMARK_IN_VIEW_THRESHOLD = 0.35;
@@ -19,66 +19,25 @@ const JAPAN_TIME_FORMATTER = new Intl.DateTimeFormat('ja-JP', {
   hourCycle: 'h23',
 });
 
-// フッターの大きな名前．画面に入ると1文字ずつ下から起き上がる．
+// フッターの大きな名前．マウスでなぞると点がほどけ，元の字形へ戻る．
 // 名前はすぐ上のリンクで読めるため，この飾りは読み上げから外す
 export function FooterWordmark({ text }: { text: string }) {
   const { ref, isInView } = useInView<HTMLDivElement>(WORDMARK_IN_VIEW_THRESHOLD);
+  const textRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const characters = Array.from(text);
 
   useEffect(() => {
     const wordmark = ref.current;
-    if (!wordmark) return;
+    const fallbackText = textRef.current;
+    const canvas = canvasRef.current;
+    if (!wordmark || !fallbackText || !canvas) return;
     const enabled = matchMedia('(hover: hover) and (pointer: fine) and (min-width: 761px) and (prefers-reduced-motion: no-preference)');
     let dispose = () => {};
     const setup = () => {
       dispose();
       if (!enabled.matches) return;
-      const controller = new AbortController();
-      const { signal } = controller;
-      const letters = [...wordmark.querySelectorAll<HTMLElement>('[data-footer-letter]')];
-      let centers: number[] = [];
-      let bounds: DOMRect | null = null;
-      let lift = 0;
-      let radius = 0;
-      const spring = createPointerSpring(letters.length * 2, values => {
-        letters.forEach((letter, index) => {
-          letter.style.transform = `translate3d(0,${values[index * 2]}px,0) rotate(${values[index * 2 + 1]}deg)`;
-        });
-      });
-      const measure = () => {
-        bounds = wordmark.getBoundingClientRect();
-        lift = Math.min(bounds.height * .15, 32);
-        radius = Math.max(bounds.width / letters.length * 1.7, 90);
-        centers = letters.map(letter => {
-          const rect = letter.parentElement!.getBoundingClientRect();
-          return rect.left + rect.width / 2;
-        });
-      };
-      const release = () => spring.to(Array(letters.length * 2).fill(0));
-      wordmark.addEventListener('pointerenter', measure, { signal, passive: true });
-      wordmark.addEventListener('pointermove', event => {
-        if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
-        if (!bounds) measure();
-        const targets = centers.flatMap(center => {
-          const distance = event.clientX - center;
-          const influence = Math.exp(-((distance / radius) ** 2) * 1.5);
-          return [-lift * influence, distance / radius * influence * 7];
-        });
-        spring.to(targets);
-      }, { signal, passive: true });
-      wordmark.addEventListener('pointerleave', release, { signal });
-      window.addEventListener('blur', () => spring.reset(), { signal });
-      document.addEventListener('visibilitychange', () => { if (document.hidden) spring.reset(); }, { signal });
-      const resize = new ResizeObserver(() => { bounds = null; spring.reset(); });
-      resize.observe(wordmark);
-      const intersection = new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) spring.reset(); });
-      intersection.observe(wordmark);
-      wordmark.setAttribute('data-pointer-wave', '');
-      dispose = () => {
-        controller.abort(); resize.disconnect(); intersection.disconnect(); spring.dispose();
-        wordmark.removeAttribute('data-pointer-wave');
-        letters.forEach(letter => letter.style.removeProperty('transform'));
-      };
+      dispose = createParticleWordmark(wordmark, fallbackText, canvas);
     };
     setup(); enabled.addEventListener('change', setup);
     return () => { dispose(); enabled.removeEventListener('change', setup); };
@@ -86,15 +45,22 @@ export function FooterWordmark({ text }: { text: string }) {
 
   return (
     <div ref={ref} className={`footer-wordmark ${isInView ? 'is-visible' : ''}`} aria-hidden="true">
-      {characters.map((character, index) => (
-        <span
-          key={`${character}-${index}`}
-          className={`footer-wordmark-char ${index === characters.length - 1 ? 'is-accent' : ''}`}
-          style={{ '--char-index': index } as CSSProperties}
-        >
-          <span className="footer-letter" data-footer-letter>{character === ' ' ? ' ' : character}</span>
-        </span>
-      ))}
+      <div ref={textRef} className="footer-wordmark-text">
+        {characters.map((character, index) => (
+          <span
+            key={`${character}-${index}`}
+            className={`footer-wordmark-char ${index === characters.length - 1 ? 'is-accent' : ''}`}
+            style={{ '--char-index': index } as CSSProperties}
+          >
+            <span className="footer-letter" data-footer-letter>{character === ' ' ? ' ' : character}</span>
+          </span>
+        ))}
+      </div>
+      <canvas
+        ref={canvasRef}
+        className="footer-wordmark-canvas"
+        style={{ '--particle-padding': `${WORDMARK_PARTICLE_PADDING}px` } as CSSProperties}
+      />
     </div>
   );
 }

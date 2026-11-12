@@ -1,0 +1,46 @@
+/* 大きな文字が 1 語ずつ間隔を空けて広がる帯．
+   語は最初から「両端まで広がった」位置に置き（space-between），JS が詰めた位置へ戻す translateX を書く．
+   動かすのは transform だけ．色は墨色（ダークは明るい文字）のトークンから． */
+.host {
+  position: relative;
+  width: 100%;
+  padding: clamp(64px, 10vw, 128px) 24px;
+  color: var(--site-ink);
+  pointer-events: none;
+  user-select: none;
+}
+
+.words {
+  /* 語の offsetLeft / offsetTop の基準になる */
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: 0.4em;
+  row-gap: 0.06em;
+  max-width: 1600px;
+  margin: 0 auto;
+  font-size: clamp(2.5rem, 8vw, 7rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+
+.word {
+  display: block;
+  will-change: transform;
+}
+
+/* 1 行に 1 語だけの行（狭い画面）の語を行末へ寄せる．JS が奇数番目の行の語に付ける */
+.word[data-end] {
+  margin-left: auto;
+}
+
+/* 動きを減らす設定：広がり切った静止の姿（JS の値より優先する） */
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    transform: none !important;
+    will-change: auto;
+  }
+}

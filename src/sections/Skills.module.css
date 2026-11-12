@@ -1,25 +1,23 @@
 .section { --skill-ink: var(--site-ink); --skill-muted: var(--site-muted); --skill-surface: var(--site-surface-raised); --skill-line: var(--site-line); color: var(--skill-ink); }
-.sectionLabel { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 18px; color: var(--skill-muted); font-size: 10px; letter-spacing: .12em; }
+.sectionLabel { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; color: var(--skill-muted); font-size: 10px; letter-spacing: .12em; }
 .sectionLabel span:last-child { letter-spacing: .02em; }
-.grid { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 18px; }
+.grid { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 24px; }
 .nativeSlot { grid-row: span 2; }
 .webSlot { grid-column: span 2; }
-.card { --skill-accent: #537fd3; position: relative; isolation: isolate; height: 100%; padding: 26px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--skill-line) 75%, transparent); border-radius: var(--site-radius-card); background: var(--skill-surface); box-shadow:var(--site-shadow-card); transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform .45s var(--portfolio-ease), box-shadow .45s, border-color .35s; }
-.card::before { content: ''; position: absolute; z-index: -1; pointer-events: none; inset: 0; opacity: 0; background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), color-mix(in srgb, var(--skill-accent) 10%, transparent), transparent 65%); transition: opacity .4s; }
-.card:hover::before { opacity: 1; }
-.card:hover { box-shadow: 0 16px 40px #14253f0a; border-color: color-mix(in srgb, var(--skill-accent) 25%, transparent); }
-.cardTop { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-.icon { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 12px; color: var(--skill-accent); background: color-mix(in srgb, var(--skill-accent) 10%, transparent); transition: transform .4s; }
-.card:hover .icon { transform: rotate(-7deg); }
+.card { --skill-accent: #537fd3; position: relative; isolation: isolate; height: 100%; padding: 24px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--skill-line) 75%, transparent); border-radius: var(--site-radius-card); background: var(--skill-surface); box-shadow:var(--site-shadow-card); transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform var(--dur-base) var(--ease-out), border-color var(--dur-fast) ease; }
+.card::before { content: ''; position: absolute; z-index: -1; pointer-events: none; inset: 0; opacity: 0; background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), color-mix(in srgb, var(--skill-accent) 10%, transparent), transparent 65%); transition: opacity var(--dur-fast) ease; }
+.cardTop { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+.icon { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 12px; color: var(--skill-accent); background: color-mix(in srgb, var(--skill-accent) 10%, transparent); transition: transform var(--dur-fast) var(--ease-out); }
 .category { color: var(--skill-muted); font-size: 10px; font-weight: 600; letter-spacing: .1em; }
-.primaryBadge { margin-left: auto; font-size: 9px; white-space: nowrap; color: #b96b3e; background: #ed9d661a; padding: 5px 8px; border-radius: 20px; }
+.primaryBadge { margin-left: auto; font-size: 9px; white-space: nowrap; color: #b96b3e; background: #ed9d661a; padding: 4px 8px; border-radius: 20px; }
 .card h3 { margin: 0; font-size: clamp(23px, 2.3vw, 30px); font-weight: 650; line-height: 1.3; letter-spacing: -.045em; }
 .card h3 > span { color: var(--skill-muted); font-weight: 450; }
 .description { margin: 12px 0 0; font-size: 14px; line-height: 1.8; }
-.evidence { margin: 14px 0 0; color: var(--skill-muted); font-size: 12px; line-height: 1.8; }
-.textLink { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; margin-top: 8px; font-size: 12px; color: var(--skill-accent); }
-.textLink svg, .cardFooter a svg { transition: transform .3s; }
-.textLink:hover svg, .cardFooter a:hover svg { transform: translate(3px, -3px); }
+.evidence { margin: 16px 0 0; color: var(--skill-muted); font-size: 12px; line-height: 1.8; }
+.textLink { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; margin-top: 8px; font-size: 12px; color: var(--skill-accent); }
+.labLink { display:flex; align-items:center; gap:8px; width:fit-content; min-height:44px; padding:8px 0; margin-top:8px; color:var(--site-accent); font-size:13px; }
+.section .labLink:focus-visible { outline-color:var(--site-focus); }
+.textLink svg, .cardFooter a svg, .processLink svg, .labLink svg { transition: transform var(--dur-fast) var(--ease-out); }
 .native { --skill-accent: #dd8856; display: flex; flex-direction: column; background: radial-gradient(ellipse at 50% 48%, #fff0e0 0%, transparent 65%), var(--skill-surface); }
 :global(.dark) .native { background: radial-gradient(ellipse at 50% 48%, #54332455, transparent 65%), var(--skill-surface); }
 .native h3 { font-size: clamp(28px, 2.8vw, 36px); }
@@ -28,58 +26,51 @@
 .orbit { position: absolute; width: 175px; height: 175px; border: 1px solid #dd885625; border-radius: 50%; }
 .orbit::before, .orbit::after { content: ''; position: absolute; border: 1px dashed #dd885620; border-radius: 50%; inset: -24px; }
 .orbit::after { inset: 24px; border-style: solid; }
-.appShelf { display: flex; align-items: center; justify-content: center; gap: 15px; position: relative; z-index: 1; }
-.app { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; font-size: 9px; color: var(--skill-muted); }
-.app img { width: 66px; height: 66px; border-radius: 23%; box-shadow: 0 10px 24px #77411a20; transition: transform .45s var(--portfolio-ease), box-shadow .4s; }
+.appShelf { display: flex; align-items: center; justify-content: center; gap: 16px; position: relative; z-index: 1; }
+.app { display: flex; min-width: 0; font-size: 9px; color: var(--skill-muted); transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) ease; }
+.appArrival { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.app img { width: 66px; height: 66px; border-radius: 23%; box-shadow: 0 10px 24px #77411a20; }
 .app:nth-child(2) img { width: 82px; height: 82px; }
-.app:is(:hover, :focus-visible) img { transform: translateY(-9px) rotate(-5deg) scale(1.05); box-shadow: 0 18px 28px #77411a30; }
 .platform { position: absolute; font-size: 9px; letter-spacing: .04em; color: #b37b59; }
 .ios { top: 20px; left: 28px; }
 .macos { right: 20px; bottom: 23px; }
-.stats { display: flex; gap: 30px; padding-top: 20px; border-top: 1px solid var(--skill-line); }
+.stats { display: flex; gap: 32px; padding-top: 20px; border-top: 1px solid var(--skill-line); }
 .stats > div { display: flex; flex-direction: column-reverse; gap: 4px; }
 .stats dt { font-size: 10px; color: var(--skill-muted); }
 .stats dd { font-size: 33px; font-weight: 600; letter-spacing: -.04em; line-height: 1.15; }
-.stats dd > span:last-child { margin-left: 7px; font-size: 9px; font-weight: 400; color: var(--skill-muted); letter-spacing: 0; }
-.cardFooter { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-top: 22px; font-size: 10px; color: var(--skill-muted); }
-.cardFooter a { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; color: var(--skill-ink); }
+.stats dd > span:last-child { margin-left: 8px; font-size: 9px; font-weight: 400; color: var(--skill-muted); letter-spacing: 0; }
+.cardFooter { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-top: 24px; font-size: 10px; color: var(--skill-muted); }
+.cardFooter a { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; color: var(--skill-ink); }
 .web { display: flex; align-items: center; gap: 16px; min-height: 238px; }
 .webCopy { position: relative; z-index: 1; flex: 1; }
 .web h3 { font-size: 25px; }
-.web h3 span { display: block; margin-top: 3px; }
-.web .cardTop { margin-bottom: 14px; }
-.browserVisual { flex: 0 0 43%; border: 1px solid #678bc22b; border-radius: 12px; background: #f5f8fe; box-shadow: 0 16px 24px #24498409; transform: perspective(600px) rotateY(-12deg) rotateZ(3deg); transition: transform .6s var(--portfolio-ease); overflow: hidden; }
+.web h3 span { display: block; margin-top: 4px; }
+.web .cardTop { margin-bottom: 16px; }
+.browserVisual { flex: 0 0 43%; border: 1px solid #678bc22b; border-radius: 12px; background: #f5f8fe; box-shadow: 0 16px 24px #24498409; transform: perspective(600px) rotateY(0); overflow: hidden; }
 :global(.dark) .browserVisual { background: #111b2e; }
-.web:hover .browserVisual { transform: perspective(600px) rotateY(0) rotateZ(0) translateY(-4px); }
-.browserBar { height: 27px; display: flex; align-items: center; gap: 4px; padding-inline: 10px; border-bottom: 1px solid #678bc21a; }
+.browserBar { height: 27px; display: flex; align-items: center; gap: 4px; padding-inline: 12px; border-bottom: 1px solid #678bc21a; }
 .browserBar i { width: 5px; height: 5px; border-radius: 50%; background: #9cafc8; }
 .browserBar i:first-child { background: #e0a094; }
 .browserBar span { margin-left: 12px; font: 8px monospace; color: var(--skill-muted); }
-.code { display: flex; flex-direction: column; gap: 6px; padding: 17px 12px; font: 9px/1.5 monospace; white-space: pre; color: #8897b1; }
-.code b { color: #547dd2; font-weight: 500; }
+.code { display: flex; flex-direction: column; gap: 6px; padding: 16px 12px; font: 9px/1.5 monospace; white-space: pre; color: #8897b1; }
+.code b { color: #547dd2; font-weight: 600; }
 .code em { color: #8c9f74; font-style: normal; }
 .caret { display: inline-block; height: 10px; width: 4px; margin-left: 4px; background: #547dd2; animation: cursor-blink 1.2s steps(2, jump-none) infinite; }
-.browserPreview { display: flex; gap: 7px; padding: 0 12px 16px; }
+.browserPreview { display: flex; gap: 8px; padding: 0 12px 16px; }
 .browserPreview span { height: 32px; flex: 1; border-radius: 5px; background: #6b8aca12; }
 .browserPreview span:first-child { flex: 1.6; background: #6b8aca25; }
 .python { --skill-accent: #628b6c; }
-.pipeline { display: flex; align-items: center; gap: 7px; margin-top: 20px; color: var(--skill-accent); }
-.pipeline span { font: 9px monospace; background: #628b6c0d; border: 1px solid #628b6c1a; padding: 7px 9px; border-radius: 6px; }
-.dataLink { position: relative; flex: 0 0 22px; height: 1px; color: var(--skill-accent); background: color-mix(in srgb, currentColor 32%, transparent); }
-.dataLink::before { content: ''; position: absolute; left: 0; top: -2px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0; }
+.pipeline { display: flex; align-items: center; gap: 8px; margin-top: 20px; color: var(--skill-accent); }
+.pipeline > span > span { display: block; font: 9px monospace; background: #628b6c0d; border: 1px solid #628b6c1a; padding: 8px; border-radius: 6px; }
+.dataLink { position: relative; flex: 0 0 22px; height: 1px; color: var(--skill-accent); }
+.dataLink > i { display: block; width: 100%; height: 100%; background: color-mix(in srgb, currentColor 32%, transparent); transform-origin: left center; }
 .dataLink::after { content: ''; position: absolute; right: 0; top: -2px; width: 5px; height: 5px; border-top: 1px solid currentColor; border-right: 1px solid currentColor; transform: rotate(45deg); opacity: .6; }
 .hardware { --skill-accent: #9880b5; }
 .hardware h3 { font-size: 25px; }
-.circuit { display: flex; align-items: center; gap: 6px; margin-top: 18px; height: 37px; color: var(--skill-accent); }
+.circuit { display: flex; align-items: center; gap: 6px; margin-top: 16px; height: 37px; color: var(--skill-accent); }
 .circuit span { flex: 1; height: 1px; background: #9880b540; position: relative; }
 .circuit span::after { content: ''; width: 4px; height: 4px; border: 1px solid #9880b580; border-radius: 50%; position: absolute; top: -1.5px; }
 .circuit span:nth-last-child(-n+2)::after { right: 0; }
-.circuit span::before { content: ''; position: absolute; left: 0; top: -2px; width: 100%; height: 5px; background: radial-gradient(circle at 3px 50%, currentColor 0 2px, transparent 2.5px); opacity: 0; pointer-events: none; }
-.toolbox { display: grid; grid-template-columns: 1.2fr 1.2fr .7fr; gap: 24px; margin-top: 30px; padding: 26px 4px 0; border-top: 1px solid var(--skill-line); }
-.toolGroup h3 { display: flex; align-items: center; gap: 7px; margin-bottom: 14px; font-size: 11px; font-weight: 500; color: var(--skill-muted); }
-.toolGroup ul { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; padding: 0; }
-.toolGroup li { padding: 5px 9px; border: 1px solid var(--skill-line); border-radius: 6px; font-size: 11px; color: var(--skill-muted); transition: border-color .25s, color .25s, translate .25s; }
-.toolGroup li:hover { color: var(--skill-ink); border-color: #8a929a55; translate: 0 -2px; }
 .section a:focus-visible { outline: 2px solid var(--skill-accent); outline-offset: 5px; border-radius: 5px; }
 @keyframes cursor-blink { to { opacity: 0; } }
 @media (max-width: 1023px) {
@@ -89,63 +80,164 @@
   .web { flex-direction: column; align-items: stretch; }
   .browserVisual { flex-basis: auto; max-width: 220px; width: 100%; align-self: flex-end; }
   .web h3 span { display: inline; }
-  .toolbox { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 600px) {
-  .grid { grid-template-columns: 1fr; gap: 14px; }
+  .grid { grid-template-columns: 1fr; gap: 24px; }
   .card { padding: 24px; border-radius: 22px; transform: none; }
   .sectionLabel { font-size: 9px; }
   .sectionLabel span:last-child { display: none; }
   .nativeVisual { min-height: 220px; }
   .native h3 { font-size: 33px; }
-  .web { min-height: 0; gap: 22px; }
+  .web { min-height: 0; gap: 24px; }
   .web h3 { font-size: 27px; }
   .browserVisual { align-self: center; max-width: 100%; transform: none; }
-  .code { font-size: 11px; padding: 18px; }
+  .code { font-size: 11px; padding: 20px; }
   .browserPreview span { height: 40px; }
-  .toolbox { grid-template-columns: 1fr; gap: 22px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .section *, .section *::before, .section *::after { animation: none !important; transition: none !important; }
-  .card, .browserVisual, .web:hover .browserVisual, .app:is(:hover, :focus-visible) img, .card:hover .icon { transform: none; }
-  .toolGroup li:hover { translate: none; }
-}
-
 :global(.dark) .native { --skill-accent: #efb28c; }
 :global(.dark) .web { --skill-accent: #91b4fa; }
 :global(.dark) .python { --skill-accent: #a2cba6; }
 :global(.dark) .hardware { --skill-accent: #c5afe5; }
-.nativeSlot:global(.reveal-visible) .app { animation: skill-app-arrive .8s var(--portfolio-ease) both; animation-delay: calc(150ms + var(--app-index, 0) * 90ms); }
-@keyframes skill-app-arrive { from { opacity: 0; translate: 0 32px; rotate: -12deg; scale: .75; } to { opacity: 1; translate: 0 0; rotate: 0deg; scale: 1; } }
 
-/* スキルごとの小さな図が、表示された順に組み上がる。 */
-:global(.reveal-visible) .code > span,
-:global(.reveal-visible) .browserPreview > span,
-:global(.reveal-visible) .pipeline > *,
-:global(.reveal-visible) .circuit > *,
-:global(.reveal-visible) .toolGroup li { animation: skill-detail-arrive .7s cubic-bezier(.22, 1, .36, 1) backwards; }
-:global(.reveal-visible) .code > :nth-child(2), :global(.reveal-visible) .pipeline > :nth-child(2), :global(.reveal-visible) .circuit > :nth-child(2), :global(.reveal-visible) .toolGroup li:nth-child(2) { animation-delay: 80ms; }
-:global(.reveal-visible) .code > :nth-child(3), :global(.reveal-visible) .pipeline > :nth-child(3), :global(.reveal-visible) .circuit > :nth-child(3), :global(.reveal-visible) .toolGroup li:nth-child(3) { animation-delay: 160ms; }
-:global(.reveal-visible) .code > :nth-child(4), :global(.reveal-visible) .pipeline > :nth-child(4), :global(.reveal-visible) .circuit > :nth-child(4), :global(.reveal-visible) .toolGroup li:nth-child(4) { animation-delay: 240ms; }
-:global(.reveal-visible) .pipeline > :nth-child(5), :global(.reveal-visible) .circuit > :nth-child(5), :global(.reveal-visible) .toolGroup li:nth-child(n+5) { animation-delay: 320ms; }
-:global(.reveal-visible) .browserPreview > :nth-child(1) { animation-delay: 300ms; }
-:global(.reveal-visible) .browserPreview > :nth-child(2) { animation-delay: 380ms; }
-:global(.reveal-visible) .browserPreview > :nth-child(3) { animation-delay: 460ms; }
-@keyframes skill-detail-arrive { from { opacity: 0; translate: 0 20px; scale: .82; } to { opacity: 1; translate: 0 0; scale: 1; } }
-/* 小さなパケットが処理と回路を順番に通過する。 */
-@media (prefers-reduced-motion: no-preference) {
-  :global(.reveal-visible) .dataLink::before { animation: skill-packet 3s cubic-bezier(.45, 0, .55, 1) infinite; }
-  :global(.reveal-visible) .dataLink:nth-of-type(2)::before { animation-delay: 1.15s; }
-  :global(.reveal-visible) .circuit span::before { animation: skill-circuit-packet 3.4s cubic-bezier(.45, 0, .55, 1) infinite; }
-  :global(.reveal-visible) .circuit span:nth-child(2)::before { animation-delay: .45s; }
-  :global(.reveal-visible) .circuit span:nth-child(4)::before { animation-delay: .9s; }
-  :global(.reveal-visible) .circuit span:nth-child(5)::before { animation-delay: 1.35s; }
+/* 外の Reveal が着地した合図で，内側だけを視線の順に出す． */
+.card { --stagger-step: 60ms; }
+.cardTop { --i: 0; }
+.card h3 { --i: 1; }
+.description { --i: 2; }
+.linkEntrance { display: inline-flex; }
+.evidence, .linkEntrance, .stats, .cardFooter { --i: 4; --part-extra: 20ms; }
+.cardTop, .card h3, .description, .evidence, .linkEntrance, .stats, .cardFooter { opacity: 0; }
+.card[data-entered=true] :is(.cardTop, h3, .description, .evidence, .linkEntrance, .stats, .cardFooter) {
+  animation: skill-copy-arrive var(--dur-base) var(--ease-out) both;
+  animation-delay: min(480ms, calc(var(--i) * var(--stagger-step) + var(--part-extra, 0ms)));
 }
-@keyframes skill-packet { 0%, 8% { opacity: 0; transform: translateX(0); } 15%, 42% { opacity: 1; } 50%, 100% { opacity: 0; transform: translateX(18px); } }
-@keyframes skill-circuit-packet { 0%, 8% { opacity: 0; transform: translateX(0); } 14%, 40% { opacity: 1; } 50%, 100% { opacity: 0; transform: translateX(calc(100% - 5px)); } }
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .native:hover .orbit::before { animation: skill-orbit 5s ease-in-out infinite alternate; }
-  .hardware:hover .circuit > svg { animation: skill-chip 1.3s ease-in-out infinite alternate; }
+@keyframes skill-copy-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.rollingCount { font-variant-numeric: tabular-nums; }
+.rollingCount :global(.digit-roll-track) { transition: transform var(--dur-enter) var(--ease-out); }
+
+/* 棚の登場は内側，持ち上がりと隣の間隔は外側のリンクが受け持つ． */
+.app { --app-order: var(--app-index); --app-from-x: -10px; --app-scale: 1; }
+.app:nth-child(2) { --app-order: 2; --app-from-x: 0px; --app-scale: 1.03; }
+.app:nth-child(3) { --app-order: 1; --app-from-x: 10px; }
+.appArrival, .platform, .orbit { opacity: 0; }
+.card[data-entered=true] .appArrival { animation: skill-app-arrive var(--dur-slow) var(--ease-out) both; animation-delay: calc(180ms + var(--app-order) * 40ms); }
+.card[data-entered=true] :is(.platform, .orbit) { animation: skill-fade var(--dur-base) ease 180ms both; }
+@keyframes skill-app-arrive { from { opacity: 0; transform: translate(var(--app-from-x), 14px) scale(.96); } to { opacity: 1; transform: scale(var(--app-scale)); } }
+@keyframes skill-fade { from { opacity: 0; } to { opacity: 1; } }
+.app:focus-visible { transform: translateY(-4px); color: var(--skill-ink); }
+.appShelf:has(.app:focus-visible) .app:not(:focus-visible) { transform: translateX(-3px); }
+.appShelf:has(.app:focus-visible) .app:focus-visible ~ .app { transform: translateX(3px); }
+.section .app:active { transform: scale(.95); }
+
+/* ブラウザの面と，中の行・ブロックは別々の transform を持つ． */
+.browserVisual { opacity: 0; }
+.card[data-entered=true] .browserVisual { animation: skill-browser-arrive var(--dur-slow) var(--ease-out) 180ms both; }
+@keyframes skill-browser-arrive { from { opacity: 0; transform: perspective(600px) translateX(8%) rotateY(10deg); } to { opacity: 1; transform: perspective(600px) rotateY(0); } }
+.code > span, .browserPreview > span { opacity: 0; transform-origin: left center; }
+.code > :nth-child(1) { --i: 0; }
+.code > :nth-child(2) { --i: 1; }
+.code > :nth-child(3) { --i: 2; }
+.code > :nth-child(4) { --i: 3; }
+.browserPreview > :nth-child(1) { --i: 4; }
+.browserPreview > :nth-child(2) { --i: 5; }
+.browserPreview > :nth-child(3) { --i: 6; }
+.card[data-entered=true] .code > span { animation: skill-code-arrive var(--dur-base) var(--ease-out) both; animation-delay: calc(180ms + var(--i) * 30ms); }
+.card[data-entered=true] .browserPreview > span { animation: skill-line-draw var(--dur-base) var(--ease-out) both; animation-delay: calc(180ms + var(--i) * 30ms); }
+@keyframes skill-code-arrive { from { opacity: 0; clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0); } }
+@keyframes skill-line-draw { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
+
+/* 処理の順序は一度だけ説明する．触った再生は中の要素の transition で戻せる． */
+.pipeline > :nth-child(1) { --i: 0; }
+.pipeline > :nth-child(2) { --i: 1; }
+.pipeline > :nth-child(3) { --i: 2; }
+.pipeline > :nth-child(4) { --i: 3; }
+.pipeline > :nth-child(5) { --i: 4; }
+.pipeline > * { opacity: 0; transform-origin: left center; }
+.card[data-entered=true] .pipeline > span { animation: skill-step-arrive var(--dur-base) var(--ease-out) both; animation-delay: calc(180ms + var(--i) * 35ms); }
+.card[data-entered=true] .pipeline > i { animation: skill-line-draw var(--dur-base) var(--ease-out) both; animation-delay: calc(180ms + var(--i) * 35ms); }
+.card[data-entered=true] .pipeline:not([data-replay]) > span:last-child > span { animation: skill-done-lift var(--dur-press) var(--ease-out) 440ms 2 alternate; }
+@keyframes skill-step-arrive { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes skill-done-lift { from { transform: scale(1); } to { transform: scale(1.04); } }
+.pipeline > span > span, .dataLink > i { transition: opacity var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); }
+.pipeline[data-replay=reset] > span > span { opacity: .28; transform: translateY(6px); }
+.pipeline[data-replay=reset] .dataLink > i { opacity: .28; transform: scaleX(0); }
+.pipeline[data-replay=play] > span > span, .pipeline[data-replay=play] .dataLink > i { transition-delay: calc(var(--i) * 35ms); }
+.pipeline[data-replay=play] > span:last-child > span { transform: scale(1.04); }
+
+/* 外側の配線から中央へ引き，最後にチップが一度だけ応答する． */
+.circuit > * { opacity: 0; }
+.circuit > span { transform-origin: left center; }
+.circuit > span:nth-last-child(-n+2) { transform-origin: right center; }
+.circuit > span:nth-child(1), .circuit > span:nth-child(5) { --wire-delay: 180ms; }
+.circuit > span:nth-child(2), .circuit > span:nth-child(4) { --wire-delay: 220ms; }
+.card[data-entered=true] .circuit > span { animation: skill-line-draw var(--dur-base) var(--ease-out) var(--wire-delay) both; }
+.card[data-entered=true] .circuit > svg { animation: skill-chip-arrive var(--dur-base) var(--ease-out) 360ms both; }
+@keyframes skill-chip-arrive { from { opacity: .35; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+
+.textLink:focus-visible svg, .cardFooter a:focus-visible svg, .processLink:focus-visible svg, .labLink:focus-visible svg { transform: translate(2px, -2px); }
+@media (hover: hover) and (pointer: fine) {
+  .card:hover::before { opacity: 1; }
+  .card:hover { border-color: color-mix(in srgb, var(--skill-accent) 25%, transparent); }
+  .card:hover .icon { transform: rotate(-4deg); }
+  .app:hover { transform: translateY(-4px); color: var(--skill-ink); }
+  .appShelf:has(.app:hover) .app:not(:hover) { transform: translateX(-3px); }
+  .appShelf:has(.app:hover) .app:hover ~ .app { transform: translateX(3px); }
+  .textLink:hover svg, .cardFooter a:hover svg, .processLink:hover svg, .labLink:hover svg { transform: translate(2px, -2px); }
 }
-@keyframes skill-orbit { to { rotate: 35deg; } }
-@keyframes skill-chip { to { scale: 1.2; filter: drop-shadow(0 0 8px currentColor); } }
+
+/* 制作工程は，止めた状態でも入力から結果まで読める． */
+.process { display:grid; grid-template-columns:1fr 1.25fr; gap:32px; margin-top:32px; padding:32px; border:1px solid var(--site-line); border-radius:var(--site-radius-card); background:var(--site-surface); color:var(--site-ink); }
+.processLabel { margin:0 0 12px; color:var(--site-muted); font-size:12px; }
+.processCopy h3 { margin:0 0 16px; font-size:24px; font-weight:600; line-height:1.5; }
+.processCopy > p:not(.processLabel) { margin:12px 0; font-size:13px; line-height:1.9; color:var(--site-muted); }
+.processLink { display:inline-flex; align-items:center; gap:8px; min-height:44px; color:var(--site-accent); font-size:13px; }
+.processFigure { min-width:0; margin:0; }
+.processFlow { display:grid; gap:12px; margin:0; padding:0; list-style:none; }
+.processFlow li { position:relative; padding:16px 20px; border:1px solid var(--site-line); border-radius:16px; background:var(--site-surface-soft); }
+.processFlow li::before { content:''; position:absolute; inset:8px auto 8px 0; width:3px; border-radius:2px; background:var(--site-accent); opacity:0; transition:opacity var(--dur-fast) ease; }
+.processFlow li[data-active=true]::before { opacity:1; }
+.processFlow li > span { display:block; margin-bottom:8px; font-size:11px; color:var(--site-muted); }
+.processFlow strong { font-size:16px; font-weight:600; }
+.processFlow .processResult { font-size:28px; font-variant-numeric:tabular-nums; }
+.processResponse { opacity:0; transform:translateY(8px); transition:opacity var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); }
+.process[data-phase='2'] .processResponse { opacity:1; transform:translateY(0); }
+.process[data-instant=true] .processResponse { transition:none; }
+.processFlow p { margin:4px 0 0; font-size:12px; color:var(--site-muted); }
+.processControls { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; margin-top:16px; }
+.processControls > div { display:flex; gap:4px; }
+.processControls button { min-width:44px; min-height:44px; padding:8px 12px; border:1px solid var(--site-line); border-radius:12px; background:var(--site-surface); color:var(--site-accent); font-size:12px; cursor:pointer; }
+.processControls button[aria-pressed=true] { background:var(--site-accent-soft); }
+.processControls button:disabled { color:var(--site-muted); cursor:default; }
+.processFigure figcaption { margin-top:12px; font-size:11px; line-height:1.8; color:var(--site-muted); }
+.comparison { margin:20px 0 0; padding-top:16px; border-top:1px solid var(--site-line); }
+.comparisonTitle { margin:0; font-size:14px; font-weight:600; }
+.comparisonLabels { margin:8px 0; color:var(--site-muted); font-size:11px; line-height:1.8; }
+.comparisonFrame { position:relative; aspect-ratio:4 / 3; overflow:hidden; border:1px solid var(--site-line); border-radius:12px; background:var(--site-surface-soft); }
+.comparisonImage { position:absolute; inset:0; display:block; width:100%; height:100%; object-fit:cover; opacity:0; animation:none; transition:opacity var(--dur-fast) ease; }
+.comparisonImage[data-active=true] { opacity:1; }
+.comparison[data-instant=true] .comparisonImage { transition:none; }
+.comparisonControls { display:flex; flex-wrap:wrap; gap:4px; margin-top:12px; }
+.comparisonControls button { min-width:44px; min-height:44px; padding:8px 12px; border:1px solid var(--site-line); border-radius:12px; background:var(--site-surface); color:var(--site-accent); font-size:12px; cursor:pointer; }
+.comparisonControls button[aria-pressed=true] { background:var(--site-accent-soft); }
+.comparison figcaption { margin-top:12px; color:var(--site-muted); font-size:11px; line-height:1.8; }
+.process :global(.press-effect) { transition:transform var(--dur-press) var(--ease-out), background-color var(--dur-fast) ease, color var(--dur-fast) ease; }
+.process :global(.press-effect):focus-visible { transition:none; }
+@media (max-width:760px) { .process { grid-template-columns:1fr; padding:24px; gap:24px; } }
+@media (prefers-reduced-motion:reduce) { .process .processResponse { opacity:1; transition:none; transform:none; } }
+@media (prefers-reduced-motion:reduce) { .comparisonImage { transition:none; } }
+
+/* 下線の幅は固定の 1px．計測した幅は scaleX にだけ渡す． */
+.selectionControls { position:relative; }
+.selectionControls::after { content:''; position:absolute; top:0; left:0; width:1px; height:2px; border-radius:1px; background:var(--site-accent); pointer-events:none; transform-origin:0 0; transform:var(--selection-transform); opacity:0; transition:transform var(--dur-base) var(--ease-in-out), opacity var(--dur-fast) ease; }
+.selectionControls[data-indicator-ready=true]::after { opacity:1; }
+.process :global(.press-effect):focus-visible { background:var(--site-accent-soft); }
+@media (hover:hover) and (pointer:fine) { .process button:not(:disabled):hover { background:var(--site-accent-soft); } }
+@media (prefers-reduced-motion:reduce) {
+  .section *, .section *::before, .section *::after { animation:none !important; transition:none !important; }
+  .section .card, .section .browserVisual, .section .app, .section .icon, .section .appArrival { transform:none !important; }
+  .cardTop, .card h3, .description, .evidence, .linkEntrance, .labLink, .stats, .cardFooter,
+  .appArrival, .platform, .orbit, .browserVisual, .code > span, .browserPreview > span, .pipeline > *, .circuit > * { opacity:1; transform:none; }
+  .section .pipeline > span > span, .section .dataLink > i, .section .circuit > svg,
+  .section .textLink svg, .section .cardFooter a svg, .section .processLink svg, .section .labLink svg { opacity:1; transform:none; }
+  .rollingCount :global(.digit-roll-track) { transition:none; }
+}

@@ -3,6 +3,7 @@ import './globals.css';
 import './design-tokens.css';
 import './refinements.css';
 import './motion.css';
+import './link-motion.css';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { CursorRing } from '../components/CursorRing';
 import { Navbar } from '../components/Navbar';
@@ -13,6 +14,9 @@ import { CommandPalette } from '../components/CommandPalette';
 import { NavigationTransitions } from '../components/NavigationTransitions';
 import { ImageReveal } from '../components/ImageReveal';
 import { SectionTransitions } from '../components/SectionTransitions';
+import { PageLoader } from '../components/PageLoader';
+import { FluidCursor } from '../components/animations/fluid/FluidCursor';
+import { preloaderBootScript } from '../lib/preloader';
 import { siteConfig } from '../config/site';
 
 
@@ -100,13 +104,18 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* 読み込み画面の起動スクリプト．初回の訪問のときだけ html に is-preloading を付ける．
+            最初の描画から読み込み画面を出すため，<head> の先頭側で実行する（lib/preloader.ts） */}
+        <script dangerouslySetInnerHTML={{ __html: preloaderBootScript }} />
       </head>
       <body className="bg-cream dark:bg-night text-ink dark:text-night-ink antialiased transition-colors min-h-screen flex flex-col">
+        {/* 初めて開いたときだけ出る読み込み画面（2 回目以降は何も出ない） */}
+        <PageLoader />
         <ThemeProvider>
           {/* キーボード操作でヘッダーを読み飛ばすためのリンク */}
           <a
             href="#main-content"
-            className="skip-link inline-flex min-h-11 items-center px-4 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border text-sm font-medium shadow-soft"
+            className="skip-link inline-flex min-h-11 items-center px-4 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border text-sm font-semibold shadow-soft"
           >
             本文へスキップ
           </a>
@@ -115,6 +124,8 @@ export default function RootLayout({
           <CommandPalette />
           <Navbar />
           <CursorRing />
+          {/* 何もない所でマウスに合わせて流れる流体の背景（FEATURES.fluidCursor．最初のマウスの動きまで何も作らない） */}
+          <FluidCursor />
           {/* 紹介ページへ移るとき，押したカードの画面を移動先の画面へ変形させる */}
           <NavigationTransitions />
           {/* 遅延読み込みの画像を，読み込み終わったところでふわりと現す */}

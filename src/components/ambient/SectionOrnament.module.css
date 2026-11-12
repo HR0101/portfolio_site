@@ -1,0 +1,33 @@
+.ornament {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 12px;
+  color: var(--site-ink);
+  pointer-events: none;
+}
+
+.chapter {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+}
+
+.canvas {
+  display: block;
+  width: 72px;
+  height: 72px;
+  opacity: 0.52;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .ornament { gap: 8px; }
+  .canvas { width: 56px; height: 56px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas { opacity: 0.48; }
+}

@@ -30,6 +30,8 @@
   },
   "include": [
     "next-env.d.ts",
+    "functions/**/*.ts",
+    "src/lib/edge/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",

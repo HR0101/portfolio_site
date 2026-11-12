@@ -1,0 +1,36 @@
+/* RollTitle：題名の文字が 1 文字ずつ上へ抜け，同じ文字が下から入る．
+   動かすのは transform だけ．ホバーの状態変化は transition なので，途中で反転しても現在値から戻る．
+   祖先に data-roll-host を付けた要素が，ホバー（とキーボードのフォーカス）の合図になる． */
+.roll-title { line-height: 1.3; }
+.roll-title-visual { display: inline; }
+.roll-word { display: inline-block; white-space: nowrap; }
+/* 1 文字ぶんの窓．高さは 1 行ぶん（1lh）で，2 枚目の同じ文字は窓の下に隠れている */
+.roll-char {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  height: 1.3em;
+  height: 1lh;
+  /* 字間（letter-spacing）を詰めた題名でも，字の端が窓で欠けないよう，窓を左右へ少し広げる（並びは変わらない） */
+  padding-inline: 0.05em;
+  margin-inline: -0.05em;
+}
+.roll-char-face {
+  display: block;
+  transition: transform var(--dur-slow) var(--ease-out);
+  transition-delay: var(--roll-delay, 0ms);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-roll-host]:hover .roll-char-face { transform: translateY(-100%); }
+}
+/* キーボードのフォーカスにも，ホバーと同じ返事 */
+[data-roll-host]:has(:focus-visible) .roll-char-face { transform: translateY(-100%); }
+
+/* 動きを減らす設定：文字は回さない（呼び出し側が，色や不透明度の短い変化で返事をする） */
+@media (prefers-reduced-motion: reduce) {
+  .roll-char-face { transition: none; }
+  [data-roll-host]:hover .roll-char-face,
+  [data-roll-host]:has(:focus-visible) .roll-char-face { transform: none; }
+}

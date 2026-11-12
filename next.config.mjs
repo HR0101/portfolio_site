@@ -25,7 +25,7 @@ const contentSecurityPolicy = [
   "font-src 'self' data:",
   "form-action 'self' mailto:",
   "frame-ancestors 'none'",
-  "img-src 'self' data: blob: https://ghchart.rshah.org",
+  "img-src 'self' data: blob: https://ghchart.rshah.org https://*.mzstatic.com",
   "object-src 'none'",
   scriptSrc,
   "style-src 'self' 'unsafe-inline'",

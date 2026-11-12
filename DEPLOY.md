@@ -26,6 +26,69 @@ AWS（S3 + CloudFront）から移した理由：AWS の無料プランのプロ�
 
 ---
 
+## 動的 API（Pages Functions）
+
+静的な画面は引き続き `out/` に書き出し，同じオリジンの API はリポジトリ直下の `functions/` で動かします．Cloudflare Pages の Git 連携・ビルドコマンド・出力ディレクトリは変更しません．`wrangler.toml` は作らず，Secret は Cloudflare ダッシュボードで管理します．
+
+| URL | Pages ラッパー | 共通ロジック | 共有キャッシュ |
+| --- | --- | --- | --- |
+| `/api/github` | `functions/api/github/index.ts` | `src/lib/edge/github.ts` | 600 秒 |
+| `/api/github/activity` | `functions/api/github/activity.ts` | 同上 | 300 秒 |
+| `/api/github/contributions` | `functions/api/github/contributions.ts` | 同上 | 1800 秒 |
+| `/api/music/recent` | `functions/api/music/recent.ts` | `src/lib/edge/appleMusic.ts` | 120 秒 |
+
+`src/lib/edge/http.ts` が Cache API と `Cache-Control`，クエリを除いたキー，JSON 応答を共通化します．GET は HTTP 200 と `apiStatus` で結果を伝え，GET 以外は 405 にします．CORS は付けません．`src/app/api/` の Next ルートも同じロジックを呼びます．`scripts/build-static.mjs` はこのディレクトリ全体を一時退避するため，新しい音楽ルートも静的書き出しに混ざりません．
+
+GitHub は期限内の localStorage キャッシュを使い，なければ API を呼び，取得失敗時は `src/data/github-snapshot.json` に戻ります．イベントのブラウザキャッシュは 10 分，リポジトリと草は 1 時間です．草の snapshot もなければ既存の外部画像へ戻ります．Apple Music は Profile の集計行が画面に近づいたときに取得し，成功かつ曲がある場合だけ表示します．ブラウザキャッシュは 5 分です．
+
+### Cloudflare の Secret
+
+Cloudflare Pages の対象プロジェクトの設定で，Production と必要な Preview 環境に以下を Secret として登録します．値を `NEXT_PUBLIC_*` へ入れないでください．
+
+| 名前 | 用途 |
+| --- | --- |
+| `GITHUB_TOKEN` | GitHub の公開 REST API の制限緩和と，草の GraphQL 認証 |
+| `APPLE_MUSIC_TEAM_ID` | Developer Token の発行者 |
+| `APPLE_MUSIC_KEY_ID` | MusicKit 署名鍵の識別 |
+| `APPLE_MUSIC_PRIVATE_KEY` | MusicKit の PKCS#8 PEM 署名鍵 |
+| `APPLE_MUSIC_USER_TOKEN` | 本人の最近聴いた曲を取得する認可 |
+
+Apple の 4 項目が欠けると `no_token` で非表示になります．GitHub の草もトークンなしでは `no_token` です．公開リポジトリ・公開イベントは，既存どおりトークンなしでも匿名で取得します．Developer Token は WebCrypto の ES256 で有効期間 12 時間として署名し，期限の 5 分前までメモリ内で再利用します．PEM の改行は，文字列の `\n` でも扱えます．
+
+### Apple 側の準備と Music User Token の取得
+
+1. Apple Developer の Certificates, Identifiers & Profiles → Keys で，MusicKit を有効にしたキーを作成します．Team ID と Key ID を控えます．`.p8` は一度しかダウンロードできないため，安全に保管してください．
+2. `.dev.vars.example` を `.dev.vars` へコピーし，Team ID・Key ID・秘密鍵をローカルで設定します．秘密鍵は引用符で囲んだ 1 行の PEM（改行は `\n`）でも設定できます．これらはシェル環境変数でも渡せます．`.dev.vars` と `AuthKey_*.p8` は Git の対象外です．
+3. 次のコマンドでローカル認可サーバーを起動し，表示された `http://127.0.0.1:8787` をブラウザで開きます．
+
+```bash
+node scripts/apple-music-user-token.mjs
+# PEM を環境変数へ入れず，ファイルから読む場合
+node scripts/apple-music-user-token.mjs --key-file ./AuthKey_XXXX.p8
+```
+
+4. 「Apple Music で認可する」を押し，画面に表示された Music User Token をコピーして Cloudflare の `APPLE_MUSIC_USER_TOKEN` Secret を更新します．他の 3 項目も登録します．作業後はページを閉じ，Ctrl+C でサーバーを終了します．スクリプトはトークンや鍵をファイル・ログ・URL へ出さず，`127.0.0.1` だけで待ち受けます．MusicKit JS はこのローカル認可ページだけで読み込みます．
+5. Music User Token は約 6 か月で失効する想定です．401 / 403 は `token_expired` として非表示にするため，再認可して Secret を更新してください．401 / 403 だけでは User Token と Developer Token のどちらが原因かは判別できないので，署名鍵や MusicKit の設定も確認してください．
+
+Apple API は `{ data: [{ id, type: 'songs' または 'library-songs', attributes: { name, artistName, albumName, artwork: { url }, url? } }] }` を想定しています．この環境では公式ドキュメント・実 API に接続できておらず，エンドポイント，実際の応答，MusicKit v3 の認可，利用アカウントでの権限と有効期間は未確認です．想定外の形は空配列へ倒します．公開するのは曲名・アーティスト・アルバム・検証済みの画像 URL と任意の Apple Music URL だけで，ID・再生日時・その他の属性は返しません．ジャケットは HTTPS の `*.mzstatic.com`，曲のリンクは `https://music.apple.com/` 配下に限定します．
+
+### GitHub トークン
+
+GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens で，対象アカウントの公開リポジトリの読み取りだけに限定したトークンを作成します．書き込み権限は付けず，公開リポジトリの基本情報の取得に必要な最小権限にします．草の GraphQL を利用するアカウントで取得できることも確認して，`GITHUB_TOKEN` Secret に登録してください．
+
+### ローカル確認
+
+Next の開発サーバーでは `.env.local.example` を元に `.env.local` を設定します．Pages Functions を試す場合は `.dev.vars` に値を設定し，開発サーバーを停止してから次を実行します．本作業ではビルドも wrangler も実行していません．
+
+```bash
+npm run build:static
+npx wrangler pages dev out
+```
+
+`wrangler` は別途利用できる環境が必要です．通常のサイトは MusicKit JS を読み込まず，音楽取得も同じオリジン経由なので，CSP の `connect-src` は既存のままです．画像用の `https://*.mzstatic.com` は `next.config.mjs` と `public/_headers` の両方へ追加しています．
+
+---
+
 ## 旧構成：AWS（S3 + CloudFront）
 
 以下は Cloudflare Pages へ移す前の記録です．S3・CloudFront のリソースは移行確認後に扱いを決めます．
@@ -235,7 +298,7 @@ aws cloudfront create-invalidation --distribution-id <ID> --paths "/*"
 
 ## 静的書き出しの制約（把握しておくこと）
 
-- **GitHub セクションはビルド時点の内容**になります（`npm run build:static` を実行し直すと更新）．
-- API ルート（`/api/github/*`）は書き出しに含まれません．書き出し中だけ自動で退避しています（`scripts/build-static.mjs`）．
+- Pages Functions のない配信先では，GitHub セクションは同梱 snapshot の内容へ戻ります．Cloudflare Pages では動的 API を先に利用します．
+- Next の API ルート（`src/app/api/` 全体）は書き出しに含まれません．書き出し中だけ自動で退避しています（`scripts/build-static.mjs`）．Pages Functions は別途配信されます．
 - `next.config.mjs` の `headers()` は無効です．上の表のとおり CloudFront 側で設定してください．
 - URL は末尾スラッシュ付き（`/apps/bustimeapp/`）になります．

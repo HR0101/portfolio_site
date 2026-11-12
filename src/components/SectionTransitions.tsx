@@ -212,7 +212,7 @@ export function SectionTransitions() {
 
     // Scroll-driven entrance applies to section surfaces, including their
     // backgrounds. Hero/showcase already have their own pinned choreography.
-    const scenes = Array.from(main.querySelectorAll<HTMLElement>('section:not(#hero):not(#showcase)'));
+    const scenes = Array.from(main.querySelectorAll<HTMLElement>('section:not(#hero):not(#showcase):not([data-scroll-actor])'));
     scenes.forEach(section => { section.dataset.sectionScene = ''; });
     const sceneAnimations = new Set<Animation>();
     let observer: IntersectionObserver | undefined;

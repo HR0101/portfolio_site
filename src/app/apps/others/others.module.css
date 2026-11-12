@@ -1,0 +1,95 @@
+/* ===== その他のアプリ（アイコンの素材がないアプリの紹介ページ） =====
+   サイト共通のトークン（--site-*）で組み，トップの Apps と同じ静かな面・細い線・淡い影にそろえる．*/
+.page { max-width:1152px; margin:0 auto; padding:96px 24px clamp(80px, 8vw, 112px); color:var(--site-ink); }
+.back {
+  display:inline-flex; align-items:center; gap:6px; min-height:44px; color:var(--site-muted); font-size:13px; font-weight:400;
+  transition:color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out);
+}
+.back:focus-visible { color:var(--site-ink); transform:translateX(-3px); }
+@media (hover:hover) and (pointer:fine) { .back:hover { color:var(--site-ink); transform:translateX(-3px); } }
+.header { padding:32px 0 48px; border-bottom:1px solid var(--site-line); }
+.eyebrow { color:var(--site-accent); font:600 11px/1 var(--font-mono); letter-spacing:.16em; text-transform:uppercase; }
+.header h1 { margin:16px 0 0; font-size:clamp(32px, 4.5vw, 54px); font-weight:600; line-height:1.3; letter-spacing:-.03em; }
+.lead { max-width:640px; margin:20px 0 0; color:var(--site-muted); font-size:15px; line-height:2; }
+
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap:64px 24px; margin-top:48px; }
+.grid > * { min-width:0; }
+.cardEntrance { opacity:0; transform:translateY(8px); transition:opacity var(--dur-slow) ease, transform var(--dur-slow) var(--ease-out); }
+.cardEntrance[data-entered=true] { opacity:1; transform:translateY(0); transition-delay:var(--card-delay); }
+
+/* タイル：大きな角丸の画面を上に，文字は画面に重ねず下に置く．タイルの枠は動かさず，動くのは画面の中身と題名の文字だけ．
+   ホバー・フォーカスの合図は，article の data-roll-host（題名の回転は RollTitle.css，画面の寄りはここ）． */
+.tile { position:relative; display:flex; flex-direction:column; gap:20px; height:100%; scroll-margin-top:88px; }
+.heading { scroll-margin-top:120px; }
+
+/* 画面．アイコンの素材がないので，アプリごとのグラデーションに線画のアイコンを重ねた面 */
+.screen {
+  position:relative; display:block; aspect-ratio:646 / 420; overflow:hidden; isolation:isolate;
+  border-radius:var(--site-radius-card); background:var(--site-surface-soft);
+}
+/* 画面の中身（グラデーションとアイコン）．ホバーで枠の中だけが寄る */
+.screenMedia { position:absolute; inset:0; display:grid; place-items:center; transform-origin:50% 50%; transition:transform var(--dur-enter) var(--ease-out); }
+.face { position:absolute; inset:0; }
+.screenIcon { position:relative; width:24%; height:auto; aspect-ratio:1; color:rgb(30 41 59 / .72); stroke-width:1.2; }
+:global(.dark) .face { opacity:.86; }
+.index { position:absolute; top:20px; left:24px; z-index:2; color:rgb(30 41 59 / .62); font:400 12px/1 var(--font-mono); letter-spacing:.08em; }
+/* タッチとキーボードの人にも「押せる」と伝える矢印．マウスのときは，カーソルの「VIEW」の札が同じ役目をする */
+.arrow {
+  position:absolute; right:20px; bottom:20px; z-index:2; display:grid; place-items:center; width:36px; height:36px;
+  border-radius:50%; background:rgb(255 255 255 / .85); color:#344966; transition:transform var(--dur-fast) var(--ease-out);
+}
+
+/* 文字は画面の下．小さな分類の行 → 大きな題名 → 説明 */
+.caption { display:flex; flex:1; flex-direction:column; gap:12px; }
+.meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 0; color:var(--site-muted); font:400 13px/1.5 var(--font-sans); }
+.chip { display:inline-flex; flex:none; align-items:center; gap:6px; color:var(--site-muted); font:400 13px/1.5 var(--font-sans); white-space:nowrap; }
+.chip + .chip::before { content:''; flex:none; width:3px; height:3px; margin-right:10px; border-radius:50%; background:currentColor; opacity:.6; }
+.title { display:block; margin:0; color:var(--site-ink); font-size:clamp(30px, 3.4vw, 44px); font-weight:600; letter-spacing:-.03em; }
+.tagline { margin:0; color:var(--site-ink); font-size:15px; font-weight:600; line-height:1.7; }
+.desc { margin:0; color:var(--site-muted); font-size:13.5px; line-height:1.95; }
+.tags { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; list-style:none; }
+.tags li { padding:6px 10px; border:1px solid var(--site-line); border-radius:999px; background:var(--site-surface); color:var(--site-muted); font:400 11px/1 var(--font-mono); }
+.links { display:flex; flex-wrap:wrap; gap:2px 18px; margin-top:auto; padding-top:14px; border-top:1px solid var(--site-line); }
+.link { display:inline-flex; flex-wrap:wrap; align-items:center; gap:0 6px; min-height:44px; color:var(--site-ink); font-size:13px; font-weight:400; }
+.link :global(.line-sweep), .linkRole { white-space:nowrap; }
+.linkIcon { width:15px; height:15px; }
+.linkRole { color:var(--site-muted); font-size:12px; }
+.tags li { transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) ease; }
+.link { position:relative; }
+.link::after { content:''; position:absolute; inset:auto 0 5px; height:1px; background:currentColor; transform:scaleX(0); transform-origin:left; transition:transform var(--dur-fast) var(--ease-out); }
+.link > svg:last-child { transition:transform var(--dur-fast) var(--ease-out); }
+
+/* キーボードのフォーカスにも，ホバーと同じ水準の返事（題名の回転は RollTitle.css） */
+.tile:has(:focus-visible) .screenMedia { transform:scale(1.05); }
+.tile:has(:focus-visible) .arrow { transform:translate(2px, -2px); }
+.link:focus-visible::after { transform:scaleX(1); }
+.link:focus-visible > svg:last-child { transform:translate(2px, -2px); }
+/* 押した瞬間は，画面の中身がわずかに戻る（枠は動かさない） */
+.screen:active .screenMedia { transform:scale(1.025); transition-duration:var(--dur-press); }
+@media (hover:hover) and (pointer:fine) {
+  .tile:hover .screenMedia { transform:scale(1.05); }
+  .tile:hover .arrow { transform:translate(2px, -2px); }
+  .screen:active .screenMedia { transform:scale(1.025); }
+  .tags li:hover { transform:translateY(-1px); border-color:var(--site-muted); }
+  .link:hover::after { transform:scaleX(1); }
+  .link:hover > svg:last-child { transform:translate(2px, -2px); }
+}
+
+.footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 24px; margin-top:56px; padding-top:24px; border-top:1px solid var(--site-line); font-size:14px; }
+.footer a { display:inline-flex; align-items:center; gap:6px; min-height:44px; color:var(--site-ink); font-weight:600; }
+.page a:focus-visible { outline:2px solid var(--site-focus); outline-offset:4px; border-radius:6px; }
+
+@media (max-width:480px) { .page { padding-inline:18px; } .grid { gap:48px 24px; } }
+@media (prefers-reduced-motion:reduce) {
+  .cardEntrance, .cardEntrance[data-entered=true] { transform:none; transition:opacity var(--dur-fast) ease; transition-delay:0s; }
+  .back:is(:hover, :focus-visible), .tags li:hover { transform:none; }
+  .back, .tags li { transition:border-color var(--dur-fast) ease, color var(--dur-fast) ease; }
+  /* 画面は寄せず，矢印も動かさない．題名の文字も回さないので（RollTitle.css），不透明度の短い変化で返事をする */
+  .screenMedia, .arrow { transition:none; }
+  .tile:hover .screenMedia, .tile:has(:focus-visible) .screenMedia, .screen:active .screenMedia { transform:none; }
+  .tile:hover .arrow, .tile:has(:focus-visible) .arrow { transform:none; }
+  .title { transition:opacity var(--dur-fast) ease; }
+  .tile:hover .title, .tile:has(:focus-visible) .title { opacity:.7; }
+  .link::after, .link > svg:last-child { transition:none; }
+  .link:is(:hover, :focus-visible) > svg:last-child { transform:none; }
+}

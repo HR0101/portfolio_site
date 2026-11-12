@@ -1,0 +1,7 @@
+# Keep editable design assets byte-for-byte and out of text diffs.
+*.ai binary
+*.blend binary
+*.glb binary
+
+# Markdown uses trailing spaces for explicit line breaks.
+*.md whitespace=-blank-at-eol

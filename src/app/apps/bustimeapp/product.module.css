@@ -45,8 +45,12 @@
 .threeColumns svg { color: #407fac; margin-bottom: 22px; }.threeColumns h3 { font-size: 19px; margin-bottom: 14px; }.threeColumns p { font-size: 14px; color: var(--muted); }
 .demo { background: #f4f6f8; padding: 0 max(28px, calc((100vw - 1044px) / 2)); scroll-margin-top: 72px; }
 .demoScene { height: auto; }
-.demoScroll { height: 340vh; }
-.demoSticky { position: sticky; top: 64px; min-height: calc(100svh - 64px); display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 64px; align-items: center; padding-block: 36px; }
+.demoScroll { height: calc(340vh + var(--reel-grow, 0vh)); }
+/* 録画の枠がスクロールで育つ場面（FEATURES.growingReel．幅 1000px 以上・高さ 760px 以上・動きを減らさない設定のときだけ付く）．
+   枠は育ち切ったときの大きさ --reel-h（画面の高さの 86% か，下の進行バー・ボタン・注記の 88px を除いた高さの小さいほう）でレイアウトし，
+   育つあいだの位置と大きさは JS が枠（.videoFrame）の transform に書く．--reel-grow は育つ区間の長さで，growingReel.ts の REEL_GROW_VIEWPORT_RATIO（0.7）と同じ値 */
+.demoGrow { --reel-grow: 70vh; --reel-pad: 16px; --reel-h: min(86svh, calc(100svh - 184px)); --reel-w: calc((var(--reel-h) - 10px) * 900 / 1956 + 10px); --reel-col: var(--reel-w); }
+.demoSticky { position: sticky; top: 64px; min-height: calc(100svh - 64px); display: grid; grid-template-columns: minmax(0, 1fr) var(--reel-col, 320px); gap: 64px; align-items: center; padding-block: var(--reel-pad, 36px); }
 .demoCopy h2 { font-size: clamp(30px, 3.3vw, 46px); line-height: 1.25; letter-spacing: -.045em; }
 .demoCopy h2 span { color: #86868b; }
 .demoCopy > p:not(.eyebrow) { color: var(--muted); margin-top: 20px; font-size: 15px; }
@@ -61,15 +65,30 @@
 .steps button:focus-visible, .demoPlayback:focus-visible { outline: 3px solid #2997ff; outline-offset: 3px; border-radius: 8px; }
 .scrubTrack { width: 100%; height: 2px; margin: 20px auto 0; border-radius: 2px; background: #d8dee6; overflow: hidden; }
 .scrubBar { height: 100%; background: #1d1d1f; transform-origin: left center; }
-.videoFigure { display: grid; justify-items: center; width: min(100%, 300px); margin: auto; }
-.videoFrame { position: relative; width: min(100%, calc((100svh - 230px) * .46)); padding: 4px; background: #252527; border: 1px solid #68686b; border-radius: 38px; box-shadow: 0 24px 48px -20px #00000040; }
-.videoFrame video { display: block; width: 100%; height: auto; aspect-ratio: 900 / 1956; border-radius: 33px; background: #0d1b28; }
+.videoFigure { display: grid; justify-items: center; width: min(100%, var(--reel-col, 300px)); margin: auto; }
+/* 枠が育つ場面では，枠の外側（寸法を測る側）。動かさない。それ以外では箱を作らない */
+.videoSlot { display: contents; }
+.demoGrow .videoSlot { display: grid; justify-items: center; width: 100%; }
+.videoFrame { position: relative; width: min(100%, var(--reel-w, calc((100svh - 230px) * .46))); padding: 4px; background: #252527; border: 1px solid #68686b; border-radius: var(--reel-radius, 38px); box-shadow: 0 24px 48px -20px #00000040; }
+.demoGrow .videoFrame { will-change: transform; }
+/* 「動画として再生する」を押したときだけ，大きな状態へ滑らかに移す（スクロールに 1:1 で連動するあいだは使わない） */
+.demoGrow .videoFrame[data-settle='true'] { transition: transform var(--dur-slow, 420ms) var(--ease-out, cubic-bezier(.23, 1, .32, 1)); }
+.videoFrame video { display: block; width: 100%; height: auto; aspect-ratio: 900 / 1956; border-radius: var(--reel-inner-radius, 33px); background: #0d1b28; }
+/* 育ち切ったときに，枠の中央へ薄く出る再生の表示（装飾）。濃さは JS が --reel-play に書く */
+.reelPlay { position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 14px; pointer-events: none; opacity: var(--reel-play, 0); }
+.reelPlayIcon { display: grid; place-items: center; width: 64px; height: 64px; padding-left: 3px; border: 1px solid #ffffff59; border-radius: 50%; background: #0d1b28a6; color: #fff; }
+.reelPlayLabel { padding: 6px 14px; border-radius: 999px; background: #0d1b28a6; color: #fff; font-size: 12px; font-weight: 600; letter-spacing: .04em; }
 .demoPlayback { margin-top: 20px; padding: 8px 12px; border: 0; border-radius: 999px; background: none; color: #0066cc; font-size: 12px; cursor: pointer; }
 .demoPlayback:hover { text-decoration: underline; }
 .videoFigure figcaption { font-size: 10px; color: var(--muted); margin-top: 14px; text-align: center; }
+/* 枠を大きくした分，枠の下の進行バー・ボタン・注記は詰めて置く（合わせて 88px）。ボタンは 44px の高さにする */
+.demoGrow .scrubTrack { margin-top: 14px; }
+.demoGrow .demoPlayback { margin-top: 6px; min-height: 44px; }
+.demoGrow .videoFigure figcaption { margin-top: 4px; }
 :global(.dark) .steps li { border-color: #ffffff26; }
 :global(.dark) .steps h3 { color: #a1a1a6; }
 :global(.dark) .steps li.stepActive h3, :global(.dark) .steps button:hover h3, :global(.dark) .steps li.stepActive button > span { color: #f5f5f7; }
+:global(.dark) .scrubTrack { background: #ffffff2e; }
 :global(.dark) .scrubBar { background: #f5f5f7; }
 :global(.dark) .demoPlayback { color: #8bc7ef; }
 .skySection { background: #0c1728; color: #eef3fc; padding: 100px max(28px, calc((100vw - 1044px) / 2)); }.sectionHeading { text-align: center; }.skySection .eyebrow { color: #96b3d0; }.skySection h2 span { color: #accfe9; }.sectionHeading > p:last-child { color: #afbed1; margin-top: 26px; }
@@ -106,7 +125,9 @@
 @media (max-width: 500px) { .localNav { padding-inline: 18px; }.localNav span { font-size: 14px; }.localNav a { font-size: 10px; }.sceneImage { width: min(190px, 62vw); }.sceneButtons button { padding-right: 16px; font-size: 13px; }.weatherGrid { grid-template-columns: 1fr; }.gallery { margin-bottom: 45px; } }
 @media (prefers-reduced-motion: reduce) { .page *, .page *::before, .page *::after { transition: none !important; animation: none !important; }.primaryLink:hover { transform: none; }
   /* スクロールで送る演出をやめ，静止画と全ステップをそのまま見せる */
-  .demoScene, .demoScroll { height: auto; }.demoSticky { position: static; min-height: 0; }.steps li { opacity: 1; }.scrubTrack { display: none; } }
+  .demoScene, .demoScroll { height: auto; }.demoSticky { position: static; min-height: 0; }.steps li { opacity: 1; }.scrubTrack { display: none; }
+  /* 録画の枠が育つ場面も使わない（枠は大きな状態の静止画のまま） */
+  .videoFrame { transform: none !important; transition: none; }.reelPlay { display: none; } }
 @media (max-width: 800px) {
   .hero { padding: 30px 24px 55px; gap: 25px; }
   .heroProducts { grid-row: 1; max-width: 450px; margin: auto; gap: 48px; }

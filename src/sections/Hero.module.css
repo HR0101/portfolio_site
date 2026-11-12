@@ -1,24 +1,86 @@
-.runway { height:160svh; --hero-blue:#667eaf; --hero-muted:#626e7f; }
-.stage { position:sticky; top:0; height:100svh; min-height:720px; overflow:clip; isolation:isolate; background:var(--color-cream); }
+/* ライトは白地・黒文字、ダークは黒地・白文字。色のある空の帯は両テーマで保つ。 */
+.runway { height:160svh; --hero-blue:#1d1d1f; --hero-muted:rgb(0 0 0 / .64); --hero-terminal:#f0f0f2; --hero-prompt:#18723c; color:#171719; }
+/* ===== 空 =====
+   参考：unitedcarriers.com の序盤の構成（色と構成の考え方のみ）．最初は真っ黒な画面で，下へ移るときに，
+   黒い円の縁が下から現れ，紫 → 青 → 水色と変わって白になり，次のセクションへつながる．
+   黒い円は，ヒーローの上端の中央を中心にした「真円」．半径は，ヒーローの下の隅に縁がちょうど触れる大きさにして
+   あるので，最初の画面は黒く，下の隅にだけ紫が覗く．縁は円なので，中央ほど深く隅ほど浅い弧になる
+   （円の半径が小さいほど丸みが強い．楕円や縦のグラデーションにすると丸みが消える）．
+   ヒーロー（.runway）と帯（.skyBridge）は兄弟の要素なので，変数は両方に宣言する．ダークでは下で上書きする． */
+.runway, .skyBridge {
+  --sky-zenith:#fff; --sky-indigo:#d8d2fa; --sky-violet:#b9b3f5; --sky-blue:#8197ef;
+  --sky-blue-light:#90b2f2; --sky-light:#b3d5f9; --sky-pale:#d3eafb; --sky-haze:#f1f9fe; --sky-limb:#d4dcf4; --sky-end:#f5f5f7;
+  /* ヒーローの高さ．帯の円の中心を，ヒーローの上端にそろえるために使う（高さが違う設定は下で上書きする） */
+  --stage-h:max(100svh,720px);
+  /* 黒い円の半径：ヒーローの下の隅までの距離から少し引く */
+  --sky-r0:calc(hypot(50vw,var(--stage-h)) - 40px);
+  /* 円の縁の色．位置は黒い円の半径からの距離．黒から青まではすばやく，水色から白へは長くゆったり
+     （参考サイトは，水色の帯が厚く，白へゆっくり抜ける）．縁の厚みは約 580px：
+     読める情報のない移動区間を長くしないため，参考の帯より薄く詰めてある．
+     白のあと，次の面（暗い章）へは灰色を経由せず，青の縁（--sky-limb）を挟んで沈める */
+  --sky-stops:
+    var(--sky-zenith) 0, var(--sky-zenith) var(--sky-r0),
+    var(--sky-indigo) calc(var(--sky-r0) + 70px), var(--sky-violet) calc(var(--sky-r0) + 135px),
+    var(--sky-blue) calc(var(--sky-r0) + 200px), var(--sky-blue-light) calc(var(--sky-r0) + 270px),
+    var(--sky-light) calc(var(--sky-r0) + 345px), var(--sky-pale) calc(var(--sky-r0) + 420px),
+    var(--sky-haze) calc(var(--sky-r0) + 480px), var(--sky-limb) calc(var(--sky-r0) + 530px),
+    var(--sky-end) calc(var(--sky-r0) + 590px);
+}
+@supports not (width:hypot(1px,1px)) { .runway, .skyBridge { --sky-r0:1100px; } }
+@media(min-width:761px) and (max-height:820px) { .runway, .skyBridge { --stage-h:820px; } }
+@media(max-width:760px) { .runway, .skyBridge { --stage-h:1500px; } }
+.stage { position:sticky; top:0; display:flex; flex-direction:column; height:auto; min-height:max(100svh,720px); overflow:clip; isolation:isolate; background:var(--sky-zenith); }
+/* ヒーローの空：黒い円の中心はヒーローの上端の中央 */
+.stage::before {
+  content:''; position:absolute; inset:0; z-index:-3; pointer-events:none;
+  background:radial-gradient(circle at 50% 0, var(--sky-stops));
+}
+/* ヒーローの直後に置く，空の続き．円の中心は，ヒーローの上端の中央（＝帯の上端から --stage-h だけ上）．
+   高さは，円の縁が次の面の色になるまで（黒い円の半径 + 縁の厚み 590px - ヒーローの高さ）に少し足した分 */
+.skyBridge {
+  --sky-end:#f5f5f7;
+  position:relative; z-index:0; pointer-events:none;
+  height:max(480px,calc(var(--sky-r0) + 620px - var(--stage-h)));
+  background:radial-gradient(circle at 50% calc(-1 * var(--stage-h)), var(--sky-stops));
+}
 .wash { position:absolute; z-index:-2; inset:-15%; pointer-events:none; }
-.blue { background:radial-gradient(ellipse at 73% 45%,#dce4f3,transparent 58%); }
-.peach { opacity:0; background:radial-gradient(ellipse at 70% 65%,#f0dacb,transparent 60%); }
+/* アプリのアイコンの周りに，淡い光をほんのり灯す（真っ黒な背景に，奥行きを足す） */
+.blue { background:radial-gradient(ellipse 40% 36% at 74% 52%,rgb(95 115 180 / .10),transparent 100%); }
+/* スクロールで濃くなる色のぼかし（useHeroMotion が opacity を動かす）．ヒーローだけが色づくと，
+   直後の空の帯との継ぎ目が見えてしまうので，色は付けない（要素は useHeroMotion のために残してある） */
+.peach { opacity:0; background:none; }
 .rule { position:absolute; top:65px; left:0; height:1px; width:100%; background:var(--hero-blue); transform-origin:left; opacity:0; }
-.layout { height:100%; max-width:1500px; margin:auto; padding:112px 6vw 125px; display:grid; grid-template-columns:1.15fr 1fr; align-items:center; gap:32px; }
+.layout { flex:1; width:100%; max-width:1500px; margin:auto; padding:112px 6vw 40px; display:grid; grid-template-columns:1.15fr 1fr; align-items:center; gap:32px; }
 .eyebrow { font-size:11px; letter-spacing:.12em; color:var(--hero-muted); }
 .titleScroll { perspective:1000px; }
-.copy h1 { margin:22px 0; font-size:clamp(42px,5.1vw,76px); line-height:1.26; font-weight:650; letter-spacing:-.065em; }
+.copy h1 { margin:24px 0; font-size:clamp(42px,5.1vw,76px); line-height:1.26; font-weight:650; letter-spacing:-.065em; }
+/* 見出しは左から，ぼかした縁の帯が通るように現れる．読み込み画面が開くと始まる
+   （読み込み画面の間は CSS アニメーションが止まっていて，帯の手前＝見えない状態で待つ）．
+   動きを減らす設定では帯を使わず，最初から全文を見せる */
+@property --title-wipe { syntax:'<percentage>'; inherits:false; initial-value:-24%; }
+@keyframes hero-title-wipe { from { --title-wipe:-24%; } to { --title-wipe:100%; } }
+@media (prefers-reduced-motion: no-preference) {
+  .copy h1 {
+    -webkit-mask-image:linear-gradient(90deg,#000 var(--title-wipe),transparent calc(var(--title-wipe) + 24%));
+    mask-image:linear-gradient(90deg,#000 var(--title-wipe),transparent calc(var(--title-wipe) + 24%));
+    animation:hero-title-wipe 1.5s var(--site-ease,cubic-bezier(.22,1,.36,1)) .1s both;
+  }
+}
 .line { display:block; perspective:900px; white-space:nowrap; }
 .charMask { display:inline-block; overflow:clip; vertical-align:top; padding-bottom:.1em; margin-bottom:-.1em; }
 .char { display:inline-block; transform-origin:50% 100%; }
 .accent { color:var(--hero-blue); }
 .lead { font-size:clamp(14px,1.2vw,18px); line-height:1.8; }
-.description { margin-top:13px; font-size:13px; line-height:1.9; color:var(--hero-muted); }
-.actions { display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-top:26px; }
-.cta { display:inline-flex; min-height:48px; align-items:center; gap:26px; padding:13px 22px; border:1px solid #7187bb50; border-radius:40px; font-size:13px; font-weight:600; background:#ffffffb5; box-shadow:var(--site-shadow-card); }
+.description { margin-top:16px; font-size:13px; line-height:1.9; color:var(--hero-muted); }
+.actions { display:flex; align-items:center; gap:24px; flex-wrap:wrap; margin-top:24px; }
+/* 主な行動は，Action Blue の細いピル（17px / 400）．押すと 0.95 に沈む */
+.cta { display:inline-flex; min-height:44px; align-items:center; gap:14px; padding:11px 22px; border:0; border-radius:9999px; font-size:17px; font-weight:400; color:#fff; background:var(--color-accent); transition:background-color .2s, transform .12s ease-out; }
+.cta:is(:hover, :focus-visible) { background:var(--color-accent-strong); }
+.cta:active { transform:scale(.95); }
 .cta svg { transition:rotate .5s cubic-bezier(.16,1,.3,1); }
 .cta:hover svg { rotate:45deg; }
-.source { display:inline-flex; min-height:44px; align-items:center; gap:6px; color:var(--hero-muted); font-size:12px; }
+.source { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:var(--color-accent); font-size:14px; }
+:global(.dark) .source { color:var(--color-accent-dark); }
 .universe { position:relative; width:100%; aspect-ratio:1; max-width:490px; justify-self:center; perspective:1000px; }
 .pointerCore { position:absolute; inset:0; pointer-events:none; transform-style:preserve-3d; }
 .pointerOrbit { transform-style:preserve-3d; }
@@ -48,47 +110,53 @@
 .app img { width:100%; height:auto; border-radius:24%; box-shadow:0 22px 35px -12px #3b4b7440; transition:transform .6s cubic-bezier(.16,1,.3,1),box-shadow .6s; }
 .app:is(:hover,:focus-visible) img { transform:translateY(-15px) rotate(-10deg) scale(1.13); box-shadow:0 35px 45px -12px #3b4b7455; }
 .coordinate { position:absolute; right:0; bottom:3%; color:var(--hero-muted); font-size:8px; letter-spacing:.12em; }
-.bottom { position:absolute; bottom:40px; inset-inline:6vw; display:flex; justify-content:space-between; gap:32px; align-items:end; }
+.bottom { position:relative; margin-inline:6vw; padding-bottom:40px; display:flex; justify-content:space-between; gap:32px; align-items:end; }
 .scrollCue { display:flex; align-items:center; gap:20px; min-height:44px; font-size:8px; letter-spacing:.15em; color:var(--hero-muted); }
 .scrollCue i { width:60px; height:1px; background:#8993a733; overflow:hidden; }
 .scrollCue i::after { content:''; display:block; width:100%; height:100%; background:#8993a7; transform:scaleX(.3); transform-origin:left; transition:transform .7s cubic-bezier(.16,1,.3,1); }
 .scrollCue:hover i::after { transform:scaleX(1); }
 .stats { display:flex; gap:32px; }
-.stats > div { display:flex; flex-direction:column-reverse; gap:5px; }
+.stats > div { display:flex; flex-direction:column-reverse; gap:4px; }
 .stats dt { color:var(--hero-muted); font-size:9px; }
 .stats dd { font-size:15px; font-weight:550; letter-spacing:-.025em; }
 .runway a:focus-visible { outline:2px solid var(--hero-blue); outline-offset:7px; border-radius:6px; }
-:global(.dark) .runway { --hero-blue:#a9bee9; --hero-muted:#a2adbf; }
-:global(.dark) .stage { background:var(--color-night); }
-:global(.dark) .blue { background:radial-gradient(ellipse at 73% 45%,#24334e,transparent 58%); }
-:global(.dark) .peach { background:radial-gradient(ellipse at 70% 65%,#503a32,transparent 60%); }
+:global(.dark) .runway { --hero-blue:#f5f5f7; --hero-muted:#b0b0b5; --hero-terminal:#111113; --hero-prompt:#7ee787; color:#f5f5f7; }
+/* ダークの空：黒い天頂から深い紫，抑えた青の光を経て，ページの黒へ戻る */
+:global(.dark) .runway, :global(.dark) .skyBridge {
+  --sky-zenith:#000; --sky-indigo:#07062a; --sky-violet:#120f5c; --sky-blue:#16277a;
+  --sky-blue-light:#1a3a8a; --sky-light:#14295c; --sky-pale:#0c1738; --sky-haze:#091128; --sky-limb:#0a0f1e; --sky-end:#000;
+}
+:global(.dark) .skyBridge { --sky-end:#0a0b0e; }
+:global(.dark) .blue { background:radial-gradient(ellipse 40% 36% at 74% 52%,#24334e8c,transparent 100%); }
+:global(.dark) .peach { background:none; }
 :global(.dark) .core { border-color:#a9bee925; background:linear-gradient(135deg,#839acf28,#a9bee908); box-shadow:inset 0 1px 25px #a9bee910,18px 35px 60px #0003; }
 :global(.dark) .core > div { opacity:.08; }
 :global(.dark) .core > span { color:#a9bee9aa; }
-:global(.dark) .cta { background:#a9bee90b; border-color:#a9bee940; }
-@media(min-width:761px) and (max-height:740px) { .layout { padding-block:100px 120px; } .stage { min-height:650px; } .universe { max-width:360px; } }
+:global(.dark) .cta { color:#fff; background:var(--color-accent-strong); }
+:global(.dark) .cta:is(:hover, :focus-visible) { background:var(--color-accent-hover); }
+@media(min-width:761px) and (max-height:740px) { .layout { padding-block:104px 40px; } .stage { min-height:650px; } .universe { max-width:360px; } }
 @media(max-width:760px) {
   .runway { height:auto; }
   .stage { position:relative; height:auto; min-height:0; }
-  .layout { height:auto; padding:112px 24px 35px; grid-template-columns:minmax(0,1fr); gap:25px; }
+  .layout { height:auto; padding:112px 24px 32px; grid-template-columns:minmax(0,1fr); gap:24px; }
   .copy { min-width:0; }
   .copy h1 { font-size:clamp(39px,9vw,64px); }
   .eyebrow { font-size:9px; }
   .description { font-size:11px; }
   .universe { width:85%; max-width:350px; }
   .core > span { font-size:40px; }
-  .app { font-size:9px; gap:9px; }
+  .app { font-size:9px; gap:8px; }
   .coordinate { font-size:6px; }
   .actions { gap:16px; }
-  .bottom { position:static; padding:0 24px 60px; flex-direction:column-reverse; align-items:stretch; gap:25px; }
-  .stats { justify-content:space-between; gap:12px; padding-top:22px; border-top:1px solid #7c91b825; }
+  .bottom { position:static; margin-inline:0; padding:0 24px 64px; flex-direction:column-reverse; align-items:stretch; gap:24px; }
+  .stats { justify-content:space-between; gap:12px; padding-top:24px; border-top:1px solid #7c91b825; }
   .stats dt { font-size:8px; }
   .stats dd { font-size:12px; }
   .scrollCue { justify-content:center; }
   .runway[data-hero-active] .appFloat { animation-name:hero-float-mobile; animation-duration:5.5s; }
   .app:is(:hover,:focus-visible) img { transform:none; }
   .app:active img { transform:scale(.94); }
-  .cta:active { transform:scale(.97); }
+  .cta:active { transform:scale(.95); }
 }
 @keyframes hero-float-mobile { 0%,100% { translate:0 0; rotate:-2deg; } 50% { translate:0 -8px; rotate:2deg; } }
 @media(prefers-reduced-motion:reduce) {
@@ -98,14 +166,25 @@
   .app:is(:hover,:focus-visible) img { transform:none; }
 }
 
-.terminalWrap { margin-top:22px; max-width:560px; min-width:0; }
-.terminalWrap .terminal { width:100%; margin:0; font-size:11px; opacity:1; animation:none; border:1px solid #ffffff12; box-shadow:0 18px 40px -24px #1c2b4866; }
+.terminalWrap { margin-top:24px; max-width:560px; min-width:0; }
+.terminalWrap .terminal { width:100%; margin:0; font-size:11px; opacity:1; animation:none; background:var(--hero-terminal); color:inherit; border:1px solid color-mix(in srgb,currentColor 12%,transparent); box-shadow:0 18px 40px -24px #1c2b4833; }
+.terminal :global(.typing-terminal-prompt) { color:var(--hero-prompt); }
+.terminal :global(.typing-terminal-caret) { background:currentColor; }
+.terminal :global(.typing-terminal-output) { color:var(--hero-muted); }
+.terminal :global(.typing-terminal-next) { color:inherit; }
+/* Keep copy and statistics clear of the large globe's opaque limb. */
+@media(min-width:960px) {
+  .terminalWrap { max-width:430px; }
+  .bottom { display:grid; max-width:430px; gap:12px; }
+  .stats { grid-row:1; justify-content:space-between; gap:16px; }
+  .scrollCue { grid-row:2; }
+}
 @media(min-width:761px) and (max-height:820px) {
   .runway { height:auto; }
   .stage { position:relative; height:auto; min-height:820px; }
-  .layout { height:auto; padding:112px 6vw 135px; }
+  .layout { height:auto; padding:112px 6vw 40px; }
 }
 @media(max-width:760px) {
-  .terminalWrap { margin-top:22px; }
+  .terminalWrap { margin-top:24px; }
   .terminalWrap .terminal { font-size:10px; border-radius:12px; }
 }

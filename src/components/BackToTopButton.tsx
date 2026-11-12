@@ -36,9 +36,7 @@ export function BackToTopButton() {
       tabIndex={isVisible ? 0 : -1}
       aria-hidden={!isVisible}
       data-testid="back-to-top"
-      className={`group fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50 w-12 h-12 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border shadow-soft flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-ink dark:hover:border-night-ink ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-      }`}
+      className={`back-to-top group fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50 w-12 h-12 rounded-full bg-white dark:bg-night-soft border border-soft dark:border-night-border shadow-soft flex items-center justify-center ${isVisible ? 'is-visible' : 'pointer-events-none'}`}
     >
       {/* 読了率を示す円形プログレス */}
       <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 44 44" aria-hidden="true">
@@ -63,7 +61,7 @@ export function BackToTopButton() {
         />
       </svg>
       <ArrowUp
-        className="relative w-4 h-4 text-ink dark:text-night-ink transition-transform duration-300 group-hover:-translate-y-0.5"
+        className="back-to-top-arrow relative w-4 h-4 text-ink dark:text-night-ink"
         aria-hidden="true"
       />
     </button>

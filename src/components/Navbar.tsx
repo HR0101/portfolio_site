@@ -9,11 +9,14 @@ import { RollLabel } from './RollLabel';
 import { ThemeToggle } from './ThemeToggle';
 import { GitHubIcon } from './icons/GitHubIcon';
 import { siteConfig } from '../config/site';
-import { SWIFT_APPS } from '../data/apps';
-import { WEB_WORKS, GAME_WORKS } from '../data/works';
+import { OTHER_APPS, OTHER_APPS_PATH, SWIFT_APPS } from '../data/apps';
+import { WEB_WORKS, GAME_WORKS, GAMES_PATH } from '../data/works';
+import { LAB_PATH } from '../data/lab';
+import { NOTES_PATH } from '../data/notes';
+import { FEATURES } from '../config/features';
 import { useActiveSection } from '../hooks/useActiveSection';
 import { subscribeToScroll } from '../lib/scrollObserver';
-import { useTilt } from '../hooks/useTilt';
+import { NAV_MOTION, navLinkDelay } from '../lib/motionFoundation';
 import './Navbar.css';
 
 type MenuLink = { label: string; href: string; description?: string };
@@ -39,6 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'about', label: 'About', groups: [
     { title: 'プロフィール', links: [
       { label: '自己紹介', href: '#about', description: 'Ryuto Hara について' },
+      { label: 'プロフィール', href: '#profile' },
       { label: 'スキルと技術', href: '#skills', description: '開発で使っている技術' },
       { label: 'お問い合わせ', href: '#contact' },
     ] },
@@ -46,6 +50,7 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'iOS / macOS Apps', href: '#projects' },
       { label: 'Web & Games', href: '#works' },
       { label: 'GitHub の活動', href: '#github' },
+      ...(FEATURES.notes ? [{ label: '制作ノート', href: NOTES_PATH, description: '1 つの判断を，1 つの記事に' }] : []),
     ] },
   ], feature: featuredApp },
   { id: 'skills', label: 'Skills', groups: [
@@ -58,14 +63,17 @@ const NAV_ITEMS: NavItem[] = [
   ], feature: featuredWork },
   { id: 'projects', label: 'Apps', groups: [
     { title: 'アプリ', links: [
-      { label: 'すべてのアプリ', href: '#projects', description: 'iPhone・iPad・Mac のプロダクト' },
+      { label: 'アプリ一覧', href: '#projects', description: 'iPhone・iPad・Mac の主なプロダクト' },
+      { label: 'その他のアプリ', href: OTHER_APPS_PATH, description: `残りの${OTHER_APPS.length}本をまとめて紹介` },
       { label: 'ソースコード', href: siteConfig.githubUrl },
     ] },
     { title: 'プロダクトを見る', links: appLinks },
   ], feature: featuredApp },
   { id: 'works', label: 'Works', groups: [
     { title: 'Web & Games', links: [
-      { label: '作品一覧', href: '#works', description: 'ブラウザで使えるサービスとゲーム' },
+      { label: '作品一覧', href: '#works', description: 'ブラウザで使える Web サービス' },
+      { label: 'ゲーム一覧', href: GAMES_PATH, description: 'ブラウザで遊べるゲーム' },
+      ...(FEATURES.lab ? [{ label: '実験室', href: LAB_PATH, description: '点・粒子・物理の小さな実験' }] : []),
       ...WEB_WORKS.map((work) => ({ label: work.name, href: work.detailHref ?? work.url })),
     ] },
     { title: 'ブラウザであそぶ', links: GAME_WORKS.map((work) => ({
@@ -88,7 +96,7 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'メールで連絡', href: `mailto:${siteConfig.email}`, description: siteConfig.email },
     ] },
     { title: 'もっと知る', links: [
-      { label: 'プロフィール', href: '#about' },
+      { label: 'プロフィール', href: '#profile' },
       { label: 'つくったアプリ', href: '#projects' },
       { label: 'GitHub', href: siteConfig.githubUrl },
     ] },
@@ -96,12 +104,11 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 function FeaturedPreview({ feature, onNavigate }: { feature: NavItem['feature']; onNavigate: () => void }) {
-  const { ref, handlers } = useTilt<HTMLAnchorElement>();
   return (
-    <Link ref={ref} {...handlers} href={feature.href} onClick={onNavigate} className="mega-feature">
+    <Link href={feature.href} onClick={onNavigate} className="mega-feature">
       <div className={`mega-feature-image ${feature.icon ? 'is-icon' : ''}`}>
         <Image src={feature.image} alt="" width={640} height={400} />
-        <span className="mega-feature-arrow"><ArrowUpRight size={20} aria-hidden="true" /></span>
+        <span className="mega-feature-arrow"><ArrowUpRight size={20} className="motion-arrow motion-arrow-diagonal" aria-hidden="true" /></span>
       </div>
       <p>{feature.title}</p>
       <small>{feature.description}</small>
@@ -116,8 +123,10 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [displayedId, setDisplayedId] = useState(NAV_ITEMS[0].id);
+  const [isSwitching, setIsSwitching] = useState(false);
   const displayedItem = NAV_ITEMS.find((item) => item.id === displayedId)!;
   const openMenu = (id: string) => {
+    setIsSwitching(Boolean(openId && openId !== id));
     setDisplayedId(id);
     setOpenId(id);
   };
@@ -125,14 +134,23 @@ export function Navbar() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sectionIds = useMemo(() => ['hero', ...NAV_ITEMS.map((item) => item.id)], []);
+  const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sectionIds = useMemo(() => ['hero', ...NAV_ITEMS.flatMap((item) => item.id === 'contact' ? ['profile', item.id] : [item.id])], []);
   const activeSectionId = useActiveSection(sectionIds);
+  // プロフィールを読んでいる間は，その入口がある About に印を付ける．
+  const activeNavId = activeSectionId === 'profile' ? 'about' : activeSectionId;
   const resolveHref = (href: string) => href.startsWith('#') && !isHome ? `/${href}` : href;
   const cancelClose = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = null;
+  };
+  const cancelOpen = () => {
+    if (openTimer.current) clearTimeout(openTimer.current);
+    openTimer.current = null;
   };
   const closeMenu = () => {
     cancelClose();
+    cancelOpen();
     setOpenId(null);
     setIsMenuOpen(false);
   };
@@ -140,7 +158,7 @@ export function Navbar() {
   // いま読んでいるセクションの項目の下へ，小さな印を滑らせる（Hero にいる間は隠す）
   const [sectionMarker, setSectionMarker] = useState({ left: 0, width: 0, isVisible: false });
   useLayoutEffect(() => {
-    const activeTrigger = isHome ? triggerRefs.current[activeSectionId] : null;
+    const activeTrigger = isHome ? triggerRefs.current[activeNavId] : null;
     if (!activeTrigger) {
       setSectionMarker((current) => ({ ...current, isVisible: false }));
       return;
@@ -150,14 +168,18 @@ export function Navbar() {
     const observer = new ResizeObserver(measure);
     observer.observe(activeTrigger);
     return () => observer.disconnect();
-  }, [activeSectionId, isHome]);
+  }, [activeNavId, isHome]);
 
   useEffect(() => subscribeToScroll(() => setIsScrolled(window.scrollY > 16)), []);
-  useEffect(() => () => { if (closeTimer.current) clearTimeout(closeTimer.current); }, []);
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    if (openTimer.current) clearTimeout(openTimer.current);
+  }, []);
   useEffect(() => {
     if (!openId && !isMenuOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
+      cancelOpen();
       if (openId && !isMenuOpen) {
         triggerRefs.current[openId]?.focus();
         setOpenId(null);
@@ -169,6 +191,7 @@ export function Navbar() {
     };
     const onPointerDown = (event: PointerEvent) => {
       if (!headerRef.current?.contains(event.target as Node)) {
+        cancelOpen();
         setOpenId(null);
         setIsMenuOpen(false);
       }
@@ -187,7 +210,7 @@ export function Navbar() {
         <div className="mega-group" key={group.title} style={{ '--group-index': groupIndex } as CSSProperties}>
           <p className="mega-group-title">{group.title}</p>
           {group.links.map((link, index) => (
-            <Link key={link.href} href={resolveHref(link.href)} onClick={closeMenu} className="mega-link" style={{ '--link-index': index } as CSSProperties}>
+            <Link key={link.href} href={resolveHref(link.href)} onClick={closeMenu} className="mega-link" style={{ '--link-delay': `${navLinkDelay(item.groups.slice(0, groupIndex).reduce((count, group) => count + group.links.length, 0) + index)}ms` } as CSSProperties}>
               <span>{link.label}</span>
               {link.description && <small>{link.description}</small>}
             </Link>
@@ -205,7 +228,11 @@ export function Navbar() {
       data-testid="navbar"
       onPointerEnter={cancelClose}
       onPointerLeave={(event) => {
-        if (event.pointerType === 'mouse') closeTimer.current = setTimeout(() => setOpenId(null), 180);
+        if (event.pointerType === 'mouse') {
+          cancelOpen();
+          cancelClose();
+          closeTimer.current = setTimeout(() => setOpenId(null), NAV_MOTION.closeIntentMs);
+        }
       }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) closeMenu();
@@ -230,20 +257,28 @@ export function Navbar() {
               className={`mega-trigger roll-label-host ${openId === item.id ? 'is-open' : ''}`}
               aria-expanded={openId === item.id}
               aria-controls="desktop-navigation-details"
-              aria-current={isHome && activeSectionId === item.id ? 'true' : undefined}
-              onPointerEnter={(event) => { if (event.pointerType === 'mouse') { cancelClose(); openMenu(item.id); } }}
+              aria-current={isHome && activeNavId === item.id ? 'true' : undefined}
+              onPointerEnter={(event) => {
+                if (event.pointerType !== 'mouse') return;
+                cancelClose();
+                cancelOpen();
+                openTimer.current = setTimeout(() => { openTimer.current = null; openMenu(item.id); }, NAV_MOTION.openIntentMs);
+              }}
+              onPointerLeave={cancelOpen}
               onClick={(event) => {
                 cancelClose();
+                cancelOpen();
                 if (event.detail > 0 && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
                   openMenu(item.id);
                 } else {
-                  setDisplayedId(item.id);
-                  setOpenId((current) => current === item.id ? null : item.id);
+                  if (openId === item.id) setOpenId(null);
+                  else openMenu(item.id);
                 }
               }}
               onKeyDown={(event) => {
                 if (event.key === 'ArrowDown') {
                   event.preventDefault();
+                  cancelOpen();
                   openMenu(item.id);
                   requestAnimationFrame(() => headerRef.current?.querySelector<HTMLAnchorElement>(`#mega-panel-${item.id} a`)?.focus());
                 }
@@ -255,7 +290,7 @@ export function Navbar() {
         </nav>
         <div className="flex items-center gap-2">
           <a href={siteConfig.githubUrl} target="_blank" rel="noopener noreferrer" aria-label="GitHub プロフィールを開く" className="group inline-flex h-11 w-11 items-center justify-center rounded-full text-subtle dark:text-night-subtle hover:bg-mist dark:hover:bg-night-soft transition-colors">
-            <GitHubIcon className="w-5 h-5 transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110" />
+            <GitHubIcon className="w-5 h-5" />
           </a>
           <ThemeToggle />
           <button ref={menuButtonRef} type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-full text-subtle dark:text-night-subtle md:hidden" aria-label={isMenuOpen ? 'メニューを閉じる' : 'メニューを開く'} aria-expanded={isMenuOpen} aria-controls="mobile-navigation" onClick={() => { setIsMenuOpen((value) => !value); setOpenId(null); }}>
@@ -273,7 +308,7 @@ export function Navbar() {
         ref={(node) => { if (node) node.inert = !openId || isMenuOpen; }}
       >
         <div className="nav-collapse-inner">
-          <nav key={displayedId} id={`mega-panel-${displayedId}`} className="mega-layout max-w-6xl mx-auto px-6" aria-label={`${displayedItem.label} の詳細`}>
+          <nav key={displayedId} id={`mega-panel-${displayedId}`} className="mega-layout max-w-6xl mx-auto px-6" data-switching={isSwitching} style={{ '--feature-delay': `${navLinkDelay(displayedItem.groups.reduce((count, group) => count + group.links.length, 0) - 1) + NAV_MOTION.linkStepMs}ms` } as CSSProperties} aria-label={`${displayedItem.label} の詳細`}>
             {renderDetails(displayedItem)}
           </nav>
         </div>

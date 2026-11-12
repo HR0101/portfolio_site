@@ -1,0 +1,30 @@
+.band {
+  width: 100%;
+  padding: clamp(48px, 8vw, 96px) 24px;
+  color: var(--site-ink);
+  background: var(--site-surface);
+  pointer-events: none;
+  container-type: inline-size;
+}
+
+.text {
+  margin: 0 auto;
+  max-width: 1440px;
+  font-size: clamp(20px, calc(88cqw / var(--statement-units)), 64px);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.035em;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.word {
+  display: inline-block;
+  max-width: 100%;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word { opacity: 1 !important; }
+}

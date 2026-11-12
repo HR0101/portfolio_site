@@ -29,6 +29,7 @@ dist-ssr
 
 # Local agent workspace
 .agents/
+.claude/
 
 # TypeScript build cache
 *.tsbuildinfo
@@ -38,3 +39,11 @@ out/
 # Raw screenshot assets and design candidates
 BusTimeApp-screenshots/
 public/favicon-candidates/
+
+# ローカルの Pages Secrets・Wrangler 状態・MusicKit 署名鍵
+.wrangler/
+.dev.vars
+AuthKey_*.p8
+
+# HideTheKey が出力する監査レポート（生成物）
+hide-the-key-report.html

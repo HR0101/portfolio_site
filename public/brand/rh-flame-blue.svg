@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><title>RH Flame — blue</title><defs>
+  <linearGradient id="wing" gradientUnits="userSpaceOnUse" x1="64" y1="2" x2="116" y2="180">
+    <stop offset="0" stop-color="#46dfff" />
+    <stop offset=".26" stop-color="#23bdf5" />
+    <stop offset=".49" stop-color="#279aef" />
+    <stop offset=".69" stop-color="#2975dc" />
+    <stop offset="1" stop-color="#18399e" />
+  </linearGradient>
+  <linearGradient id="crown" gradientUnits="userSpaceOnUse" x1="129" y1="39" x2="180" y2="76">
+    <stop stop-color="#9aeeff" /><stop offset="1" stop-color="#36b9f5" />
+  </linearGradient>
+  <linearGradient id="stem" gradientUnits="userSpaceOnUse" x1="249" y1="40" x2="215" y2="172">
+    <stop stop-color="#65dcff" /><stop offset=".45" stop-color="#2aaff2" />
+    <stop offset=".78" stop-color="#2474d7" /><stop offset="1" stop-color="#183c9e" />
+  </linearGradient>
+  <linearGradient id="right-stem" gradientUnits="userSpaceOnUse" x1="333" y1="41" x2="299" y2="172">
+    <stop stop-color="#3da9f8" /><stop offset=".25" stop-color="#2789e4" />
+    <stop offset=".63" stop-color="#205dc8" /><stop offset="1" stop-color="#162f8b" />
+  </linearGradient>
+  <linearGradient id="ribbon" gradientUnits="userSpaceOnUse" x1="220" y1="143" x2="382" y2="48">
+    <stop stop-color="#1e83e3" /><stop offset=".43" stop-color="#36c2fa" />
+    <stop offset=".75" stop-color="#4aa4f8" /><stop offset="1" stop-color="#244bb9" />
+  </linearGradient>
+  <linearGradient id="ribbon-light" gradientUnits="userSpaceOnUse" x1="231" y1="125" x2="373" y2="55">
+    <stop stop-color="#7beaff" /><stop offset=".58" stop-color="#b0f3ff" />
+    <stop offset="1" stop-color="#5eacff" />
+  </linearGradient>
+  <linearGradient id="r-leg" gradientUnits="userSpaceOnUse" x1="158" y1="136" x2="186" y2="174">
+    <stop stop-color="#2da9f3" /><stop offset="1" stop-color="#2561ce" />
+  </linearGradient>
+</defs><g id="RH-Flame"><path id="R-upper-bowl" fill="url(#crown)" d="M111 41C130 39 162 38 179 42C196 46 204 56 207 68L187 68C180 58 171 51 153 49C138 45 124 43 111 41Z" /><path id="R-diagonal" fill="url(#r-leg)" d="M151 139L175 131L198 174H179C172 174 168 167 165 160Z" /><path id="H-upper-left" fill="url(#stem)" d="M223 113L237 58C241 46 247 41 258 41H273L258 91C244 99 232 105 223 113Z" /><path id="H-lower-left" fill="url(#stem)" d="M213 147C217 130 229 117 247 110L227 171H210Z" /><path id="H-upper-right" fill="url(#right-stem)" d="M316 73L321 54C325 43 333 40 348 41L342 61C333 65 324 69 316 73Z" /><path id="H-lower-right" fill="url(#right-stem)" d="M308 108L337 93L320 156C317 166 310 173 301 173H289Z" /><path id="R-wing-body-tail" fill="url(#wing)" d="M18 2C28 22 63 37 114 48C129 51 140 59 146 70C153 84 162 85 175 72C184 63 192 66 199 71L216 77L203 80C193 87 188 100 177 111C165 124 149 128 133 132C113 139 98 153 85 181L95 146C81 153 61 158 43 160C81 144 101 131 112 112C118 101 116 98 103 97C67 95 37 82 24 58C48 73 81 81 110 83C68 74 34 58 17 31C46 49 81 60 110 64C59 51 25 31 18 2Z" /><path id="Lower-flight-feather" fill="url(#wing)" d="M29 77C49 89 78 96 108 95C79 101 49 94 29 77Z" /><path id="H-flight-crossbar" fill="url(#ribbon)" d="M214 165C213 144 218 124 237 112C258 99 292 89 322 77C351 66 373 56 386 46C366 72 339 90 311 104C280 119 249 129 232 142C223 150 218 157 214 165Z" /><path id="Crossbar-leading-edge" fill="url(#ribbon-light)" d="M220 141C227 127 238 118 257 110C290 96 339 80 375 55C346 82 309 98 278 111C250 122 232 131 220 141Z" /></g></svg>

@@ -1,0 +1,133 @@
+/* 路線図は説明の図版として実画面の手前に置く． */
+.exhibit { position:relative; padding:20px; border:1px solid var(--site-line); border-radius:20px; background:var(--site-surface-soft); color:var(--site-ink); }
+.title { margin:0; font-size:14px; font-weight:600; }
+.diagram { display:block; width:100%; height:auto; margin-top:12px; overflow:visible; }
+.route { fill:none; stroke:var(--site-muted); stroke-width:1.5; }
+.station { fill:var(--site-surface); stroke:var(--site-muted); stroke-width:1.5; }
+.traveller { fill:var(--site-ink); stroke:var(--site-surface-soft); stroke-width:2; }
+.destination { fill:var(--site-surface); stroke:var(--site-ink); stroke-width:2; }
+.resultRing { fill:none; stroke:var(--site-accent); stroke-width:2; opacity:0; transition:opacity 200ms var(--site-ease); }
+.exhibit[data-phase='2'] .resultRing { opacity:1; }
+.exhibit[data-instant=true] .resultRing { transition:none; }
+.exhibit[data-reduced=true] .resultRing { opacity:1; transition:none; }
+.diagram text { fill:var(--site-ink); font:400 13px var(--font-sans); }
+.diagram .destinationName { font-weight:600; }
+.diagram .candidateLabel { fill:var(--site-muted); font-size:11px; }
+.controls { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; margin-top:8px; }
+.controls > div { position:relative; display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; isolation:isolate; }
+.controls > div::before { content:''; position:absolute; inset:1px auto 1px 1px; width:calc((100% - 8px) / 3 - 2px); border-radius:11px; background:var(--site-accent-soft); pointer-events:none; transform:translateX(0); transition:transform var(--dur-fast) var(--ease-in-out); }
+.exhibit[data-phase='1'] .controls > div::before { transform:translateX(calc(100% + 6px)); }
+.exhibit[data-phase='2'] .controls > div::before { transform:translateX(calc(200% + 12px)); }
+.controls button { min-height:44px; min-width:44px; padding:8px 12px; border:1px solid var(--site-line); border-radius:12px; color:var(--site-accent); background:var(--site-surface); font-size:12px; cursor:pointer; }
+.controls button[aria-pressed=true] { background:var(--site-accent-soft); }
+.controls > div button { position:relative; background:transparent; }
+.controls > div button[aria-pressed=true] { background:transparent; }
+.controls button:disabled { color:var(--site-muted); cursor:default; }
+.controls :global(.press-effect) { transition:transform var(--dur-press) var(--ease-out), color var(--dur-fast) ease, background-color var(--dur-fast) ease, border-color var(--dur-fast) ease; }
+.controls button:focus-visible { outline:2px solid var(--site-focus); outline-offset:3px; border-color:var(--site-accent); }
+.caption { margin:12px 0 0; color:var(--site-muted); font-size:11px; line-height:1.8; }
+/* 広い画面では，図を左に，操作と注記を右に並べた横長の 1 段にする */
+@media (min-width:1024px) {
+  .exhibit { display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(0, 1fr); column-gap:40px; align-items:center; }
+  .title { grid-column:1 / -1; }
+  .diagram { grid-column:1; grid-row:2 / span 2; margin-top:4px; }
+  .controls { grid-column:2; grid-row:2; align-self:end; margin-top:0; }
+  .caption { grid-column:2; grid-row:3; align-self:start; }
+}
+@media (prefers-reduced-motion:reduce) { .traveller { transform:none !important; opacity:0; } .resultRing { opacity:1; transition:none; } }
+
+/* 登場の主役は情報と実画面．枠や SVG の時間展示には同じ変形を重ねない． */
+.copyDepth, .screenDepth { transform:translate3d(0, var(--parallax, 0px), 0); }
+.browser { transform-origin:50% 100%; }
+.imageSettle { overflow:hidden; }
+
+/* タイル：大きな角丸の画面（ブラウザの枠）を上に，文字は画面に重ねず下に置く．
+   枠は動かさず，ホバー・フォーカスで動くのは画面の中身（.screenMedia）と題名の文字（RollTitle.css）だけ．
+   合図は .tile の data-roll-host． */
+.tile { display:block; }
+.screenLink { position:relative; display:block; overflow:hidden; isolation:isolate; }
+.screenLink:focus-visible { outline:2px solid var(--site-focus); outline-offset:-4px; }
+.screenMedia { transform-origin:50% 50%; transition:transform var(--dur-enter) var(--ease-out); }
+/* タッチとキーボードの人にも「押せる」と伝える矢印．マウスのときは，カーソルの「VIEW」の札が同じ役目をする */
+.screenArrow {
+  position:absolute; right:16px; bottom:16px; z-index:2; display:grid; place-items:center; width:36px; height:36px;
+  border-radius:50%; background:rgb(255 255 255 / .85); color:#344966; transition:transform var(--dur-fast) var(--ease-out);
+}
+.tileCaption { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+/* 画面の枠の下辺の印とラベル（枠の外へ約 16px はみ出す）に文字が近づきすぎないよう，枠と題名の間を少し広げる */
+.tileCaptionMarked { margin-top:32px; }
+.tileKind { display:flex; flex-wrap:wrap; align-items:center; margin:0; color:var(--site-muted); font:400 13px/1.5 var(--font-sans); }
+.tileKind > span { white-space:nowrap; }
+.tileKind > span + span::before { content:''; display:inline-block; width:3px; height:3px; margin:0 10px 2px 0; border-radius:50%; background:currentColor; opacity:.6; vertical-align:middle; }
+.tileIcon { flex:none; width:20px; height:20px; margin-right:10px; border-radius:6px; }
+.tileTitle { margin:0; color:var(--site-ink); font-size:clamp(32px, 3.4vw, 44px); font-weight:600; line-height:1.3; letter-spacing:-.03em; }
+.accent { position:relative; display:inline-block; }
+.accent::after { content:''; position:absolute; inset:auto 0 -.08em; height:2px; background:var(--site-accent); transform-origin:left; pointer-events:none; }
+.links a, .gameLink { position:relative; transition:transform var(--dur-press) var(--ease-out), background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease; }
+.links a::after, .gameLink::after { content:''; position:absolute; inset:auto 16px 5px; height:1px; background:currentColor; transform:scaleX(0); transform-origin:left; pointer-events:none; transition:transform var(--dur-fast) var(--ease-out); }
+.links a:focus-visible::after, .gameLink:focus-visible::after { transform:scaleX(1); }
+.links a:focus-visible, .gameLink:focus-visible { outline:2px solid var(--site-focus); outline-offset:4px; }
+/* WorkLinks は共有部品なので，押下の共通値をこのスコープで適用する． */
+.links a:active { transform:scale(.95); }
+.links a > svg, .gameLink > svg { transition:transform var(--dur-fast) var(--ease-out); }
+.links a:focus-visible > svg, .gameLink:focus-visible > svg { transform:translate(2px, -2px); }
+
+/* キーボードのフォーカスにも，ホバーと同じ水準の返事 */
+.tile:has(:focus-visible) .screenMedia { transform:scale(1.05); }
+.tile:has(:focus-visible) .screenArrow { transform:translate(2px, -2px); }
+/* 押した瞬間は，画面の中身がわずかに戻る（枠は動かさない） */
+.screenLink:active .screenMedia { transform:scale(1.025); transition-duration:var(--dur-press); }
+
+@media (hover:hover) and (pointer:fine) {
+  .tile:hover .screenMedia { transform:scale(1.05); }
+  .tile:hover .screenArrow { transform:translate(2px, -2px); }
+  .screenLink:active .screenMedia { transform:scale(1.025); }
+  .controls button:not(:disabled):hover { border-color:var(--site-accent); color:var(--site-ink); }
+  .links a:hover::after, .gameLink:hover::after { transform:scaleX(1); }
+  .links a:hover > svg, .gameLink:hover > svg { transform:translate(2px, -2px); }
+  .gameLink:hover { background:var(--site-surface-soft); }
+}
+
+@media (prefers-reduced-motion:no-preference) {
+  .workScene[data-work-visible='false'] :is(.label, .headline, .description, .tags > li, .links a, .tileKind, .tileTitle) { opacity:0; }
+  .workScene[data-work-visible='false'] .accent::after { transform:scaleX(0); }
+  .workScene[data-work-visible='true'] :is(.label, .tags > li, .links a) { animation:workFade var(--dur-base) ease backwards; }
+  .workScene[data-work-visible='true'] .tileKind { animation:workFade var(--dur-base) ease 240ms backwards; }
+  .workScene[data-work-visible='true'] .tileTitle { animation:workCopy var(--dur-slow) var(--ease-out) 280ms backwards; }
+  .workScene[data-work-visible='true'] .headline { animation:workCopy var(--dur-slow) var(--ease-out) 120ms backwards; }
+  .workScene[data-work-visible='true'] .accent::after { animation:workUnderline var(--dur-base) var(--ease-out) 320ms backwards; }
+  .workScene[data-work-visible='true'] .description { animation:workCopy var(--dur-slow) var(--ease-out) 340ms backwards; }
+  .workScene[data-work-visible='true'] .label { animation-duration:var(--dur-fast); }
+  .workScene[data-work-visible='true'] .tags > li { animation-delay:var(--work-delay); }
+  .workScene[data-work-visible='true'] .links a { animation-delay:380ms; }
+  .workScene[data-work-visible='true'] .links a:nth-child(2) { animation-delay:430ms; }
+  .workScene[data-work-visible='true'] .links a:nth-child(3) { animation-delay:480ms; }
+  .browser { opacity:0; transform:perspective(1400px) translateY(24px) rotateX(4deg); clip-path:inset(0 0 88% 0 round 22px); transition:opacity var(--dur-slow) ease, transform var(--dur-enter) var(--ease-out), clip-path var(--dur-enter) var(--ease-out); }
+  .imageSettle { transform:scale(1.04); transition:transform var(--dur-enter) var(--ease-out); }
+  .workScene[data-work-visible='true'] .browser { opacity:1; transform:perspective(1400px) translateY(0) rotateX(0); clip-path:inset(0 0 0 0 round 22px); }
+  .workScene[data-work-visible='true'] .imageSettle { transform:scale(1); }
+  .diagramEntrance { opacity:0; transform:translateY(12px); transition:opacity var(--dur-slow) ease, transform var(--dur-slow) var(--ease-out); }
+  .diagramEntrance[data-diagram-visible='true'] { opacity:1; transform:none; }
+}
+
+@keyframes workFade { from { opacity:0; } to { opacity:1; } }
+@keyframes workCopy { from { opacity:0; transform:translateY(.45em); } to { opacity:1; transform:none; } }
+@keyframes workUnderline { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+
+@media (prefers-reduced-motion:reduce) {
+  .copyDepth, .screenDepth, .browser, .imageSettle, .diagramEntrance { transform:none; clip-path:none; opacity:1; transition:none; }
+  .workScene :is(.label, .headline, .description, .tags > li, .links a, .tileKind, .tileTitle), .accent::after { animation:none; opacity:1; }
+  /* 画面は寄せず，矢印も動かさない．題名の文字も回さないので（RollTitle.css），不透明度の短い変化で返事をする */
+  .screenMedia, .screenArrow { transition:none; }
+  .tile:hover .screenMedia, .tile:has(:focus-visible) .screenMedia, .screenLink:active .screenMedia { transform:none; }
+  .tile:hover .screenArrow, .tile:has(:focus-visible) .screenArrow { transform:none; }
+  .tileTitle { transition:opacity var(--dur-fast) ease; }
+  .tile:hover .tileTitle, .tile:has(:focus-visible) .tileTitle { opacity:.7; }
+  .accent::after { transform:none; }
+  .controls > div::before { transition:none; }
+  .controls button, .links a, .gameLink { transition:color var(--dur-fast) ease, background-color var(--dur-fast) ease, border-color var(--dur-fast) ease; }
+  .controls button:active, .links a:active, .gameLink:active { transform:none; }
+  .links a::after, .gameLink::after, .links a > svg, .gameLink > svg { transform:none !important; transition:none; }
+  .links a::after, .gameLink::after { opacity:0; }
+  .links a:is(:hover, :focus-visible)::after, .gameLink:is(:hover, :focus-visible)::after { opacity:1; }
+}

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { subscribeToScroll } from '../lib/scrollObserver';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { decaySkew } from '../lib/motionFoundation';
 
 interface VelocityMarqueeProps {
   // 帯に流す語（白抜きと塗りを交互に並べる）
@@ -17,8 +18,8 @@ interface VelocityMarqueeProps {
 // 傾きの上限（度）と，速度を傾きへ変える係数
 const MAX_SKEW_DEG = 12;
 const SKEW_PER_PIXEL = 0.35;
-// 傾きを 0 へ戻す速さ（1フレームごとに残す割合）
-const SKEW_DECAY = 0.86;
+const SKEW_FOLLOW = 0.4;
+const SKEW_SETTLED_DEG = 0.05;
 
 // スクロール位置に合わせて大きな文字の帯が横に流れ，速く回すほど文字が傾く．
 // 値は style を直接書き換えるので，スクロール中も再描画は起きない．
@@ -37,6 +38,7 @@ export function VelocityMarquee({ words, distancePerScreenPx = 420, direction = 
     let lastScrollY = window.scrollY;
     let skew = 0;
     let frameId = 0;
+    let lastFrameTime = 0;
 
     const render = () => {
       const bounds = container.getBoundingClientRect();
@@ -47,10 +49,11 @@ export function VelocityMarquee({ words, distancePerScreenPx = 420, direction = 
     };
 
     // スクロールが止まったあとも，傾きだけはゆっくり 0 へ戻す
-    const settle = () => {
-      skew *= SKEW_DECAY;
+    const settle = (time: number) => {
+      skew = decaySkew(skew, time - lastFrameTime);
+      lastFrameTime = time;
       render();
-      if (Math.abs(skew) > 0.05) {
+      if (Math.abs(skew) > SKEW_SETTLED_DEG) {
         frameId = window.requestAnimationFrame(settle);
       } else {
         skew = 0;
@@ -63,9 +66,10 @@ export function VelocityMarquee({ words, distancePerScreenPx = 420, direction = 
       const velocity = window.scrollY - lastScrollY;
       lastScrollY = window.scrollY;
       const targetSkew = Math.max(-MAX_SKEW_DEG, Math.min(MAX_SKEW_DEG, velocity * SKEW_PER_PIXEL * -direction));
-      skew += (targetSkew - skew) * 0.4;
+      skew += (targetSkew - skew) * SKEW_FOLLOW;
       render();
       if (frameId === 0) {
+        lastFrameTime = performance.now();
         frameId = window.requestAnimationFrame(settle);
       }
     };
@@ -77,6 +81,8 @@ export function VelocityMarquee({ words, distancePerScreenPx = 420, direction = 
       if (frameId !== 0) {
         window.cancelAnimationFrame(frameId);
       }
+      // 設定を途中で切り替えたときも，最後の傾きと移動を残しません．
+      track.style.removeProperty('transform');
     };
   }, [direction, distancePerScreenPx, prefersReducedMotion]);
 

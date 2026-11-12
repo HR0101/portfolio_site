@@ -1,4 +1,4 @@
-// GitHub 上のリポジトリ作成時期をもとにした，アプリ開発の年表．
+// GitHub 上のリポジトリ作成時期と，本サイトの変更履歴をもとにした開発の年表．
 // Apps セクションでスクロールに連動して線が伸びる演出に使う．
 
 export interface TimelineMilestone {
@@ -54,5 +54,14 @@ export const TIMELINE_MILESTONES: TimelineMilestone[] = [
     description:
       'ノッチで AI CLI を見張る Subghost，通知とウィジェットまで作り込んだ BusTimeApp，記事を端末内で診断する Tsumugi．',
     apps: ['Subghost', 'BusTimeApp', 'Tsumugi', 'Ark Server'],
+  },
+  {
+    // 本サイトの git log（f50df95・514b97f）で Web 作品の掲載・刷新を確認．
+    // 各作品の作成月は確認できていないため，月を推測せず「現在」とする．
+    period: '現在',
+    title: 'Web サービス・ブラウザゲームとポートフォリオの刷新',
+    description:
+      '複数人の最寄駅から，移動時間の公平さで集合駅を探す EkiHub（Next.js / TypeScript）や，コンビニの手仕事を遊ぶピッとマート（Three.js），動物園を歩く探索ホラーのふしぎなどうぶつえん（Canvas）へと作品が広がっています．このポートフォリオも刷新しています．',
+    apps: ['EkiHub', 'ピッとマート', 'ふしぎなどうぶつえん'],
   },
 ];

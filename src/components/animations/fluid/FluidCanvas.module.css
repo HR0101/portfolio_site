@@ -1,0 +1,13 @@
+/* 流体カーソルの canvas．位置・大きさ・重なり（操作を通す・筆を置くまで隠す）は FluidCanvas.tsx のインラインにもある．
+   色は，通常のアルファ合成（乗算済み）で足す（mix-blend-mode は使わない）．
+   canvas は画面の 1/2 以下の解像度で描いて，ここで画面いっぱいへ拡大する（やわらかい絵なので粗さは目立たない）．
+   動きを減らす設定のときの退避は，出す条件に合わなければそもそも描画されないが，念のため隠す */
+.canvas {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas {
+    display: none;
+  }
+}

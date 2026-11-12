@@ -84,7 +84,7 @@ export default function EkiHubPage() {
   return (
     <article className={styles.page} data-product-page>
       <nav className={styles.localNav} aria-label="EkiHub ナビゲーション">
-        <Link href="/#works">← Web とゲームの一覧</Link>
+        <Link href="/#works">← Web サービスの一覧</Link>
         <span>EkiHub</span>
         <a href="#ekihub-screens">画面を見る ↓</a>
       </nav>

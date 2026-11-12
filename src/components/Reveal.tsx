@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useInView } from '../hooks/useInView';
+import { revealDelay } from '../lib/motionFoundation';
 
 // 登場アニメーションの種類
 export type RevealVariant = 'up' | 'left' | 'right' | 'scale' | 'blur' | 'flip' | 'scene';
@@ -25,8 +26,12 @@ interface RevealProps {
   // 登場の仕方（既定は下から上へのフェードイン）
   variant?: RevealVariant;
   className?: string;
+  style?: React.CSSProperties;
   layoutKey?: string;
   cardDirection?: 'left' | 'right';
+  // カードが画面の外から入るとき，来た側へ伸びる光の筋を出すか（既定は出す）．
+  // 隣のカードの上を横切ってしまう配置（中央の列など）では false にする
+  tow?: boolean;
 }
 
 export function Reveal({
@@ -34,20 +39,25 @@ export function Reveal({
   delayMs = 0,
   variant = 'up',
   className = '',
+  style,
   layoutKey,
   cardDirection,
+  tow = true,
 }: RevealProps) {
   const { ref, isInView } = useInView<HTMLDivElement>(0.15, Boolean(cardDirection));
+  const delay = `${revealDelay(delayMs, Boolean(cardDirection))}ms`;
 
   return (
     <div
       ref={ref}
       data-layout-key={layoutKey}
       data-card-reveal={cardDirection}
+      data-card-tow={cardDirection && !tow ? 'off' : undefined}
       className={`reveal ${VARIANT_CLASS_NAMES[variant]} ${
         isInView ? 'reveal-visible' : ''
       } ${className}`}
-      style={{ transitionDelay: `${cardDirection ? Math.min(delayMs * 1.4, 420) : delayMs}ms` }}
+      // 光の筋（::before）の動き出しをカードの遅延にそろえる（animation-delay: inherit で受け取る）
+      style={{ ...style, transitionDelay: delay, animationDelay: cardDirection ? delay : undefined }}
     >
       {children}
     </div>

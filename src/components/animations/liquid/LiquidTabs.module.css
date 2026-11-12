@@ -1,0 +1,29 @@
+/* 流体タブ．背後に aria-hidden の層を置き，その層にだけ SVG フィルタ（ぼかし → アルファの締め）を掛ける．
+   雫の位置・大きさは LiquidTabs.tsx が transform だけで書く．フィルタは動いている間だけ掛かる（data-moving）． */
+.root { position:relative; isolation:isolate; }
+/* 文字（ボタン）は雫の上．ボタンの中身には触れない */
+.root > button { position:relative; z-index:1; }
+.defs { position:absolute; width:0; height:0; overflow:hidden; pointer-events:none; }
+/* ぼかしが欠けないよう，層は親より外へ広げてある（幅は --liquid-bleed．雫の座標はその分ずらして書かれる） */
+.goo { position:absolute; z-index:0; inset:calc(-1 * var(--liquid-bleed, 24px)); pointer-events:none; opacity:0; }
+.goo[data-ready=true] { opacity:1; }
+/* 面の色は選択中の面（サイトのトークン）．ライト・ダークは変数が切り替える．角丸は --liquid-radius で変えられる */
+.drop { position:absolute; left:0; top:0; border-radius:var(--liquid-radius, 999px); background:var(--liquid-color, var(--site-surface)); transform-origin:50% 50%; }
+/* 後続の雫は，動いている間だけ見える（止まったら先頭の雫 1 つに戻る） */
+.trail { visibility:hidden; }
+.goo[data-moving=true] .trail { visibility:visible; }
+.goo[data-plain=true] .trail { display:none; }
+.goo[data-moving=true] .drop { will-change:transform; }
+
+/* 強制カラー：フィルタも雫の色も使わず，選択中の面をシステムの強調色で塗る（文字はその上の色に） */
+@media (forced-colors:active) {
+  .goo { filter:none !important; }
+  .trail { display:none; }
+  .drop { forced-color-adjust:none; background:Highlight; }
+  .root[data-liquid] > button:is([aria-selected=true], [aria-checked=true], [aria-pressed=true]) { forced-color-adjust:none; color:HighlightText; }
+}
+/* 透明効果を減らす設定・動きを減らす設定：フィルタなしの面（雫は 1 つ．位置は JS が即時に置く） */
+@media (prefers-reduced-transparency:reduce), (prefers-reduced-motion:reduce) {
+  .goo { filter:none !important; }
+  .trail { display:none; }
+}

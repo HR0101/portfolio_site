@@ -118,3 +118,6 @@ export const PITTO_MART_JOBS: { job: string; title: string }[] = [
 ];
 
 export const ALL_WORKS: Work[] = [...WEB_WORKS, ...GAME_WORKS];
+
+// ゲームをまとめたページのパス（トップの Web サービスのセクションから案内する）
+export const GAMES_PATH = '/games';

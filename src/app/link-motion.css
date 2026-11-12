@@ -1,0 +1,27 @@
+/* Short link feedback shares the site's existing curve and never moves hit areas. */
+.arrow-swap { position:relative; display:inline-grid; flex-shrink:0; overflow:hidden; vertical-align:middle; }
+.arrow-swap svg { grid-area:1 / 1; transition:transform 240ms var(--site-ease); }
+.arrow-swap-back { transform:translate(-120%, 120%); }
+.line-sweep { position:relative; display:inline-block; overflow:hidden; vertical-align:bottom; padding-bottom:2px; }
+.line-sweep::before, .line-sweep::after { content:''; position:absolute; left:0; bottom:0; width:100%; height:1px; background:currentColor; transition:transform 240ms var(--site-ease); }
+.line-sweep::before { opacity:.45; }
+.line-sweep::after { transform:translateX(-110%); }
+.hover-shuffle { position:relative; display:inline-block; vertical-align:baseline; }
+.hover-shuffle-measure, .hover-shuffle-display { white-space:nowrap; }
+.hover-shuffle-measure { visibility:hidden; }
+.hover-shuffle-display { position:absolute; inset:0; overflow:hidden; }
+.reveal-line { display:block; height:1px; width:100%; margin-bottom:24px; background:var(--site-line); transform:scaleX(0); transform-origin:left; transition:transform 600ms var(--site-ease); }
+.reveal-line.is-visible { transform:scaleX(1); }
+
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  .arrow-swap-host:hover .arrow-swap-front { transform:translate(120%, -120%); }
+  .arrow-swap-host:hover .arrow-swap-back { transform:translate(0, 0); }
+  .line-sweep-host:hover .line-sweep::before { transform:translateX(110%); }
+  .line-sweep-host:hover .line-sweep::after { transform:translateX(0); }
+}
+/* Keyboard focus remains immediate; it doesn't trigger the hover choreography. */
+.line-sweep-host:focus-visible .line-sweep::before { opacity:1; }
+@media (prefers-reduced-motion:reduce) {
+  .arrow-swap svg, .line-sweep::before, .line-sweep::after { transition:none; }
+  .reveal-line { transform:none; transition:none; }
+}
