@@ -1,45 +1,47 @@
-// 流体の背景の WebGL2 エンジン．React には依存しない．
-// 使えない環境（WebGL2 が無い・半精度浮動小数のテクスチャへ描けない・シェーダーが通らない）では null を返し，例外は投げない．
+// 流体カーソルの WebGL2 エンジン．React には依存しない．
+// 流体の方程式は解かない．1/4 解像度の「速度と重み」のバッファ（前のコマ／今のコマ）と，
+// 1/8 解像度のぼかした写し 1 枚を持ち，1 コマに次の 4 回だけ描く．
+//   1. 更新（1/4 解像度）  2. 横ぼかし（1/4 → 1/8）  3. 縦ぼかし（1/8）  4. 表示（画面の 1/2 以下）
+// 使えない環境（WebGL2 が無い・シェーダーが通らない）では null を返し，例外は投げない．
 import {
-  FLUID_DENSITY_CAP,
-  FLUID_DYE_RETENTION_PER_SEC,
-  FLUID_FORCE_GAIN,
-  FLUID_MAX_SPEED,
+  FLUID_BLUR_DIVISOR_RATIO,
+  FLUID_BLUR_RADIUS_PX,
+  FLUID_BLUR_SIGMA_RATIO,
+  FLUID_FALLOFF_END,
+  FLUID_FALLOFF_START,
+  FLUID_NOISE_GAIN_PX,
+  FLUID_NOISE_PERIOD_PX,
+  FLUID_NOISE_WARP_VELOCITY,
+  FLUID_NOISE_WARP_WEIGHT,
+  FLUID_PHASE_SCALE,
+  FLUID_PUSH_PX,
   FLUID_QUALITY_TIERS,
-  FLUID_VELOCITY_RETENTION_PER_SEC,
-  FLUID_VISIBLE_DENSITY,
-  getDecayFactor,
-  getFluidGridSize,
-  type FluidColors,
-  type FluidSplat,
+  FLUID_REFERENCE_FPS,
+  FLUID_RGB_SHIFT,
+  FLUID_SHADE,
+  FLUID_VELOCITY_DECAY,
+  FLUID_WEIGHT_A_DECAY,
+  FLUID_WEIGHT_B_DECAY,
+  getFluidDisplaySize,
+  getFluidScaledSize,
+  getFrameDecay,
+  type FluidLook,
 } from '../../../lib/animations/fluid';
 import {
-  ADVECTION_SOURCE,
-  CURL_SOURCE,
+  BLUR_SOURCE,
   DISPLAY_SOURCE,
-  DISPLACEMENT_SOURCE,
-  DIVERGENCE_SOURCE,
-  GRADIENT_SUBTRACT_SOURCE,
-  PRESSURE_SOURCE,
-  SCALE_SOURCE,
-  SPLAT_SOURCE,
+  UPDATE_SOURCE,
   VERTEX_SOURCE,
-  VORTICITY_SOURCE,
 } from './fluidShaders';
 
-// 渦度の閉じ込めの強さ（マス／秒²）．大きいほど細かい渦が残る
-const VORTICITY_STRENGTH = 14;
-// ずらしの地図の短辺側ではなく，横幅のマス数（縦は画面の縦横比から決める）．小さいほど読み出しと画像化が軽い
-const DISPLACEMENT_MAP_WIDTH = 160;
-// 速度 × 濃さを地図の振れ幅へ変える倍率
-const DISPLACEMENT_GAIN = 4;
-// 前のコマの圧力を，次の反復の初期値として残す割合
-const PRESSURE_CARRY = 0.8;
-// これ未満の速度・染料は 0 へ落とす（半精度の小さな値が居座らないように）
-const VELOCITY_FLOOR = 0.002;
-const DYE_FLOOR = 0.002;
-// 1 つの染料の置き場所で，速度の成分が超えてはいけない値（マス／秒）の余裕の倍率
-const VELOCITY_CAP_MARGIN = 1.5;
+// 8 ビットのテクスチャの 1 段階．これ未満の速度・重みは 0 へ落とす（半精度でも同じ値でよい）
+const BYTE_STEP = 1 / 255;
+// 半精度で，これ未満の速度・重みを 0 へ落とす（小さな値が居座らないように）
+const HALF_ZERO_CUT = 0.0008;
+// 8 ビットのとき，これ未満の速度・重みを 0 へ落とす（0.5 を 0 とする表現の誤差を含む）
+const BYTE_ZERO_CUT = 0.004;
+// バッファの初期値（速度 0 = 0.5，重みは 0）
+const FIELD_CLEAR: readonly [number, number, number, number] = [0.5, 0.5, 0, 0];
 
 type Uniforms = Record<string, WebGLUniformLocation | null>;
 
@@ -53,8 +55,6 @@ interface Target {
   framebuffer: WebGLFramebuffer;
   width: number;
   height: number;
-  texelX: number;
-  texelY: number;
 }
 
 interface DoubleTarget {
@@ -66,28 +66,35 @@ interface TextureFormat {
   internalFormat: number;
   format: number;
   type: number;
+  // 1 コマで必ず下げる量と，0 へ落とす境
+  minStep: number;
+  zeroCut: number;
 }
 
-// 画面を歪ませる地図（RGBA の 1 画素 4 バイト．上の行から）
-export interface FluidDisplacementMap {
-  width: number;
-  height: number;
-  data: Uint8Array;
+// 1 コマぶんの入力（座標は CSS の px．左上原点．速度は画面の右・下が正）
+export interface FluidFrame {
+  dtSec: number;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+  // 筆の半径（CSS の px）．止まっていれば 0
+  brushRadiusPx: number;
+  velocityX: number;
+  velocityY: number;
 }
 
 export interface FluidEngine {
-  // 品質の段階（FLUID_QUALITY_TIERS の添字）に合わせて，テクスチャと canvas の大きさを作り直す．中身は空になる
+  // 品質の段階（FLUID_QUALITY_TIERS の添字）に合わせて，バッファと canvas の大きさを作り直す．中身は空になる
   resize: (viewportWidth: number, viewportHeight: number, tier: number) => boolean;
-  // 染料と速度を置く
-  inject: (splats: readonly FluidSplat[]) => void;
-  // 流体を dtSec 進めて，画面へ描く
-  step: (dtSec: number) => void;
-  // いまの流れから，画面を歪ませる地図を読み出す（step のあとに呼ぶ）．作れなければ null
-  readDisplacement: () => FluidDisplacementMap | null;
-  // 染料と速度を空にして，透明な絵を出す
+  // 1 コマ進めて，画面へ描く
+  step: (frame: FluidFrame) => void;
+  // バッファを空にして，透明な絵を出す
   clear: () => void;
-  // 染料の色（テーマの切り替えで呼ぶ）
-  setColors: (colors: FluidColors) => void;
+  // 色の強さ（テーマの切り替えで呼ぶ）
+  setLook: (look: FluidLook) => void;
+  // バッファの精度（'half' = 半精度，'byte' = 8 ビット）
+  precision: 'half' | 'byte';
   isContextLost: () => boolean;
   dispose: () => void;
 }
@@ -125,47 +132,27 @@ function createProgram(gl: WebGL2RenderingContext, vertexShader: WebGLShader, fr
   return { program, uniforms };
 }
 
-function createTarget(
-  gl: WebGL2RenderingContext,
-  width: number,
-  height: number,
-  format: TextureFormat,
-  filter: number,
-): Target | null {
+function createTarget(gl: WebGL2RenderingContext, width: number, height: number, format: TextureFormat): Target | null {
   const texture = gl.createTexture();
   const framebuffer = gl.createFramebuffer();
   if (!texture || !framebuffer) return null;
   gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texImage2D(gl.TEXTURE_2D, 0, format.internalFormat, width, height, 0, format.format, format.type, null);
   gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-  const isComplete = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
-  if (!isComplete) {
+  if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
     gl.deleteTexture(texture);
     gl.deleteFramebuffer(framebuffer);
     return null;
   }
   gl.viewport(0, 0, width, height);
-  gl.clearColor(0, 0, 0, 0);
+  gl.clearColor(...FIELD_CLEAR);
   gl.clear(gl.COLOR_BUFFER_BIT);
-  return { texture, framebuffer, width, height, texelX: 1 / width, texelY: 1 / height };
-}
-
-function createDoubleTarget(
-  gl: WebGL2RenderingContext,
-  width: number,
-  height: number,
-  format: TextureFormat,
-  filter: number,
-): DoubleTarget | null {
-  const read = createTarget(gl, width, height, format, filter);
-  const write = createTarget(gl, width, height, format, filter);
-  if (!read || !write) return null;
-  return { read, write };
+  return { texture, framebuffer, width, height };
 }
 
 function deleteTarget(gl: WebGL2RenderingContext, target: Target | null | undefined): void {
@@ -180,26 +167,42 @@ function swap(target: DoubleTarget): void {
   target.write = read;
 }
 
-// WebGL2 で半精度浮動小数（R16F・RG16F）のテクスチャへ描けるかを確かめる
-function canRenderToHalfFloat(gl: WebGL2RenderingContext, formats: readonly TextureFormat[]): boolean {
-  if (!gl.getExtension('EXT_color_buffer_float') && !gl.getExtension('EXT_color_buffer_half_float')) return false;
-  return formats.every((format) => {
-    const target = createTarget(gl, 4, 4, format, gl.NEAREST);
-    if (!target) return false;
-    deleteTarget(gl, target);
-    return true;
-  });
+// 半精度（RGBA16F）のテクスチャへ描けるなら半精度，だめなら 8 ビット（RGBA8．どの WebGL2 でも描ける）
+function pickFieldFormat(gl: WebGL2RenderingContext): { format: TextureFormat; precision: 'half' | 'byte' } {
+  const half: TextureFormat = {
+    internalFormat: gl.RGBA16F,
+    format: gl.RGBA,
+    type: gl.HALF_FLOAT,
+    minStep: 0,
+    zeroCut: HALF_ZERO_CUT,
+  };
+  const hasExtension = Boolean(gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float'));
+  if (hasExtension) {
+    const probe = createTarget(gl, 4, 4, half);
+    if (probe) {
+      deleteTarget(gl, probe);
+      return { format: half, precision: 'half' };
+    }
+  }
+  const byte: TextureFormat = {
+    internalFormat: gl.RGBA8,
+    format: gl.RGBA,
+    type: gl.UNSIGNED_BYTE,
+    minStep: BYTE_STEP,
+    zeroCut: BYTE_ZERO_CUT,
+  };
+  return { format: byte, precision: 'byte' };
 }
 
-export function createFluidEngine(canvas: HTMLCanvasElement, initialColors: FluidColors): FluidEngine | null {
+export function createFluidEngine(canvas: HTMLCanvasElement, initialLook: FluidLook): FluidEngine | null {
   try {
-    return buildEngine(canvas, initialColors);
+    return buildEngine(canvas, initialLook);
   } catch {
     return null;
   }
 }
 
-function buildEngine(canvas: HTMLCanvasElement, initialColors: FluidColors): FluidEngine | null {
+function buildEngine(canvas: HTMLCanvasElement, initialLook: FluidLook): FluidEngine | null {
   const gl = canvas.getContext('webgl2', {
     alpha: true,
     premultipliedAlpha: true,
@@ -211,42 +214,25 @@ function buildEngine(canvas: HTMLCanvasElement, initialColors: FluidColors): Flu
   });
   if (!gl) return null;
 
-  const rgFormat: TextureFormat = { internalFormat: gl.RG16F, format: gl.RG, type: gl.HALF_FLOAT };
-  const rFormat: TextureFormat = { internalFormat: gl.R16F, format: gl.RED, type: gl.HALF_FLOAT };
-  if (!canRenderToHalfFloat(gl, [rgFormat, rFormat])) return null;
+  const { format, precision } = pickFieldFormat(gl);
 
   const vertexShader = compileShader(gl, gl.VERTEX_SHADER, VERTEX_SOURCE);
   if (!vertexShader) return null;
-  const splatProgram = createProgram(gl, vertexShader, SPLAT_SOURCE);
-  const advectionProgram = createProgram(gl, vertexShader, ADVECTION_SOURCE);
-  const divergenceProgram = createProgram(gl, vertexShader, DIVERGENCE_SOURCE);
-  const pressureProgram = createProgram(gl, vertexShader, PRESSURE_SOURCE);
-  const gradientProgram = createProgram(gl, vertexShader, GRADIENT_SUBTRACT_SOURCE);
-  const curlProgram = createProgram(gl, vertexShader, CURL_SOURCE);
-  const vorticityProgram = createProgram(gl, vertexShader, VORTICITY_SOURCE);
-  const scaleProgram = createProgram(gl, vertexShader, SCALE_SOURCE);
+  const updateProgram = createProgram(gl, vertexShader, UPDATE_SOURCE);
+  const blurProgram = createProgram(gl, vertexShader, BLUR_SOURCE);
   const displayProgram = createProgram(gl, vertexShader, DISPLAY_SOURCE);
-  const displacementProgram = createProgram(gl, vertexShader, DISPLACEMENT_SOURCE);
   gl.deleteShader(vertexShader);
-  if (
-    !splatProgram || !advectionProgram || !divergenceProgram || !pressureProgram || !gradientProgram ||
-    !curlProgram || !vorticityProgram || !scaleProgram || !displayProgram
-  ) {
-    return null;
-  }
+  if (!updateProgram || !blurProgram || !displayProgram) return null;
 
-  let velocity: DoubleTarget | null = null;
-  let dye: DoubleTarget | null = null;
-  let pressure: DoubleTarget | null = null;
-  let divergence: Target | null = null;
-  let curl: Target | null = null;
-  let displacement: Target | null = null;
-  let displacementPixels: Uint8Array | null = null;
-  let jacobiIterations: number = FLUID_QUALITY_TIERS[0].jacobiIterations;
-  let velocityCells: number = FLUID_QUALITY_TIERS[0].velocityCells;
+  // 速度と重みのバッファ（1/4 解像度．前のコマ／今のコマ），横ぼかしの途中，ぼかした写し（1/8 解像度）
+  let field: DoubleTarget | null = null;
+  let blurMid: Target | null = null;
+  let blurred: Target | null = null;
   let viewportWidth = 1;
   let viewportHeight = 1;
-  let colors = initialColors;
+  // バッファの 1 画素の，CSS の px（= 品質の段階の bufferDivisor）
+  let bufferDivisor: number = FLUID_QUALITY_TIERS[0].bufferDivisor;
+  let look = initialLook;
   let isDisposed = false;
 
   const bindTexture = (program: Program, name: string, unit: number, texture: WebGLTexture) => {
@@ -268,183 +254,117 @@ function buildEngine(canvas: HTMLCanvasElement, initialColors: FluidColors): Flu
   };
 
   const releaseTargets = () => {
-    [velocity, dye, pressure].forEach((pair) => {
-      deleteTarget(gl, pair?.read);
-      deleteTarget(gl, pair?.write);
-    });
-    deleteTarget(gl, divergence);
-    deleteTarget(gl, curl);
-    deleteTarget(gl, displacement);
-    displacement = null;
-    displacementPixels = null;
-    velocity = null;
-    dye = null;
-    pressure = null;
-    divergence = null;
-    curl = null;
+    deleteTarget(gl, field?.read);
+    deleteTarget(gl, field?.write);
+    deleteTarget(gl, blurMid);
+    deleteTarget(gl, blurred);
+    field = null;
+    blurMid = null;
+    blurred = null;
+  };
+
+  const clearTarget = (target: Target | null | undefined) => {
+    if (!target) return;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
+    gl.viewport(0, 0, target.width, target.height);
+    gl.clearColor(...FIELD_CLEAR);
+    gl.clear(gl.COLOR_BUFFER_BIT);
   };
 
   const resize = (width: number, height: number, tier: number): boolean => {
     if (isDisposed || gl.isContextLost()) return false;
     const quality = FLUID_QUALITY_TIERS[Math.min(Math.max(tier, 0), FLUID_QUALITY_TIERS.length - 1)];
-    const velocitySize = getFluidGridSize(width, height, quality.velocityCells);
-    const dyeSize = getFluidGridSize(width, height, quality.dyeCells);
+    viewportWidth = Math.max(1, width);
+    viewportHeight = Math.max(1, height);
+    bufferDivisor = quality.bufferDivisor;
+    const fieldSize = getFluidScaledSize(viewportWidth, viewportHeight, bufferDivisor);
+    const blurSize = getFluidScaledSize(viewportWidth, viewportHeight, bufferDivisor * FLUID_BLUR_DIVISOR_RATIO);
     releaseTargets();
-    velocity = createDoubleTarget(gl, velocitySize.width, velocitySize.height, rgFormat, gl.LINEAR);
-    dye = createDoubleTarget(gl, dyeSize.width, dyeSize.height, rgFormat, gl.LINEAR);
-    pressure = createDoubleTarget(gl, velocitySize.width, velocitySize.height, rFormat, gl.NEAREST);
-    divergence = createTarget(gl, velocitySize.width, velocitySize.height, rFormat, gl.NEAREST);
-    curl = createTarget(gl, velocitySize.width, velocitySize.height, rFormat, gl.NEAREST);
-    if (!velocity || !dye || !pressure || !divergence || !curl) {
+    const read = createTarget(gl, fieldSize.width, fieldSize.height, format);
+    const write = createTarget(gl, fieldSize.width, fieldSize.height, format);
+    blurMid = createTarget(gl, blurSize.width, blurSize.height, format);
+    blurred = createTarget(gl, blurSize.width, blurSize.height, format);
+    if (!read || !write || !blurMid || !blurred) {
+      deleteTarget(gl, read);
+      deleteTarget(gl, write);
       releaseTargets();
       return false;
     }
-    // ずらしの地図は付け足しの機能．作れなくても流体本体は動かす
-    const rgbaFormat: TextureFormat = { internalFormat: gl.RGBA8, format: gl.RGBA, type: gl.UNSIGNED_BYTE };
-    const mapWidth = DISPLACEMENT_MAP_WIDTH;
-    const mapHeight = Math.max(1, Math.round((DISPLACEMENT_MAP_WIDTH * Math.max(1, height)) / Math.max(1, width)));
-    displacement = createTarget(gl, mapWidth, mapHeight, rgbaFormat, gl.LINEAR);
-    displacementPixels = displacement ? new Uint8Array(mapWidth * mapHeight * 4) : null;
-    jacobiIterations = quality.jacobiIterations;
-    velocityCells = quality.velocityCells;
-    viewportWidth = Math.max(1, width);
-    viewportHeight = Math.max(1, height);
-    // canvas は染料の格子と同じ大きさ．CSS で画面いっぱいへ引き伸ばす（低解像度を拡大）
-    canvas.width = dyeSize.width;
-    canvas.height = dyeSize.height;
+    field = { read, write };
+    // canvas は画面の 1/2 以下の解像度で描き，CSS で拡大する（やわらかい絵なので粗さは目立たない）
+    const displaySize = getFluidDisplaySize(viewportWidth, viewportHeight, quality.displayScale);
+    canvas.width = displaySize.width;
+    canvas.height = displaySize.height;
     return true;
   };
 
-  const inject = (splats: readonly FluidSplat[]) => {
-    if (isDisposed || !velocity || !dye || splats.length === 0) return;
-    const aspect = viewportWidth / viewportHeight;
-    const velocityCap = FLUID_MAX_SPEED * velocityCells * VELOCITY_CAP_MARGIN;
-    gl.useProgram(splatProgram.program);
-    gl.uniform1f(splatProgram.uniforms.uAspect, aspect);
-    for (const splat of splats) {
-      // 染料の広がりは，ポインタの動きに合わせて 1 か所ごとに変わる
-      gl.uniform1f(splatProgram.uniforms.uRadius, splat.radiusPx / viewportHeight);
-      gl.uniform2f(splatProgram.uniforms.uPoint, splat.x, splat.y);
-      // 速度：短辺／秒 → マス／秒
-      bindTexture(splatProgram, 'uTarget', 0, velocity.read.texture);
-      gl.uniform3f(
-        splatProgram.uniforms.uValue,
-        splat.velocityX * velocityCells * FLUID_FORCE_GAIN,
-        splat.velocityY * velocityCells * FLUID_FORCE_GAIN,
-        0,
-      );
-      gl.uniform1f(splatProgram.uniforms.uCap, velocityCap);
-      draw(velocity.write);
-      swap(velocity);
-      // 染料：濃さと，濃さ × 色相
-      bindTexture(splatProgram, 'uTarget', 0, dye.read.texture);
-      gl.uniform3f(splatProgram.uniforms.uValue, splat.density, splat.density * splat.hue, 0);
-      gl.uniform1f(splatProgram.uniforms.uCap, FLUID_DENSITY_CAP);
-      draw(dye.write);
-      swap(dye);
-    }
-  };
+  const step = (frame: FluidFrame) => {
+    if (isDisposed || gl.isContextLost() || !field || !blurMid || !blurred) return;
+    const dtSec = frame.dtSec;
+    const dtFrames = dtSec * FLUID_REFERENCE_FPS;
+    const fieldSize = field.read;
 
-  const advect = (field: DoubleTarget, velocityField: DoubleTarget, dtSec: number, retentionPerSec: number, floor: number) => {
-    gl.useProgram(advectionProgram.program);
-    gl.uniform2f(advectionProgram.uniforms.uVelocityTexel, velocityField.read.texelX, velocityField.read.texelY);
-    gl.uniform1f(advectionProgram.uniforms.uDt, dtSec);
-    gl.uniform1f(advectionProgram.uniforms.uDecay, getDecayFactor(dtSec, retentionPerSec));
-    gl.uniform1f(advectionProgram.uniforms.uFloor, floor);
-    bindTexture(advectionProgram, 'uVelocity', 0, velocityField.read.texture);
-    bindTexture(advectionProgram, 'uSource', 1, field.read.texture);
+    // 1. 更新
+    gl.useProgram(updateProgram.program);
+    const update = updateProgram.uniforms;
+    bindTexture(updateProgram, 'uPrevious', 0, field.read.texture);
+    bindTexture(updateProgram, 'uBlurred', 1, blurred.texture);
+    gl.uniform2f(update.uSize, fieldSize.width, fieldSize.height);
+    // 画面の座標（左上原点）→ バッファの画素（左下原点）．画素の大きさが違う分は，画面に対する割合でそろえる
+    const toBufferX = fieldSize.width / viewportWidth;
+    const toBufferY = fieldSize.height / viewportHeight;
+    gl.uniform2f(update.uFrom, frame.fromX * toBufferX, (viewportHeight - frame.fromY) * toBufferY);
+    gl.uniform2f(update.uTo, frame.toX * toBufferX, (viewportHeight - frame.toY) * toBufferY);
+    gl.uniform1f(update.uRadius, frame.brushRadiusPx * toBufferX);
+    gl.uniform2f(update.uVelocity, frame.velocityX, -frame.velocityY);
+    gl.uniform3f(
+      update.uDecay,
+      getFrameDecay(FLUID_VELOCITY_DECAY, dtSec),
+      getFrameDecay(FLUID_WEIGHT_A_DECAY, dtSec),
+      getFrameDecay(FLUID_WEIGHT_B_DECAY, dtSec),
+    );
+    // 長さは CSS の px で持ち，バッファの画素に直す．移す量は 1 コマぶんなので，経過時間で補正する
+    gl.uniform1f(update.uPush, (FLUID_PUSH_PX / bufferDivisor) * dtFrames);
+    gl.uniform1f(update.uNoiseScale, bufferDivisor / FLUID_NOISE_PERIOD_PX);
+    gl.uniform1f(update.uNoiseGain, (FLUID_NOISE_GAIN_PX / bufferDivisor) * dtFrames);
+    gl.uniform2f(update.uNoiseWarp, FLUID_NOISE_WARP_VELOCITY, FLUID_NOISE_WARP_WEIGHT);
+    gl.uniform1f(update.uMinStep, format.minStep);
+    gl.uniform1f(update.uZeroCut, format.zeroCut);
     draw(field.write);
     swap(field);
-  };
 
-  const render = () => {
-    if (!dye || !velocity) return;
+    // 2. 横ぼかし（1/4 → 1/8）  3. 縦ぼかし（1/8）
+    const blurTexelPx = bufferDivisor * FLUID_BLUR_DIVISOR_RATIO;
+    const sigmaTexels = (FLUID_BLUR_RADIUS_PX / blurTexelPx) * FLUID_BLUR_SIGMA_RATIO;
+    gl.useProgram(blurProgram.program);
+    gl.uniform1f(blurProgram.uniforms.uSigma, sigmaTexels);
+    bindTexture(blurProgram, 'uSource', 0, field.read.texture);
+    gl.uniform2f(blurProgram.uniforms.uStep, 1 / blurMid.width, 0);
+    draw(blurMid);
+    bindTexture(blurProgram, 'uSource', 0, blurMid.texture);
+    gl.uniform2f(blurProgram.uniforms.uStep, 0, 1 / blurred.height);
+    draw(blurred);
+
+    // 4. 表示
     gl.useProgram(displayProgram.program);
-    bindTexture(displayProgram, 'uDye', 0, dye.read.texture);
-    bindTexture(displayProgram, 'uVelocity', 1, velocity.read.texture);
-    // 速度（マス／秒）→ ほぼ -1〜1（短辺の 2 倍／秒で 1）
-    gl.uniform1f(displayProgram.uniforms.uVelocityScale, 1 / (velocityCells * 2));
-    gl.uniform3f(displayProgram.uniforms.uColorPrimary, ...colors.primary);
-    gl.uniform3f(displayProgram.uniforms.uColorSecondary, ...colors.secondary);
-    gl.uniform1f(displayProgram.uniforms.uMaxAlpha, colors.maxAlpha);
-    gl.uniform1f(displayProgram.uniforms.uVisible, FLUID_VISIBLE_DENSITY);
+    const display = displayProgram.uniforms;
+    bindTexture(displayProgram, 'uField', 0, field.read.texture);
+    gl.uniform1f(display.uPhaseScale, FLUID_PHASE_SCALE);
+    gl.uniform1f(display.uRgbShift, FLUID_RGB_SHIFT);
+    gl.uniform1f(display.uShade, FLUID_SHADE);
+    gl.uniform1f(display.uFalloffStart, FLUID_FALLOFF_START);
+    gl.uniform1f(display.uFalloffEnd, FLUID_FALLOFF_END);
+    gl.uniform1f(display.uColorMultiplier, look.colorMultiplier);
+    gl.uniform1f(display.uSaturation, look.saturation);
     draw(null);
-  };
-
-  const readDisplacement = (): FluidDisplacementMap | null => {
-    // 地図は付け足し．シェーダーが通らなくても流体本体は動かす
-    if (isDisposed || gl.isContextLost() || !displacementProgram || !dye || !velocity || !displacement || !displacementPixels) return null;
-    gl.useProgram(displacementProgram.program);
-    bindTexture(displacementProgram, 'uDye', 0, dye.read.texture);
-    bindTexture(displacementProgram, 'uVelocity', 1, velocity.read.texture);
-    gl.uniform1f(displacementProgram.uniforms.uVisible, FLUID_VISIBLE_DENSITY);
-    gl.uniform1f(displacementProgram.uniforms.uVelocityScale, 1 / (velocityCells * 2));
-    gl.uniform1f(displacementProgram.uniforms.uGain, DISPLACEMENT_GAIN);
-    draw(displacement);
-    gl.readPixels(0, 0, displacement.width, displacement.height, gl.RGBA, gl.UNSIGNED_BYTE, displacementPixels);
-    return { width: displacement.width, height: displacement.height, data: displacementPixels };
-  };
-
-  const step = (dtSec: number) => {
-    if (isDisposed || gl.isContextLost() || !velocity || !dye || !pressure || !divergence || !curl) return;
-    const texel = [velocity.read.texelX, velocity.read.texelY] as const;
-
-    // 渦度の閉じ込め
-    gl.useProgram(curlProgram.program);
-    gl.uniform2f(curlProgram.uniforms.uTexel, texel[0], texel[1]);
-    bindTexture(curlProgram, 'uVelocity', 0, velocity.read.texture);
-    draw(curl);
-    gl.useProgram(vorticityProgram.program);
-    gl.uniform2f(vorticityProgram.uniforms.uTexel, texel[0], texel[1]);
-    gl.uniform1f(vorticityProgram.uniforms.uStrength, VORTICITY_STRENGTH);
-    gl.uniform1f(vorticityProgram.uniforms.uDt, dtSec);
-    bindTexture(vorticityProgram, 'uVelocity', 0, velocity.read.texture);
-    bindTexture(vorticityProgram, 'uCurl', 1, curl.texture);
-    draw(velocity.write);
-    swap(velocity);
-
-    // 圧力の射影（発散 → ヤコビ反復 → 勾配の減算）
-    gl.useProgram(divergenceProgram.program);
-    gl.uniform2f(divergenceProgram.uniforms.uTexel, texel[0], texel[1]);
-    bindTexture(divergenceProgram, 'uVelocity', 0, velocity.read.texture);
-    draw(divergence);
-    gl.useProgram(scaleProgram.program);
-    gl.uniform1f(scaleProgram.uniforms.uScale, PRESSURE_CARRY);
-    bindTexture(scaleProgram, 'uSource', 0, pressure.read.texture);
-    draw(pressure.write);
-    swap(pressure);
-    gl.useProgram(pressureProgram.program);
-    gl.uniform2f(pressureProgram.uniforms.uTexel, texel[0], texel[1]);
-    bindTexture(pressureProgram, 'uDivergence', 1, divergence.texture);
-    for (let iteration = 0; iteration < jacobiIterations; iteration += 1) {
-      bindTexture(pressureProgram, 'uPressure', 0, pressure.read.texture);
-      draw(pressure.write);
-      swap(pressure);
-    }
-    gl.useProgram(gradientProgram.program);
-    gl.uniform2f(gradientProgram.uniforms.uTexel, texel[0], texel[1]);
-    bindTexture(gradientProgram, 'uPressure', 0, pressure.read.texture);
-    bindTexture(gradientProgram, 'uVelocity', 1, velocity.read.texture);
-    draw(velocity.write);
-    swap(velocity);
-
-    // 移流：速度は自分自身を運び，染料は速度に運ばれる
-    advect(velocity, velocity, dtSec, FLUID_VELOCITY_RETENTION_PER_SEC, VELOCITY_FLOOR);
-    advect(dye, velocity, dtSec, FLUID_DYE_RETENTION_PER_SEC, DYE_FLOOR);
-    render();
   };
 
   const clear = () => {
     if (isDisposed || gl.isContextLost()) return;
-    [velocity, dye, pressure].forEach((pair) => {
-      [pair?.read, pair?.write].forEach((target) => {
-        if (!target) return;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer);
-        gl.viewport(0, 0, target.width, target.height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-      });
-    });
+    clearTarget(field?.read);
+    clearTarget(field?.write);
+    clearTarget(blurMid);
+    clearTarget(blurred);
     // 透明な絵を出す（canvas に前の絵が残らないように）
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -457,17 +377,15 @@ function buildEngine(canvas: HTMLCanvasElement, initialColors: FluidColors): Flu
     isDisposed = true;
     if (gl.isContextLost()) return;
     releaseTargets();
-    [splatProgram, advectionProgram, divergenceProgram, pressureProgram, gradientProgram, curlProgram, vorticityProgram, scaleProgram, displayProgram, displacementProgram]
-      .forEach((entry) => entry && gl.deleteProgram(entry.program));
+    [updateProgram, blurProgram, displayProgram].forEach((entry) => gl.deleteProgram(entry.program));
   };
 
   return {
     resize,
-    inject,
     step,
-    readDisplacement,
     clear,
-    setColors: (next) => { colors = next; },
+    setLook: (next) => { look = next; },
+    precision,
     isContextLost: () => gl.isContextLost(),
     dispose,
   };

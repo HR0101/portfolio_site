@@ -1,6 +1,11 @@
-// 流体の背景の計算（解像度・注入量・眠りの判定・色・出す条件）．
+// 流体カーソルの計算（解像度・筆の半径・慣性・薄れ・眠りの判定・色・出す条件）．
 // 画面にも WebGL にも触れない純粋な関数だけを置く．
 // 他のファイルを読み込まない（テストが TS をそのまま読み込めるようにするため）．
+//
+// 方式：流体の方程式は解かない．画面の 1/4 の解像度で「速度」と「2 種類の重み」を塗るバッファを 1 枚持ち，
+// 毎コマ，筆（マウスの移動の線分）を足し，ぼかした低解像度の写しで自分自身を運び，指数的に薄れさせる．
+// 表示は，その速度と重みから，位相の違う正弦（淡い虹色の干渉縞）を計算して色を足す．
+// 参考の値（60fps 前提のコマあたりの値）を既定にし，経過時間で補正する．
 
 // ===== 出す条件 =====
 // 幅がこれ未満では出さない（CursorRing の引力と同じ基準）
@@ -9,10 +14,16 @@ export const FLUID_MIN_VIEWPORT_WIDTH_PX = 761;
 const FLUID_HIDDEN_PATH_PREFIX = '/apps/';
 const FLUID_VISIBLE_APPS_PATH = '/apps/others';
 
+// ===== 数の補助 =====
+const clamp = (value: number, minimum: number, maximum: number) => Math.min(Math.max(value, minimum), maximum);
+const finiteOr = (value: number, fallback: number) => (Number.isFinite(value) ? value : fallback);
+
 // ===== 時間 =====
 export const FLUID_MAX_FPS = 60;
+// 参考の「コマあたりの値」が前提にしている描画の速さ（fps）．薄れ・押す力・慣性は，この速さに換算して経過時間で補正する
+export const FLUID_REFERENCE_FPS = 60;
 // 1 コマで進める時間の上限（秒）．タブが止まっていた直後などに大きく進めない
-export const FLUID_MAX_STEP_SEC = 1 / 30;
+export const FLUID_MAX_STEP_SEC = 1 / 20;
 // 1 コマで進める時間の下限（秒）．速さの計算で 0 割りを避ける
 export const FLUID_MIN_STEP_SEC = 1 / 240;
 // コマの間引きで許す誤差（ms）．60Hz の描画間隔が 16.67ms なので，ちょうどの間隔でも通す
@@ -20,108 +31,227 @@ export const FLUID_FRAME_SLACK_MS = 1;
 // ポインタの動きがこの時間以上途切れたら，新しい筆致として扱う（再入場の飛びを線にしない）
 export const FLUID_STROKE_GAP_MS = 200;
 
+// 描画を間引くか．前のコマからの経過が足りないとき true（最大 FLUID_MAX_FPS）
+export function shouldSkipFrame(nowMs: number, lastFrameMs: number, maxFps: number = FLUID_MAX_FPS): boolean {
+  if (!(maxFps > 0) || !Number.isFinite(lastFrameMs)) return false;
+  return nowMs - lastFrameMs < 1000 / maxFps - FLUID_FRAME_SLACK_MS;
+}
+
+// 1 コマで進める時間（秒）．極端に短い・長い間隔は丸める
+export function getFluidStepSec(frameMs: number): number {
+  return clamp(finiteOr(frameMs, 1000 / FLUID_MAX_FPS) / 1000, FLUID_MIN_STEP_SEC, FLUID_MAX_STEP_SEC);
+}
+
+// 60fps の 1 コマで factor 倍になる量を，stepSec 秒ぶんの倍率にする（0.975 なら 60fps で 0.975，30fps で 0.975²）
+export function getFrameDecay(factorPerFrame: number, stepSec: number): number {
+  const factor = clamp(finiteOr(factorPerFrame, 1), 0, 1);
+  return factor ** (Math.max(0, finiteOr(stepSec, 0)) * FLUID_REFERENCE_FPS);
+}
+
+// ===== バッファの薄れ（60fps の 1 コマあたり）=====
+// 速度は長く残し，重み 1 はゆっくり，重み 2 は速く薄れる（2 種類の重みで，尾の濃さに段をつける）
+export const FLUID_VELOCITY_DECAY = 0.975;
+export const FLUID_WEIGHT_A_DECAY = 0.95;
+export const FLUID_WEIGHT_B_DECAY = 0.8;
+
+// ===== 筆（マウスの移動の線分）=====
+// 1 コマ（60fps 換算）に動いた距離（px）に比例して，筆の半径（px）が決まる．上限はこの値（CSS の px．参考は 100．彗星の細さに合わせて小さくした）
+export const FLUID_BRUSH_MAX_PX = 64;
+// 動いた距離に対する筆の半径の倍率．参考は 1（0〜100px → 0〜100px）．
+// 1 では，ふつうの速さ（秒速 1000px 前後）で筆が細すぎてほとんど見えず，参考の絵の太さにならなかったので 2 にした
+export const FLUID_BRUSH_RADIUS_PER_PX = 2;
+// これ未満の動きは「止まっている」とみなして何も塗らない（px）
+export const FLUID_MIN_MOVE_PX = 0.5;
+// 1 コマでこれ以上飛んだ動きは，ワープ（再入場など）とみなして描かない
+export const FLUID_MAX_JUMP_PX = 700;
+// 筆の慣性．前の値を残す割合（60fps の 1 コマあたり）
+export const FLUID_VELOCITY_INERTIA = 0.8;
+// 速度の目標値：ポインタの速さ（CSS の px／秒）あたり．参考の「移動量（バッファの画素）× dt × 0.8」の定常値と同じ
+export const FLUID_VELOCITY_PER_PX_PER_SEC = 1 / 3600;
+// バッファに書ける速度の大きさの上限（0.5 を 0 とするので，±0.5）
+export const FLUID_MAX_VELOCITY = 0.5;
+
+// 1 コマに moveDistancePx 動いたときの，筆の半径（CSS の px）．
+// 描画の速さによらないよう，動いた距離を 60fps の 1 コマぶんに換算してから，上限で止める．止まっていれば 0
+export function getFluidBrushRadiusPx(moveDistancePx: number, stepSec: number): number {
+  const move = finiteOr(moveDistancePx, 0);
+  if (move < FLUID_MIN_MOVE_PX) return 0;
+  const step = Math.max(finiteOr(stepSec, 1 / FLUID_REFERENCE_FPS), FLUID_MIN_STEP_SEC);
+  const perReferenceFrame = (move * (1 / FLUID_REFERENCE_FPS)) / step;
+  return clamp(perReferenceFrame * FLUID_BRUSH_RADIUS_PER_PX, 0, FLUID_BRUSH_MAX_PX);
+}
+
+export interface FluidVelocity {
+  x: number;
+  y: number;
+}
+
+// 慣性つきの速度を 1 コマ進める．deltaX・deltaY はそのコマに動いた距離（CSS の px）
+export function advanceFluidVelocity(
+  previous: FluidVelocity,
+  deltaX: number,
+  deltaY: number,
+  stepSec: number,
+): FluidVelocity {
+  const step = Math.max(finiteOr(stepSec, 1 / FLUID_REFERENCE_FPS), FLUID_MIN_STEP_SEC);
+  const keep = getFrameDecay(FLUID_VELOCITY_INERTIA, step);
+  const toTarget = (delta: number) => clamp((finiteOr(delta, 0) / step) * FLUID_VELOCITY_PER_PX_PER_SEC, -FLUID_MAX_VELOCITY, FLUID_MAX_VELOCITY);
+  const blend = (before: number, delta: number) => clamp(finiteOr(before, 0) * keep + toTarget(delta) * (1 - keep), -FLUID_MAX_VELOCITY, FLUID_MAX_VELOCITY);
+  return { x: blend(previous.x, deltaX), y: blend(previous.y, deltaY) };
+}
+
+// ===== 移流（ぼかした低解像度の写しで，自分自身を運ぶ）=====
+// 速度 1（= 0.5 ぶん）あたりに前のコマから読みにいく距離（CSS の px．60fps の 1 コマあたり）．
+// 参考は，バッファの 25 画素（= 100px）．100px では尾が扇のように広がるので，彗星の細さに合わせて半分にした
+export const FLUID_PUSH_PX = 50;
+// 細い舌を作る勾配ノイズ：1 周期の長さ（CSS の px．参考は，バッファの位置 × 0.02 ＝ 画素 50 個ぶん）と，微分成分に掛ける倍率（CSS の px）
+// 参考の倍率は，バッファの 3 画素（= 12px）．この実装では 12px だと，画素の歪みが急に変わる所で鋭い折れ目（切り取ったような平らな縁）が出るので 3px にした
+export const FLUID_NOISE_PERIOD_PX = 200;
+export const FLUID_NOISE_GAIN_PX = 3;
+// ノイズの位置を速度・重みで少し歪める大きさ（ノイズの 1 周期を 1 とする）．大きいと速度の境目で縞が細かく乱れる
+export const FLUID_NOISE_WARP_VELOCITY = 0.3;
+export const FLUID_NOISE_WARP_WEIGHT = 0.1;
+// ぼかした写しのガウスぼかしの半径（CSS の px．参考は 1/8 解像度で半径 8 ＝ 64px）．標準偏差は半径の 1/3
+export const FLUID_BLUR_RADIUS_PX = 64;
+export const FLUID_BLUR_SIGMA_RATIO = 1 / 3;
+
 // ===== 品質（端末に合わせて下げる）=====
 export interface FluidQuality {
-  // 速度場の短辺側のマス数
-  velocityCells: number;
-  // 染料の短辺側のマス数
-  dyeCells: number;
-  // 圧力のヤコビ反復の回数
-  jacobiIterations: number;
+  // バッファの大きさ：画面の幅・高さを，この数で割る（参考は 4．1/4 の解像度）
+  bufferDivisor: number;
+  // 画面へ描く canvas の，CSS の 1px あたりの画素数（参考どおり 1/2 以下．やわらかい絵なので CSS で拡大しても粗さは目立たない）
+  displayScale: number;
 }
 
 export const FLUID_QUALITY_TIERS: readonly FluidQuality[] = [
-  { velocityCells: 128, dyeCells: 512, jacobiIterations: 20 },
-  { velocityCells: 96, dyeCells: 384, jacobiIterations: 16 },
-  { velocityCells: 64, dyeCells: 256, jacobiIterations: 12 },
+  { bufferDivisor: 4, displayScale: 0.5 },
+  { bufferDivisor: 6, displayScale: 0.4 },
+  { bufferDivisor: 8, displayScale: 0.3 },
 ];
+// ぼかした写しは，バッファのさらに 1/2 の解像度（参考は 1/8）
+export const FLUID_BLUR_DIVISOR_RATIO = 2;
 // 描画間隔の平均がこれを超えたら，1 段階下げる（ms．60Hz の 16.7ms に余裕を足した値）
 export const FLUID_SLOW_FRAME_MS = 22;
 // 平均を測るのに必要な最小のコマ数
 export const FLUID_MEASURE_FRAMES = 45;
-// 縦横比の上限（超横長の画面でマスが増えすぎないように）
-export const FLUID_MAX_ASPECT = 3;
 // メモリがこれ以下の端末，コア数がこれ以下の端末は品質を下げて始める（GB／個）
 const FLUID_LOW_MEMORY_GB = 2;
 const FLUID_LOW_CORES = 2;
 const FLUID_MID_CORES = 4;
 
-// ===== 注入（ポインタの動き → 速度と染料）=====
-export const FLUID_MIN_MOVE_PX = 0.5;
-// 1 コマでこれ以上飛んだ動きは，ワープ（再入場など）とみなして描かない
-export const FLUID_MAX_JUMP_PX = 700;
-// 染料の広がり（ガウスの標準偏差相当）の上限の，短辺に対する割合．
-// Lusion は 1 コマに動いた距離をそのまま筆の半径にする（ゆっくりなら細く，速いほど太く，上限あり）．それに合わせて，動きに比例させて上限で止める
-export const FLUID_SPLAT_RADIUS_RATIO = 0.02;
-// 染料の広がりの下限の，短辺に対する割合（ゆっくり動かしたときの細さ）
-export const FLUID_SPLAT_MIN_RADIUS_RATIO = 0.006;
-// 1 コマに動いた距離（px）に対する，染料の広がり（標準偏差）の倍率
-export const FLUID_SPLAT_RADIUS_PER_MOVE = 0.4;
-// 動きの線に沿って染料を置く間隔の，半径に対する割合．小さいほど途切れない
-export const FLUID_SPLAT_SPACING_RATIO = 0.6;
-export const FLUID_MAX_SAMPLES = 24;
-// 速度へ注入する倍率（ポインタの速さに対する）
-export const FLUID_FORCE_GAIN = 0.9;
-// 速さの上限（短辺／秒）
-export const FLUID_MAX_SPEED = 8;
-// 動いた距離 1px あたりに置く染料の量と，1 回に置く量の上限
-export const FLUID_DENSITY_PER_PX = 0.012;
-export const FLUID_DENSITY_PER_SAMPLE_MAX = 0.35;
-// 画素ごとの染料の上限．これを超えて溜めない（眠るまでの時間の見積もりにも使う）
-export const FLUID_DENSITY_CAP = 1;
+// 描画の粗さの下限（CSS の 1px あたりの画素数）
+export const FLUID_MIN_DISPLAY_SCALE = 0.25;
 
-// ===== 薄れ方 =====
-// 1 秒あたりに残る割合
-export const FLUID_DYE_RETENTION_PER_SEC = 0.25;
-export const FLUID_VELOCITY_RETENTION_PER_SEC = 0.1;
-// これ未満の染料は見えない（描画のしきい値）
-export const FLUID_VISIBLE_DENSITY = 0.02;
-// 見積もりに足す余裕（ms）
-const FLUID_FADE_MARGIN_MS = 400;
-// 見積もりができないときの，眠るまでの時間（ms）
-const FLUID_FALLBACK_FADE_MS = 8000;
-
-// ===== 層 =====
-// 'behind'：本文の背後（z-index: -1）．カード・画像・文字の上には出ない＝何もない所だけで見える．
-//   ただし不透明な背景をもつ章（Hero・Showcase・About・Skills・GitHub・Contact など）の裏では見えない．
-// 'overlay'：本文の上にブレンドで薄く重ねる（ライトは multiply，ダークは screen）．どの章でも見えるが，カードにも薄く乗る．
-export type FluidLayerMode = 'behind' | 'overlay';
-export const FLUID_LAYER_MODE: FluidLayerMode = 'overlay';
-// 層ごとの z-index．overlay は本文（main．10）より上，ナビ（50）より下
-export const FLUID_LAYER_Z_INDEX: Record<FluidLayerMode, number> = { behind: -1, overlay: 20 };
-
-// ===== 色 =====
-// 染料の色相の移ろい（rad／秒）．筆致に沿って，シャボン玉の虹色の位相がゆっくり変わる
-const FLUID_HUE_RATE = 0.9;
-
-export type FluidRgb = readonly [number, number, number];
-
-export interface FluidColors {
-  // シャボン玉の虹色に混ぜる，淡い水色（サイトのアクセントには依存しない）
-  primary: FluidRgb;
-  // シャボン玉の虹色に混ぜる，淡いピンク紫
-  secondary: FluidRgb;
-  // 最も濃いところの不透明度（控えめ）
-  maxAlpha: number;
+export interface FluidSize {
+  width: number;
+  height: number;
 }
 
-// Lusion 風のシャボン玉（薄膜干渉）の虹色に混ぜる，淡い 2 色．虹色そのものはシェーダー側で作る．
-// サイトのアクセント色には引っ張られない
-const FLUID_TINT_CYAN = { light: '#8fd3ff', dark: '#8fe0ff' } as const;
-const FLUID_TINT_PINK = { light: '#d9a8ff', dark: '#ffb8e8' } as const;
-// 最大の不透明度．虹色は淡い色なので，ライト（乗算）でも見えるよう少し持ち上げ，ダークは暗い面の上で少し明るく．
-// overlay は本文にも乗るので，behind より薄くする
-// ページを歪ませる層が使えるとき，染料の絵は縁の虹色を足すだけなので，さらに淡くする
-const FLUID_MAX_ALPHA = {
-  behind: { light: 0.4, dark: 0.46 },
-  overlay: { light: 0.16, dark: 0.18 },
-} as const;
-// ページを歪ませる層が使えないブラウザ（Safari・Firefox）では，染料の絵だけで見せるので，濃さをこの倍率で戻す
-export const FLUID_ALPHA_GAIN_WITHOUT_DISTORTION = 2;
+// 画面の大きさを divisor で割った大きさ（1 以上の整数）
+export function getFluidScaledSize(viewportWidth: number, viewportHeight: number, divisor: number): FluidSize {
+  const safeDivisor = Math.max(1, finiteOr(divisor, 1));
+  return {
+    width: Math.max(1, Math.round(Math.max(1, finiteOr(viewportWidth, 1)) / safeDivisor)),
+    height: Math.max(1, Math.round(Math.max(1, finiteOr(viewportHeight, 1)) / safeDivisor)),
+  };
+}
 
-// ===== 数の補助 =====
-const clamp = (value: number, minimum: number, maximum: number) => Math.min(Math.max(value, minimum), maximum);
-const finiteOr = (value: number, fallback: number) => (Number.isFinite(value) ? value : fallback);
+// 画面へ描く canvas の大きさ（CSS の画素数 × 倍率．端末の倍率には依らない）
+export function getFluidDisplaySize(viewportWidth: number, viewportHeight: number, displayScale: number): FluidSize {
+  const scale = clamp(finiteOr(displayScale, 0.5), FLUID_MIN_DISPLAY_SCALE, 1);
+  return getFluidScaledSize(viewportWidth, viewportHeight, 1 / scale);
+}
+
+// 端末の余力から，最初の品質の段階を決める（0 が最高）
+export function pickInitialQualityTier(hardware: { cores?: number; memoryGb?: number }): number {
+  const cores = finiteOr(hardware.cores ?? Number.NaN, Number.POSITIVE_INFINITY);
+  const memory = finiteOr(hardware.memoryGb ?? Number.NaN, Number.POSITIVE_INFINITY);
+  if (memory <= FLUID_LOW_MEMORY_GB || cores <= FLUID_LOW_CORES) return FLUID_QUALITY_TIERS.length - 1;
+  if (cores <= FLUID_MID_CORES) return 1;
+  return 0;
+}
+
+// 描画間隔の平均が長いとき，1 段階だけ下げる．上げ直さない（行き来して揺れないように）
+export function getNextQualityTier(currentTier: number, averageFrameMs: number): number {
+  const lastTier = FLUID_QUALITY_TIERS.length - 1;
+  const tier = clamp(Math.round(finiteOr(currentTier, 0)), 0, lastTier);
+  if (Number.isFinite(averageFrameMs) && averageFrameMs > FLUID_SLOW_FRAME_MS) return Math.min(tier + 1, lastTier);
+  return tier;
+}
+
+// ===== 眠り =====
+// 色の振れ幅の上限が，この値（0〜1．8 ビットで 1.5 段階ぶん）を下回ったら，ほぼ見えない（眠る）
+export const FLUID_INVISIBLE_LEVEL = 1.5 / 255;
+// 眠る直前に，層の不透明度をなだらかに 0 へ下げる時間（ms）．この時点の色はすでにごく薄いので，段差は見えない
+export const FLUID_LAYER_FADE_MS = 400;
+
+// 始点 > 終点でも決まる smoothstep．表示のシェーダーの falloff と同じ式
+export function getFluidFalloff(edge0: number, edge1: number, value: number): number {
+  if (edge0 === edge1) return value < edge0 ? 0 : 1;
+  const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+// 最後に筆を置いてから，色の振れ幅が見えなくなるまでの時間（ms）．
+// 重み (z + w) / 2 は，足し込まれても 1 で止まるので，最大 0.5 から指数的に薄れる．
+// 速度 |0.5 − xy| × 2 も同じ速さで薄れるので，振れ幅の上限は
+//   陰影 × 重み 0 での減衰の値 × 色の倍率 × 0.5 × (速度の薄れ × 重み 1 の薄れ)^コマ数
+export function getFluidSleepMs(colorMultiplier: number = FLUID_LOOKS.light.colorMultiplier): number {
+  const ceiling = FLUID_SHADE * getFluidFalloff(FLUID_FALLOFF_START, FLUID_FALLOFF_END, 0) * Math.max(0, finiteOr(colorMultiplier, 0)) * 0.5;
+  if (!(ceiling > FLUID_INVISIBLE_LEVEL)) return 0;
+  const frames = Math.log(FLUID_INVISIBLE_LEVEL / ceiling) / Math.log(FLUID_VELOCITY_DECAY * FLUID_WEIGHT_A_DECAY);
+  return Math.ceil((frames / FLUID_REFERENCE_FPS) * 1000);
+}
+
+// 最後に筆を置いてから十分に時間がたち，描画を止めて眠ってよいか
+export function isFluidAsleep(nowMs: number, lastInjectMs: number, sleepMs: number = getFluidSleepMs()): boolean {
+  if (!Number.isFinite(lastInjectMs)) return true;
+  return nowMs - lastInjectMs >= sleepMs;
+}
+
+// 最後に筆を置いてからの経過（ms）に対する，層の不透明度（0〜1）．眠る直前だけ，なだらかに 0 へ下げる
+// （それまでは，バッファ自身の指数的な薄れに任せる）
+export function getFluidLayerOpacity(sinceInjectMs: number, sleepMs: number = getFluidSleepMs()): number {
+  const t = clamp((sleepMs - finiteOr(sinceInjectMs, 0)) / FLUID_LAYER_FADE_MS, 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+// ===== 層 =====
+// 本文の上（main．10）で，ナビ（50）より下に，通常のアルファ合成（乗算済み）で重ねる．mix-blend-mode は使わない
+export const FLUID_LAYER_Z_INDEX = 20;
+
+// ===== 表示（色を足す）=====
+// 参考の式：足す色 = sin((vel.x + vel.y) × 位相の倍率 + (0, 2, 4) × RGB のずれ)
+//                    × smoothstep(始点, 終点, 重み) × 陰影 × max(|vel.x|, |vel.y|) × 色の倍率
+// 重み = (z + w) / 2，vel = (0.5 − xy) × 2 × 重み．RGB で位相が違うので，淡い虹色の干渉縞になる
+// 位相の倍率．参考は 40．40 だと，筆の縁で縞が細かく乱れ（低い解像度のバッファでは階段状に見える），虹色が強く出すぎる．
+// 縞がなめらかなまま，頭に淡い紫が出る 28 にした（18 だと水色一色に寄る）
+export const FLUID_PHASE_SCALE = 28;
+export const FLUID_RGB_SHIFT = 0.5;
+export const FLUID_SHADE = 1.25;
+// 重みが多いほど色が弱まる．重み FLUID_FALLOFF_START で 0，FLUID_FALLOFF_END で 1（始点 > 終点なので，逆向きの smoothstep）
+export const FLUID_FALLOFF_START = 0.4;
+export const FLUID_FALLOFF_END = -0.9;
+
+// テーマごとの見た目の強さ．
+// 明るい背景は，正の成分が頭打ち（白はそれ以上明るくならない）なので，負の成分が作る淡い色の筋が主役になる．
+// 暗い背景は，加算がよく見えるので，強さを別に持つ
+export interface FluidLook {
+  // 色の倍率（参考のトップページは 10）
+  colorMultiplier: number;
+  // 彩度（1 で正弦のまま，小さいほど白っぽい光に寄る）
+  saturation: number;
+}
+
+// 強さは，参考の画像と見比べて決めた値
+export const FLUID_LOOKS: Record<'light' | 'dark', FluidLook> = {
+  light: { colorMultiplier: 24, saturation: 1 },
+  dark: { colorMultiplier: 50, saturation: 0.55 },
+};
+
+export function getFluidLook(isDark: boolean): FluidLook {
+  return isDark ? FLUID_LOOKS.dark : FLUID_LOOKS.light;
+}
 
 // ===== 出す条件 =====
 export interface FluidEnvironment {
@@ -157,186 +287,14 @@ export function isFluidPath(pathname: string): boolean {
   return !(path + '/').startsWith(FLUID_HIDDEN_PATH_PREFIX);
 }
 
-// ===== 解像度 =====
-export interface FluidGridSize {
-  width: number;
-  height: number;
-}
-
-// 画面の縦横比に合わせたマスの数．短辺が shortCells，長辺は比に応じて増える（上限あり）
-export function getFluidGridSize(viewportWidth: number, viewportHeight: number, shortCells: number): FluidGridSize {
-  const short = Math.max(1, Math.round(finiteOr(shortCells, 1)));
-  const width = Math.max(1, finiteOr(viewportWidth, 1));
-  const height = Math.max(1, finiteOr(viewportHeight, 1));
-  const ratio = clamp(width / height, 1 / FLUID_MAX_ASPECT, FLUID_MAX_ASPECT);
-  if (ratio >= 1) return { width: Math.round(short * ratio), height: short };
-  return { width: short, height: Math.round(short / ratio) };
-}
-
-// 端末の余力から，最初の品質の段階を決める（0 が最高）
-export function pickInitialQualityTier(hardware: { cores?: number; memoryGb?: number }): number {
-  const cores = finiteOr(hardware.cores ?? Number.NaN, Number.POSITIVE_INFINITY);
-  const memory = finiteOr(hardware.memoryGb ?? Number.NaN, Number.POSITIVE_INFINITY);
-  if (memory <= FLUID_LOW_MEMORY_GB || cores <= FLUID_LOW_CORES) return FLUID_QUALITY_TIERS.length - 1;
-  if (cores <= FLUID_MID_CORES) return 1;
-  return 0;
-}
-
-// 描画間隔の平均が長いとき，1 段階だけ下げる．上げ直さない（行き来して揺れないように）
-export function getNextQualityTier(currentTier: number, averageFrameMs: number): number {
-  const lastTier = FLUID_QUALITY_TIERS.length - 1;
-  const tier = clamp(Math.round(finiteOr(currentTier, 0)), 0, lastTier);
-  if (Number.isFinite(averageFrameMs) && averageFrameMs > FLUID_SLOW_FRAME_MS) return Math.min(tier + 1, lastTier);
-  return tier;
-}
-
-// ===== 時間 =====
-// 描画を間引くか．前のコマからの経過が足りないとき true（最大 FLUID_MAX_FPS）
-export function shouldSkipFrame(nowMs: number, lastFrameMs: number, maxFps: number = FLUID_MAX_FPS): boolean {
-  if (!(maxFps > 0) || !Number.isFinite(lastFrameMs)) return false;
-  return nowMs - lastFrameMs < 1000 / maxFps - FLUID_FRAME_SLACK_MS;
-}
-
-// 1 コマで進める時間（秒）．極端に短い・長い間隔は丸める
-export function getFluidStepSec(frameMs: number): number {
-  return clamp(finiteOr(frameMs, 1000 / FLUID_MAX_FPS) / 1000, FLUID_MIN_STEP_SEC, FLUID_MAX_STEP_SEC);
-}
-
-// 1 秒あたりに残る割合 retention を，dt 秒ぶんの係数にする
-export function getDecayFactor(stepSec: number, retentionPerSec: number): number {
-  const retention = clamp(finiteOr(retentionPerSec, 1), 0, 1);
-  return retention ** Math.max(0, finiteOr(stepSec, 0));
-}
-
-// 染料が最大の濃さから見えなくなるまでの時間（ms）．移流は染料を増やさないので，減衰だけで上から押さえられる
-export function getFluidFadeMs(
-  maxDensity: number = FLUID_DENSITY_CAP,
-  retentionPerSec: number = FLUID_DYE_RETENTION_PER_SEC,
-  visibleDensity: number = FLUID_VISIBLE_DENSITY,
-): number {
-  if (!(visibleDensity > 0) || !(maxDensity > visibleDensity)) return 0;
-  if (!(retentionPerSec > 0 && retentionPerSec < 1)) return FLUID_FALLBACK_FADE_MS;
-  const seconds = Math.log(visibleDensity / maxDensity) / Math.log(retentionPerSec);
-  return Math.ceil(seconds * 1000) + FLUID_FADE_MARGIN_MS;
-}
-
-// 最後に染料を置いてから十分に時間がたち，描画を止めて眠ってよいか
-export function isFluidAsleep(nowMs: number, lastInjectMs: number, fadeMs: number = getFluidFadeMs()): boolean {
-  if (!Number.isFinite(lastInjectMs)) return true;
-  return nowMs - lastInjectMs >= fadeMs;
-}
-
-// ===== 注入 =====
+// ===== ポインタ =====
 export interface FluidPoint {
   x: number;
   y: number;
 }
 
-export interface FluidViewport {
-  width: number;
-  height: number;
-}
-
-// 1 か所に置く染料と速度．x, y は 0〜1（y は上向き）．
-// velocityX, velocityY は短辺／秒（y は上向き）．hue は 0〜1（虹色の位相のずれ）．
-// radiusPx は染料の広がり（px）．ポインタの動きの大きさで変わる
-export interface FluidSplat {
-  x: number;
-  y: number;
-  velocityX: number;
-  velocityY: number;
-  density: number;
-  hue: number;
-  radiusPx: number;
-}
-
-// 染料の広がりの半径（px）の上限
-export function getFluidSplatRadiusPx(viewport: FluidViewport): number {
-  return Math.min(finiteOr(viewport.width, 1), finiteOr(viewport.height, 1)) * FLUID_SPLAT_RADIUS_RATIO;
-}
-
-// 1 コマに distancePx 動いたときの，染料の広がりの半径（px）．動きに比例し，下限と上限（getFluidSplatRadiusPx）で止める
-export function getFluidSplatRadiusForMovePx(viewport: FluidViewport, distancePx: number): number {
-  const shortSide = Math.min(finiteOr(viewport.width, 1), finiteOr(viewport.height, 1));
-  const maximum = getFluidSplatRadiusPx(viewport);
-  const minimum = Math.min(shortSide * FLUID_SPLAT_MIN_RADIUS_RATIO, maximum);
-  return clamp(finiteOr(distancePx, 0) * FLUID_SPLAT_RADIUS_PER_MOVE, minimum, maximum);
-}
-
-// ポインタが from から to へ dtSec かけて動いたときの，染料と速度の置き場所．
-// 動きに沿って間隔をあけて並べるので，速く動かしても線が途切れない．動かなかった・ワープしたときは空
-export function getPointerSplats(
-  from: FluidPoint,
-  to: FluidPoint,
-  dtSec: number,
-  viewport: FluidViewport,
-  hue: number,
-): FluidSplat[] {
-  const width = finiteOr(viewport.width, 0);
-  const height = finiteOr(viewport.height, 0);
-  if (!(width > 0 && height > 0)) return [];
-  const deltaX = to.x - from.x;
-  const deltaY = to.y - from.y;
-  const distance = Math.hypot(deltaX, deltaY);
-  if (!Number.isFinite(distance) || distance < FLUID_MIN_MOVE_PX || distance > FLUID_MAX_JUMP_PX) return [];
-
-  const shortSide = Math.min(width, height);
-  const stepSec = Math.max(finiteOr(dtSec, FLUID_MIN_STEP_SEC), FLUID_MIN_STEP_SEC);
-  const speed = Math.min(distance / shortSide / stepSec, FLUID_MAX_SPEED);
-  // 画面の座標は下向きが正なので，y を反転して上向きにそろえる
-  const velocityX = (deltaX / distance) * speed;
-  const velocityY = (-deltaY / distance) * speed;
-
-  const radiusPx = getFluidSplatRadiusForMovePx(viewport, distance);
-  const spacing = radiusPx * FLUID_SPLAT_SPACING_RATIO;
-  const count = clamp(Math.ceil(distance / spacing), 1, FLUID_MAX_SAMPLES);
-  const density = Math.min(FLUID_DENSITY_PER_SAMPLE_MAX, (FLUID_DENSITY_PER_PX * distance) / count);
-  const safeHue = clamp(finiteOr(hue, 0), 0, 1);
-
-  const splats: FluidSplat[] = [];
-  for (let index = 1; index <= count; index += 1) {
-    const progress = index / count;
-    splats.push({
-      x: clamp((from.x + deltaX * progress) / width, 0, 1),
-      y: clamp(1 - (from.y + deltaY * progress) / height, 0, 1),
-      velocityX,
-      velocityY,
-      density,
-      hue: safeHue,
-      radiusPx,
-    });
-  }
-  return splats;
-}
-
-// 染料の色相（0〜1）．虹色の位相のずれとして使い，時間とともにゆるやかに行き来する
-export function getDyeHue(timeSec: number): number {
-  return 0.5 + 0.5 * Math.sin(finiteOr(timeSec, 0) * FLUID_HUE_RATE);
-}
-
-// ===== 色 =====
-// '#rgb'・'#rrggbb'・'rgb(r, g, b)' を 0〜1 の色にする．読めなければ null
-export function parseCssColor(value: string): FluidRgb | null {
-  const text = (value || '').trim().toLowerCase();
-  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/.exec(text);
-  if (hex) {
-    const digits = hex[1].length === 3 ? hex[1].replace(/./g, (c) => c + c) : hex[1];
-    const channel = (offset: number) => Number.parseInt(digits.slice(offset, offset + 2), 16) / 255;
-    return [channel(0), channel(2), channel(4)];
-  }
-  const rgb = /^rgba?\(\s*(\d{1,3})[\s,]+(\d{1,3})[\s,]+(\d{1,3})/.exec(text);
-  if (rgb) {
-    const channel = (text: string) => clamp(Number(text) / 255, 0, 1);
-    return [channel(rgb[1]), channel(rgb[2]), channel(rgb[3])];
-  }
-  return null;
-}
-
-// テーマに合わせた染料の色．虹色は Lusion に合わせて固定し，サイトのアクセント色（--site-accent）は使わない
-// （accentCss は呼び出し側との互換のために受け取るだけ）
-export function getFluidColors(isDark: boolean, _accentCss?: string, layer: FluidLayerMode = FLUID_LAYER_MODE): FluidColors {
-  const mode = isDark ? 'dark' : 'light';
-  const primary = parseCssColor(FLUID_TINT_CYAN[mode]) as FluidRgb;
-  const secondary = parseCssColor(FLUID_TINT_PINK[mode]) as FluidRgb;
-  return { primary, secondary, maxAlpha: FLUID_MAX_ALPHA[layer][mode] };
+// 前のコマから今のコマへのポインタの動きが，筆として使えるか（動いていて，ワープではない）
+export function isFluidStroke(from: FluidPoint, to: FluidPoint): boolean {
+  const distance = Math.hypot(to.x - from.x, to.y - from.y);
+  return Number.isFinite(distance) && distance >= FLUID_MIN_MOVE_PX && distance <= FLUID_MAX_JUMP_PX;
 }

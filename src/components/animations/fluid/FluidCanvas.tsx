@@ -2,29 +2,30 @@
 
 import { useEffect, useRef } from 'react';
 import {
-  FLUID_ALPHA_GAIN_WITHOUT_DISTORTION,
-  FLUID_LAYER_MODE,
   FLUID_LAYER_Z_INDEX,
   FLUID_MEASURE_FRAMES,
   FLUID_QUALITY_TIERS,
   FLUID_STROKE_GAP_MS,
-  getDyeHue,
-  getFluidColors,
+  advanceFluidVelocity,
+  getFluidBrushRadiusPx,
+  getFluidLayerOpacity,
+  getFluidLook,
+  getFluidSleepMs,
   getFluidStepSec,
   getNextQualityTier,
-  getPointerSplats,
   isFluidAsleep,
+  isFluidStroke,
   pickInitialQualityTier,
   shouldSkipFrame,
   type FluidPoint,
+  type FluidVelocity,
 } from '../../../lib/animations/fluid';
 import { PRELOADING_CLASS } from '../../../lib/preloader';
-import { createFluidDistortion, type FluidDistortion } from './fluidDistortion';
 import { createFluidEngine, type FluidEngine } from './fluidEngine';
 import styles from './FluidCanvas.module.css';
 
-// 流体の背景の本体（WebGL）．FluidCursor が最初のマウスの動きのあとに別チャンクとして読み込む．
-// 動きが止まって染料が見えなくなったら描画を止めて眠り，次のマウスの動きで起きる．
+// 流体カーソルの本体（WebGL）．FluidCursor が最初のマウスの動きのあとに別チャンクとして読み込む．
+// 動きが止まってバッファの重みが十分薄れたら描画を止めて眠り（canvas も隠す），次のマウスの動きで起きる．
 
 // 大きさの変化を受けて作り直すまでの待ち時間（ms）．ウィンドウを引き伸ばしている間は作り直さない
 const RESIZE_DEBOUNCE_MS = 150;
@@ -32,7 +33,6 @@ const RESIZE_DEBOUNCE_MS = 150;
 const MEASURE_MAX_FRAME_MS = 100;
 // 画面の大きさがこれ以上変わったら作り直す（px）
 const RESIZE_THRESHOLD_PX = 1;
-const ACCENT_VARIABLE = '--site-accent';
 
 interface FluidCanvasProps {
   // 最初に動いたときのマウスの位置
@@ -57,14 +57,9 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
     const root = document.documentElement;
     const controller = new AbortController();
     const { signal } = controller;
-
-    // ページを歪ませる層（Chromium のみ．使えなければ null で，染料の絵だけを出す）
-    const distortion = createFluidDistortion() as FluidDistortion | null;
-
-    const readColors = () => {
-      const colors = getFluidColors(root.classList.contains('dark'), getComputedStyle(root).getPropertyValue(ACCENT_VARIABLE));
-      return distortion ? colors : { ...colors, maxAlpha: colors.maxAlpha * FLUID_ALPHA_GAIN_WITHOUT_DISTORTION };
-    };
+    const readLook = () => getFluidLook(root.classList.contains('dark'));
+    // 眠るまでの時間は，テーマごとの色の強さで決まる（強いほど長く見える）．テーマが変わったときだけ測り直す
+    let sleepMs = getFluidSleepMs(readLook().colorMultiplier);
 
     // クロージャの中で代入するので，型を null に狭められないようにする
     let engine = null as FluidEngine | null;
@@ -75,12 +70,15 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
     let viewport = { width: canvas.clientWidth || window.innerWidth, height: canvas.clientHeight || window.innerHeight };
     let frame = 0;
     let lastFrameMs = 0;
-    let lastInjectMs = Number.NEGATIVE_INFINITY;
+    // 最後に筆を置いた時刻．眠る判定と，層の薄れに使う
+    let lastBrushMs = Number.NEGATIVE_INFINITY;
     // ポインタ：いちばん新しい位置と，前のコマで処理し終えた位置
     let pointer: FluidPoint = { ...startPointRef.current };
     let processed: FluidPoint | null = { ...startPointRef.current };
     let lastEventPoint: FluidPoint = { ...startPointRef.current };
     let lastEventMs = performance.now();
+    // 慣性つきの筆の速度
+    let velocity: FluidVelocity = { x: 0, y: 0 };
     // 品質の測定
     let measuredMs = 0;
     let measuredFrames = 0;
@@ -100,12 +98,13 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
       lastFrameMs = 0;
     };
 
-    // 眠る：描画を止め，染料を消して透明な絵にする
+    // 眠る：描画を止め，バッファを空にして透明な絵にする
     const sleep = () => {
       stopFrame();
       engine?.clear();
-      distortion?.hide();
       setShown(false);
+      velocity = { x: 0, y: 0 };
+      lastBrushMs = Number.NEGATIVE_INFINITY;
       measuredMs = 0;
       measuredFrames = 0;
     };
@@ -113,7 +112,7 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
     const rebuild = (): boolean => {
       if (!engine) return false;
       const isReady = engine.resize(viewport.width, viewport.height, tier);
-      lastInjectMs = Number.NEGATIVE_INFINITY;
+      lastBrushMs = Number.NEGATIVE_INFINITY;
       return isReady;
     };
 
@@ -145,23 +144,34 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
       measureFrame(frameMs);
       const stepSec = getFluidStepSec(frameMs);
 
-      // ポインタが実際に動いた分だけ，染料と速度を置く（スクロールで要素が下を流れるだけでは何も置かない）
-      if (processed) {
-        const splats = getPointerSplats(processed, pointer, stepSec, viewport, getDyeHue(now / 1000));
-        if (splats.length > 0) {
-          setShown(true);
-          engine.inject(splats);
-          lastInjectMs = now;
-        }
+      // ポインタが実際に動いた分だけ筆を置く（スクロールで要素が下を流れるだけでは何も置かない）
+      const from = processed ?? pointer;
+      const isStroke = isFluidStroke(from, pointer);
+      const deltaX = isStroke ? pointer.x - from.x : 0;
+      const deltaY = isStroke ? pointer.y - from.y : 0;
+      const brushRadiusPx = isStroke ? getFluidBrushRadiusPx(Math.hypot(deltaX, deltaY), stepSec) : 0;
+      velocity = advanceFluidVelocity(velocity, deltaX, deltaY, stepSec);
+      if (brushRadiusPx > 0) {
+        setShown(true);
+        lastBrushMs = now;
       }
       processed = { ...pointer };
 
-      engine.step(stepSec);
-      if (distortion && !isFluidAsleep(now, lastInjectMs)) {
-        const map = engine.readDisplacement();
-        if (map) distortion.update(map);
-      }
-      if (isFluidAsleep(now, lastInjectMs)) {
+      engine.step({
+        dtSec: stepSec,
+        fromX: from.x,
+        fromY: from.y,
+        toX: pointer.x,
+        toY: pointer.y,
+        brushRadiusPx,
+        velocityX: velocity.x,
+        velocityY: velocity.y,
+      });
+
+      // 眠る直前は，層ごとなだらかに薄れる（バッファの薄れが十分小さくなった所で，パッと消えるのを見せない）
+      const sinceBrushMs = now - lastBrushMs;
+      canvas.style.opacity = String(getFluidLayerOpacity(sinceBrushMs, sleepMs));
+      if (isFluidAsleep(now, lastBrushMs, sleepMs)) {
         sleep();
         return;
       }
@@ -187,6 +197,8 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
       if (isNewStroke || !processed) processed = { ...pointer };
       lastEventPoint = pointer;
       lastEventMs = eventMs;
+      // 眠っていた（または薄れている）あいだに起きたら，層をすぐ見える濃さへ戻す
+      canvas.style.opacity = '1';
       requestFrame();
     };
 
@@ -196,8 +208,9 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
 
     const createEngine = (): boolean => {
       engine?.dispose();
-      engine = createFluidEngine(canvas, readColors());
+      engine = createFluidEngine(canvas, readLook());
       if (!engine) return false;
+      canvas.dataset.fluidPrecision = engine.precision;
       return engine.resize(viewport.width, viewport.height, tier);
     };
 
@@ -223,11 +236,15 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
       }
     }, { signal });
 
-    // テーマ（html.dark）の切り替えに，染料の色を合わせる
-    const themeObserver = new MutationObserver(() => engine?.setColors(readColors()));
+    // テーマ（html.dark）の切り替えに，色の強さを合わせる
+    const themeObserver = new MutationObserver(() => {
+      const look = readLook();
+      engine?.setLook(look);
+      sleepMs = getFluidSleepMs(look.colorMultiplier);
+    });
     themeObserver.observe(root, { attributes: true, attributeFilter: ['class'] });
 
-    // 画面の大きさが変わったら，格子を作り直す
+    // 画面の大きさが変わったら，バッファを作り直す
     const resizeObserver = new ResizeObserver((entries) => {
       const rect = entries[0]?.contentRect;
       if (!rect) return;
@@ -247,7 +264,6 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
       resizeObserver.disconnect();
       window.clearTimeout(resizeTimer);
       stopFrame();
-      distortion?.dispose();
       engine?.dispose();
       engine = null;
     };
@@ -259,7 +275,6 @@ export default function FluidCanvas({ startPoint, onUnavailable }: FluidCanvasPr
       ref={canvasRef}
       className={styles.canvas}
       style={CANVAS_STYLE}
-      data-layer={FLUID_LAYER_MODE}
       aria-hidden="true"
     />
   );
@@ -270,8 +285,8 @@ const CANVAS_STYLE = {
   inset: 0,
   width: '100%',
   height: '100%',
-  zIndex: FLUID_LAYER_Z_INDEX[FLUID_LAYER_MODE],
+  zIndex: FLUID_LAYER_Z_INDEX,
   pointerEvents: 'none',
-  // 染料を置くまでは隠しておく（眠るときも隠す）
+  // 筆を置くまでは隠しておく（眠るときも隠す）
   visibility: 'hidden',
 } as const;

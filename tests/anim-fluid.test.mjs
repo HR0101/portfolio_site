@@ -3,75 +3,92 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import ts from 'typescript';
 
+// 流体カーソル（lib/animations/fluid.ts）の純粋な計算のテスト．
+// 方式：1/4 解像度の「速度と重み」のバッファに筆（マウスの移動の線分）を足し，ぼかした写しで運び，指数的に薄れさせる．
 const source = await readFile(new URL('../src/lib/animations/fluid.ts', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
 const fluid = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 const {
-  FLUID_DENSITY_CAP,
-  FLUID_DYE_RETENTION_PER_SEC,
-  FLUID_LAYER_MODE,
+  FLUID_BLUR_DIVISOR_RATIO,
+  FLUID_BRUSH_MAX_PX,
+  FLUID_BRUSH_RADIUS_PER_PX,
+  FLUID_FALLOFF_END,
+  FLUID_FALLOFF_START,
+  FLUID_INVISIBLE_LEVEL,
+  FLUID_LAYER_FADE_MS,
   FLUID_LAYER_Z_INDEX,
-  FLUID_MAX_ASPECT,
   FLUID_MAX_JUMP_PX,
-  FLUID_MAX_SAMPLES,
-  FLUID_MAX_SPEED,
   FLUID_MAX_STEP_SEC,
+  FLUID_MAX_VELOCITY,
+  FLUID_MIN_DISPLAY_SCALE,
+  FLUID_MIN_MOVE_PX,
   FLUID_MIN_STEP_SEC,
   FLUID_MIN_VIEWPORT_WIDTH_PX,
   FLUID_QUALITY_TIERS,
+  FLUID_REFERENCE_FPS,
+  FLUID_SHADE,
   FLUID_SLOW_FRAME_MS,
-  FLUID_VISIBLE_DENSITY,
-  getDecayFactor,
-  getDyeHue,
-  getFluidColors,
-  getFluidFadeMs,
-  getFluidGridSize,
-  getFluidSplatRadiusPx,
-  getFluidSplatRadiusForMovePx,
+  FLUID_VELOCITY_DECAY,
+  FLUID_VELOCITY_INERTIA,
+  FLUID_VELOCITY_PER_PX_PER_SEC,
+  FLUID_WEIGHT_A_DECAY,
+  FLUID_WEIGHT_B_DECAY,
+  advanceFluidVelocity,
+  getFluidBrushRadiusPx,
+  getFluidDisplaySize,
+  getFluidFalloff,
+  getFluidLayerOpacity,
+  getFluidLook,
+  getFluidScaledSize,
+  getFluidSleepMs,
   getFluidStepSec,
+  getFrameDecay,
   getNextQualityTier,
-  getPointerSplats,
   isFluidAsleep,
   isFluidEnvironmentAllowed,
   isFluidPath,
-  parseCssColor,
+  isFluidStroke,
   pickInitialQualityTier,
   shouldSkipFrame,
 } = fluid;
 
-const VIEWPORT = { width: 1440, height: 900 };
+const NEAR = 1e-9;
 
-test('格子の大きさは，短辺を基準に画面の縦横比へ合わせる', () => {
-  assert.deepEqual(getFluidGridSize(1440, 900, 512), { width: 819, height: 512 });
-  assert.deepEqual(getFluidGridSize(900, 900, 128), { width: 128, height: 128 });
-  // 縦長の画面は，短辺（幅）が基準になる
-  assert.deepEqual(getFluidGridSize(900, 1440, 128), { width: 128, height: 205 });
+test('バッファは画面の 1/4，ぼかした写しはその 1/2（= 画面の 1/8）の大きさ', () => {
+  const buffer = getFluidScaledSize(1440, 900, FLUID_QUALITY_TIERS[0].bufferDivisor);
+  assert.deepEqual(buffer, { width: 360, height: 225 });
+  assert.deepEqual(getFluidScaledSize(1440, 900, FLUID_QUALITY_TIERS[0].bufferDivisor * FLUID_BLUR_DIVISOR_RATIO), { width: 180, height: 113 });
+  // 最高の段階は 1/4（参考どおり）
+  assert.equal(FLUID_QUALITY_TIERS[0].bufferDivisor, 4);
+  assert.equal(FLUID_BLUR_DIVISOR_RATIO, 2);
 });
 
-test('格子の縦横比には上限があり，不正な入力でも壊れない', () => {
-  const ultraWide = getFluidGridSize(10000, 500, 100);
-  assert.equal(ultraWide.height, 100);
-  assert.equal(ultraWide.width, 100 * FLUID_MAX_ASPECT);
-  const fallback = getFluidGridSize(Number.NaN, Number.NaN, Number.NaN);
-  assert.ok(fallback.width >= 1 && fallback.height >= 1);
-  assert.deepEqual(getFluidGridSize(0, 0, 64), { width: 64, height: 64 });
+test('大きさの計算は，小さすぎる・不正な入力でも 1 以上の整数を返す', () => {
+  assert.deepEqual(getFluidScaledSize(0, 0, 4), { width: 1, height: 1 });
+  assert.deepEqual(getFluidScaledSize(Number.NaN, Number.NaN, Number.NaN), { width: 1, height: 1 });
+  assert.deepEqual(getFluidScaledSize(2, 2, 100), { width: 1, height: 1 });
+  const odd = getFluidScaledSize(1001, 777, 4);
+  assert.ok(Number.isInteger(odd.width) && Number.isInteger(odd.height));
 });
 
-test('品質の段階は，細かい順に並び，速度場より染料のほうが細かい', () => {
+test('表示の canvas は画面の 1/2 以下で，端末の倍率には依らない', () => {
+  assert.deepEqual(getFluidDisplaySize(1440, 900, 0.5), { width: 720, height: 450 });
+  // 下限より粗くはしない．1 を超える倍率は 1 に収める．不正な値は既定の 1/2
+  assert.deepEqual(getFluidDisplaySize(1440, 900, 0.01), { width: 360, height: 225 });
+  assert.equal(FLUID_MIN_DISPLAY_SCALE, 0.25);
+  assert.deepEqual(getFluidDisplaySize(1440, 900, 3), { width: 1440, height: 900 });
+  assert.deepEqual(getFluidDisplaySize(1440, 900, Number.NaN), { width: 720, height: 450 });
+  // どの品質の段階でも，画面の 1/2 以下
+  assert.ok(FLUID_QUALITY_TIERS.every((tier) => tier.displayScale <= 0.5));
+});
+
+test('品質の段階は，細かい順に並び，段階が下がるほどバッファも canvas も粗くなる', () => {
   assert.ok(FLUID_QUALITY_TIERS.length >= 2);
-  for (let index = 0; index < FLUID_QUALITY_TIERS.length; index += 1) {
-    const tier = FLUID_QUALITY_TIERS[index];
-    assert.ok(tier.dyeCells > tier.velocityCells);
-    if (index > 0) {
-      const previous = FLUID_QUALITY_TIERS[index - 1];
-      assert.ok(tier.velocityCells < previous.velocityCells);
-      assert.ok(tier.dyeCells < previous.dyeCells);
-      assert.ok(tier.jacobiIterations <= previous.jacobiIterations);
-    }
+  for (let index = 1; index < FLUID_QUALITY_TIERS.length; index += 1) {
+    assert.ok(FLUID_QUALITY_TIERS[index].bufferDivisor > FLUID_QUALITY_TIERS[index - 1].bufferDivisor);
+    assert.ok(FLUID_QUALITY_TIERS[index].displayScale < FLUID_QUALITY_TIERS[index - 1].displayScale);
   }
-  // 最高の段階は，仕様の目安（速度場 128 前後・染料 512 前後）
-  assert.equal(FLUID_QUALITY_TIERS[0].velocityCells, 128);
-  assert.equal(FLUID_QUALITY_TIERS[0].dyeCells, 512);
+  assert.ok(FLUID_QUALITY_TIERS.every((tier) => tier.displayScale >= FLUID_MIN_DISPLAY_SCALE));
 });
 
 test('最初の品質は端末の余力で決まる', () => {
@@ -109,153 +126,183 @@ test('1 コマで進める時間は，上限と下限の間に丸める', () => 
   assert.equal(getFluidStepSec(Number.NaN), 1 / 60);
 });
 
-test('薄れの係数は，1 秒で retention になり，時間が長いほど小さい', () => {
-  assert.equal(getDecayFactor(1, 0.45), 0.45);
-  assert.equal(getDecayFactor(0, 0.45), 1);
-  assert.ok(getDecayFactor(0.5, 0.45) > getDecayFactor(1, 0.45));
-  assert.ok(Math.abs(getDecayFactor(0.5, 0.25) - 0.5) < 1e-12);
-  assert.equal(getDecayFactor(1, 2), 1);
-  assert.equal(getDecayFactor(1, -1), 0);
-  assert.equal(getDecayFactor(Number.NaN, 0.5), 1);
+test('参考の薄れは，速度 0.975・重み 1 が 0.95・重み 2 が 0.8（60fps の 1 コマあたり）', () => {
+  assert.equal(FLUID_REFERENCE_FPS, 60);
+  assert.equal(FLUID_VELOCITY_DECAY, 0.975);
+  assert.equal(FLUID_WEIGHT_A_DECAY, 0.95);
+  assert.equal(FLUID_WEIGHT_B_DECAY, 0.8);
+  // 重み 2 は重み 1 より速く，速度は重み 1 より遅く薄れる
+  assert.ok(FLUID_WEIGHT_B_DECAY < FLUID_WEIGHT_A_DECAY && FLUID_WEIGHT_A_DECAY < FLUID_VELOCITY_DECAY);
 });
 
-test('眠るまでの時間は，最大の濃さが見えなくなるまでの減衰で決まる', () => {
-  const fadeMs = getFluidFadeMs();
-  // 見えなくなる時点の濃さが，しきい値以下になっている（余裕の分だけ長い）
-  const remaining = FLUID_DENSITY_CAP * FLUID_DYE_RETENTION_PER_SEC ** (fadeMs / 1000);
-  assert.ok(remaining < FLUID_VISIBLE_DENSITY);
-  // 長すぎない（数秒．ゆっくり薄れて消える）
-  assert.ok(fadeMs > 2000 && fadeMs < 10000);
-  // 濃いほど長く，残る割合が大きいほど長い
-  assert.ok(getFluidFadeMs(2, 0.45, 0.02) > getFluidFadeMs(1, 0.45, 0.02));
-  assert.ok(getFluidFadeMs(1, 0.7, 0.02) > getFluidFadeMs(1, 0.45, 0.02));
-  // もともと見えない濃さなら待たない．見積もれないときは上限の既定値
-  assert.equal(getFluidFadeMs(0.01, 0.45, 0.02), 0);
-  assert.ok(getFluidFadeMs(1, 1, 0.02) > 0);
-  assert.ok(getFluidFadeMs(1, 0, 0.02) > 0);
+test('薄れは経過時間で補正する：60fps の 1 コマでちょうど倍率になり，コマを割っても同じ時間なら同じ', () => {
+  assert.ok(Math.abs(getFrameDecay(0.95, 1 / 60) - 0.95) < NEAR);
+  assert.ok(Math.abs(getFrameDecay(0.95, 2 / 60) - 0.95 ** 2) < NEAR);
+  assert.equal(getFrameDecay(0.95, 0), 1);
+  // 1 秒ぶんは，何コマに割っても同じ
+  for (const factor of [0.975, 0.95, 0.8]) {
+    assert.ok(Math.abs(getFrameDecay(factor, 1 / 120) ** 120 - getFrameDecay(factor, 1)) < 1e-9);
+    assert.ok(Math.abs(getFrameDecay(factor, 1 / 30) ** 30 - factor ** 60) < 1e-9);
+  }
+  // 倍率の範囲外・不正な値でも壊れない
+  assert.equal(getFrameDecay(2, 1), 1);
+  assert.equal(getFrameDecay(-1, 1), 0);
+  assert.equal(getFrameDecay(0.95, Number.NaN), 1);
+  assert.equal(getFrameDecay(Number.NaN, 1), 1);
 });
 
-test('眠る判定は，最後に染料を置いてからの時間で決まる', () => {
-  assert.equal(isFluidAsleep(1000, 1000, 5000), false);
-  assert.equal(isFluidAsleep(5999, 1000, 5000), false);
-  assert.equal(isFluidAsleep(6000, 1000, 5000), true);
+test('筆の半径：止まっていれば 0，動いた距離に比例し，上限で止まる', () => {
+  const frame = 1 / 60;
+  assert.equal(getFluidBrushRadiusPx(0, frame), 0);
+  assert.equal(getFluidBrushRadiusPx(FLUID_MIN_MOVE_PX - 0.01, frame), 0);
+  const small = getFluidBrushRadiusPx(10, frame);
+  const middle = getFluidBrushRadiusPx(20, frame);
+  assert.ok(small > 0 && middle > small);
+  // 比例（倍率はそのまま掛かる）
+  assert.ok(Math.abs(middle - 20 * FLUID_BRUSH_RADIUS_PER_PX) < NEAR);
+  assert.ok(Math.abs(middle / small - 2) < NEAR);
+  // 上限
+  assert.equal(getFluidBrushRadiusPx(5000, frame), FLUID_BRUSH_MAX_PX);
+  assert.ok(getFluidBrushRadiusPx(FLUID_BRUSH_MAX_PX / FLUID_BRUSH_RADIUS_PER_PX, frame) <= FLUID_BRUSH_MAX_PX + NEAR);
+  assert.equal(getFluidBrushRadiusPx(Number.NaN, frame), 0);
+});
+
+test('筆の半径は描画の速さによらない：30fps の 40px は 60fps の 20px と同じ太さ', () => {
+  assert.ok(Math.abs(getFluidBrushRadiusPx(40, 1 / 30) - getFluidBrushRadiusPx(20, 1 / 60)) < NEAR);
+  assert.ok(Math.abs(getFluidBrushRadiusPx(10, 1 / 120) - getFluidBrushRadiusPx(20, 1 / 60)) < NEAR);
+  // 時間が 0・不正でも壊れない
+  assert.ok(Number.isFinite(getFluidBrushRadiusPx(20, 0)));
+  assert.ok(Number.isFinite(getFluidBrushRadiusPx(20, Number.NaN)));
+});
+
+test('筆の速度は慣性つき：動かすと目標へ近づき，止めると 0.8 倍ずつ収まる', () => {
+  const frame = 1 / 60;
+  // 秒速 1800px（1 コマ 30px）の目標
+  const pxPerSec = 1800;
+  const target = pxPerSec * FLUID_VELOCITY_PER_PX_PER_SEC;
+  const first = advanceFluidVelocity({ x: 0, y: 0 }, 30, 0, frame);
+  // 最初の 1 コマは，目標の (1 − 0.8) だけ
+  assert.ok(Math.abs(first.x - target * (1 - FLUID_VELOCITY_INERTIA)) < NEAR);
+  assert.equal(first.y, 0);
+  let velocity = first;
+  for (let index = 0; index < 60; index += 1) velocity = advanceFluidVelocity(velocity, 30, 0, frame);
+  assert.ok(Math.abs(velocity.x - target) < 1e-4);
+  // 止める（動かさない）と，0.8 倍ずつ小さくなる
+  const stopped = advanceFluidVelocity({ x: 0.4, y: -0.2 }, 0, 0, frame);
+  assert.ok(Math.abs(stopped.x - 0.4 * FLUID_VELOCITY_INERTIA) < NEAR);
+  assert.ok(Math.abs(stopped.y + 0.2 * FLUID_VELOCITY_INERTIA) < NEAR);
+});
+
+test('筆の速度は ±0.5（バッファに書ける範囲）に収まり，描画の速さによらない', () => {
+  let velocity = { x: 0, y: 0 };
+  for (let index = 0; index < 400; index += 1) velocity = advanceFluidVelocity(velocity, 600, -600, 1 / 60);
+  // 上限に張りつく（目標が上限を超えるので，慣性で近づく間に上限で止まる）
+  assert.ok(Math.abs(velocity.x - FLUID_MAX_VELOCITY) < 1e-6 && velocity.x <= FLUID_MAX_VELOCITY);
+  assert.ok(Math.abs(velocity.y + FLUID_MAX_VELOCITY) < 1e-6 && velocity.y >= -FLUID_MAX_VELOCITY);
+  // 同じ速さ（秒速 1200px）で，1 コマを 2 つに割っても同じ結果
+  const full = advanceFluidVelocity({ x: 0.1, y: 0 }, 20, 0, 1 / 60);
+  let half = { x: 0.1, y: 0 };
+  half = advanceFluidVelocity(half, 10, 0, 1 / 120);
+  half = advanceFluidVelocity(half, 10, 0, 1 / 120);
+  assert.ok(Math.abs(full.x - half.x) < NEAR);
+  // 不正な入力でも壊れない
+  const broken = advanceFluidVelocity({ x: Number.NaN, y: 0 }, Number.NaN, 0, Number.NaN);
+  assert.ok(Number.isFinite(broken.x) && Number.isFinite(broken.y));
+});
+
+test('筆として使える動き：動いていて，ワープ（再入場など）ではないもの', () => {
+  const at = { x: 300, y: 300 };
+  assert.equal(isFluidStroke(at, at), false);
+  assert.equal(isFluidStroke(at, { x: 300.2, y: 300 }), false);
+  assert.equal(isFluidStroke(at, { x: 320, y: 300 }), true);
+  assert.equal(isFluidStroke(at, { x: 300 + FLUID_MAX_JUMP_PX, y: 300 }), true);
+  assert.equal(isFluidStroke(at, { x: 300 + FLUID_MAX_JUMP_PX + 1, y: 300 }), false);
+  assert.equal(isFluidStroke(at, { x: Number.NaN, y: 300 }), false);
+});
+
+test('表示の減衰：重み 0.4 で 0，重みが小さいほど強い（始点 > 終点の逆向きの smoothstep）', () => {
+  assert.equal(FLUID_FALLOFF_START, 0.4);
+  assert.equal(FLUID_FALLOFF_END, -0.9);
+  assert.equal(getFluidFalloff(FLUID_FALLOFF_START, FLUID_FALLOFF_END, 0.4), 0);
+  assert.equal(getFluidFalloff(FLUID_FALLOFF_START, FLUID_FALLOFF_END, 1), 0);
+  assert.equal(getFluidFalloff(FLUID_FALLOFF_START, FLUID_FALLOFF_END, -0.9), 1);
+  // 重み 0 での値：t = 0.4 / 1.3 の smoothstep
+  const t = 0.4 / 1.3;
+  assert.ok(Math.abs(getFluidFalloff(FLUID_FALLOFF_START, FLUID_FALLOFF_END, 0) - t * t * (3 - 2 * t)) < NEAR);
+  let previous = Number.POSITIVE_INFINITY;
+  for (let weight = 0; weight <= 0.4; weight += 0.02) {
+    const value = getFluidFalloff(FLUID_FALLOFF_START, FLUID_FALLOFF_END, weight);
+    assert.ok(value <= previous + NEAR);
+    previous = value;
+  }
+  // 始点と終点が同じでも壊れない
+  assert.equal(getFluidFalloff(0.5, 0.5, 0.2), 0);
+  assert.equal(getFluidFalloff(0.5, 0.5, 0.7), 1);
+});
+
+test('眠るまでの時間は，色の振れ幅の上限が見えなくなるまでの指数的な減衰で決まる', () => {
+  const light = fluid.FLUID_LOOKS.light.colorMultiplier;
+  const sleepMs = getFluidSleepMs(light);
+  const ratio = FLUID_VELOCITY_DECAY * FLUID_WEIGHT_A_DECAY;
+  const ceiling = FLUID_SHADE * getFluidFalloff(FLUID_FALLOFF_START, FLUID_FALLOFF_END, 0) * light * 0.5;
+  const boundAt = (ms) => ceiling * ratio ** ((ms / 1000) * FLUID_REFERENCE_FPS);
+  // 眠る時点で見えなくなり，その少し前（1 コマ前）はまだ見える
+  assert.ok(boundAt(sleepMs) <= FLUID_INVISIBLE_LEVEL + 1e-12);
+  assert.ok(boundAt(sleepMs - 1000 / 60 - 1) > FLUID_INVISIBLE_LEVEL);
+  // 1〜3 秒でなだらかに薄れる（余韻が長すぎず，短すぎない）
+  assert.ok(sleepMs > 1000 && sleepMs < 3000);
+  // 強いほど長く，弱いほど短い．ほとんど見えない強さなら待たない
+  assert.ok(getFluidSleepMs(60) > getFluidSleepMs(30));
+  assert.ok(getFluidSleepMs(10) < getFluidSleepMs(30));
+  assert.equal(getFluidSleepMs(0), 0);
+  assert.equal(getFluidSleepMs(Number.NaN), 0);
+  // 暗いテーマは強い分，少し長い
+  assert.ok(getFluidSleepMs(fluid.FLUID_LOOKS.dark.colorMultiplier) >= sleepMs);
+});
+
+test('眠る判定は，最後に筆を置いてからの時間で決まる', () => {
+  assert.equal(isFluidAsleep(1000, 1000, 1500), false);
+  assert.equal(isFluidAsleep(2499, 1000, 1500), false);
+  assert.equal(isFluidAsleep(2500, 1000, 1500), true);
   // まだ一度も置いていない（-Infinity）なら眠ったまま
   assert.equal(isFluidAsleep(1000, Number.NEGATIVE_INFINITY), true);
-  // 既定の待ち時間は getFluidFadeMs
-  assert.equal(isFluidAsleep(1000 + getFluidFadeMs() - 1, 1000), false);
-  assert.equal(isFluidAsleep(1000 + getFluidFadeMs(), 1000), true);
+  // 既定の待ち時間は getFluidSleepMs
+  assert.equal(isFluidAsleep(1000 + getFluidSleepMs() - 1, 1000), false);
+  assert.equal(isFluidAsleep(1000 + getFluidSleepMs(), 1000), true);
 });
 
-test('動かなかった・飛んだ・不正な入力では，何も置かない', () => {
-  const at = { x: 300, y: 300 };
-  assert.deepEqual(getPointerSplats(at, at, 1 / 60, VIEWPORT, 0.5), []);
-  assert.deepEqual(getPointerSplats(at, { x: 300.2, y: 300 }, 1 / 60, VIEWPORT, 0.5), []);
-  // ワープ（再入場など）は線にしない
-  assert.deepEqual(getPointerSplats(at, { x: 300 + FLUID_MAX_JUMP_PX + 1, y: 300 }, 1 / 60, VIEWPORT, 0.5), []);
-  assert.deepEqual(getPointerSplats(at, { x: Number.NaN, y: 300 }, 1 / 60, VIEWPORT, 0.5), []);
-  assert.deepEqual(getPointerSplats(at, { x: 400, y: 300 }, 1 / 60, { width: 0, height: 900 }, 0.5), []);
-});
-
-test('右へ動かすと，右向きの速度と，動きに沿った染料が置かれる', () => {
-  const from = { x: 300, y: 450 };
-  const to = { x: 360, y: 450 };
-  const splats = getPointerSplats(from, to, 1 / 60, VIEWPORT, 0.25);
-  assert.ok(splats.length >= 2);
-  const speed = 60 / 900 / (1 / 60);
-  for (const splat of splats) {
-    assert.ok(Math.abs(splat.velocityX - speed) < 1e-9);
-    assert.ok(Math.abs(splat.velocityY) < 1e-12);
-    assert.equal(splat.hue, 0.25);
-    assert.ok(splat.density > 0);
+test('層の不透明度：眠る直前までは 1，そこからなだらかに 0 へ（パッと消えない）', () => {
+  const sleepMs = getFluidSleepMs();
+  const fadeStart = sleepMs - FLUID_LAYER_FADE_MS;
+  assert.equal(getFluidLayerOpacity(0, sleepMs), 1);
+  assert.equal(getFluidLayerOpacity(fadeStart, sleepMs), 1);
+  assert.equal(getFluidLayerOpacity(sleepMs, sleepMs), 0);
+  assert.equal(getFluidLayerOpacity(sleepMs + 5000, sleepMs), 0);
+  assert.equal(getFluidLayerOpacity(Number.NaN, sleepMs), 1);
+  let previous = 1;
+  for (let ms = 0; ms <= sleepMs; ms += 17) {
+    const value = getFluidLayerOpacity(ms, sleepMs);
+    // 単調に下がり，1 コマ（17ms）で 1 割も落ちない
+    assert.ok(value <= previous + NEAR && previous - value < 0.08);
+    previous = value;
   }
-  // 位置は from から to へ並び，最後が to
-  for (let index = 1; index < splats.length; index += 1) assert.ok(splats[index].x > splats[index - 1].x);
-  const last = splats[splats.length - 1];
-  assert.ok(Math.abs(last.x - 360 / 1440) < 1e-9);
-  assert.ok(Math.abs(last.y - 0.5) < 1e-9);
+  // 薄れる時間は十分に長い
+  assert.ok(FLUID_LAYER_FADE_MS >= 300);
 });
 
-test('画面の上へ動かすと，上向き（y が正）の速度になる（座標の向きを反転）', () => {
-  const [splat] = getPointerSplats({ x: 500, y: 300 }, { x: 500, y: 260 }, 1 / 60, VIEWPORT, 0);
-  assert.ok(Math.abs(splat.velocityX) < 1e-12);
-  assert.ok(splat.velocityY > 0);
-  // 画面の上半分（y が 450 より小さい）は，GL の座標では y が 0.5 より大きい
-  assert.ok(splat.y > 0.5);
+test('テーマごとの強さ：暗いテーマは加算がよく見えるので別に持ち，彩度は 0 より大きく 1 以下', () => {
+  const light = getFluidLook(false);
+  const dark = getFluidLook(true);
+  assert.ok(light.colorMultiplier > 0 && dark.colorMultiplier > 0);
+  assert.notEqual(light.colorMultiplier, dark.colorMultiplier);
+  for (const look of [light, dark]) assert.ok(look.saturation > 0 && look.saturation <= 1);
+  // 明るい背景は，負の成分が作る淡い色の筋を主役にするので，彩度は落とさない
+  assert.equal(light.saturation, 1);
+  assert.ok(dark.saturation < 1);
 });
 
-test('速さには上限があり，染料の数と量も上限を超えない', () => {
-  const fast = getPointerSplats({ x: 100, y: 100 }, { x: 100 + FLUID_MAX_JUMP_PX, y: 100 }, 1 / 1000, VIEWPORT, 0);
-  assert.ok(fast.length <= FLUID_MAX_SAMPLES);
-  assert.ok(fast.every((splat) => splat.velocityX <= FLUID_MAX_SPEED + 1e-9));
-  assert.ok(fast.every((splat) => splat.density <= 0.35 + 1e-9));
-  // dt が 0 でも 0 割りにならない
-  const instant = getPointerSplats({ x: 100, y: 100 }, { x: 140, y: 100 }, 0, VIEWPORT, 0);
-  assert.ok(instant.every((splat) => Number.isFinite(splat.velocityX) && splat.velocityX <= FLUID_MAX_SPEED + 1e-9));
-});
-
-test('染料の量は，動いた距離に比例し，ゆっくり動かすと薄く，速く動かすと濃くなる', () => {
-  const total = (splats) => splats.reduce((sum, splat) => sum + splat.density, 0);
-  const slow = total(getPointerSplats({ x: 100, y: 100 }, { x: 104, y: 100 }, 1 / 60, VIEWPORT, 0));
-  const fast = total(getPointerSplats({ x: 100, y: 100 }, { x: 160, y: 100 }, 1 / 60, VIEWPORT, 0));
-  assert.ok(slow > 0 && fast > slow);
-});
-
-test('染料の置き場所は，画面の内側（0〜1）に収まる', () => {
-  const splats = getPointerSplats({ x: 5, y: 5 }, { x: -50, y: -50 }, 1 / 60, VIEWPORT, 2);
-  for (const splat of splats) {
-    assert.ok(splat.x >= 0 && splat.x <= 1 && splat.y >= 0 && splat.y <= 1);
-    // 色相は 0〜1 に収める
-    assert.equal(splat.hue, 1);
-  }
-});
-
-test('染料の広がりは短辺の割合で決まる', () => {
-  assert.ok(Math.abs(getFluidSplatRadiusPx(VIEWPORT) - 900 * 0.02) < 1e-9);
-  assert.ok(Math.abs(getFluidSplatRadiusPx({ width: 800, height: 1200 }) - 800 * 0.02) < 1e-9);
-});
-
-test('色相は 0〜1 の間をゆるやかに行き来する', () => {
-  for (let time = 0; time < 30; time += 0.37) {
-    const hue = getDyeHue(time);
-    assert.ok(hue >= 0 && hue <= 1);
-  }
-  assert.equal(getDyeHue(0), 0.5);
-  assert.equal(getDyeHue(Number.NaN), 0.5);
-});
-
-test('CSS の色を読める（#rgb・#rrggbb・rgb()）．読めなければ null', () => {
-  assert.deepEqual(parseCssColor('#0066cc'), [0, 0x66 / 255, 0xcc / 255]);
-  assert.deepEqual(parseCssColor(' #FFF '), [1, 1, 1]);
-  assert.deepEqual(parseCssColor('rgb(0, 102, 204)'), [0, 102 / 255, 204 / 255]);
-  assert.deepEqual(parseCssColor('rgb(41 151 255 / 50%)'), [41 / 255, 151 / 255, 1]);
-  assert.equal(parseCssColor(''), null);
-  assert.equal(parseCssColor('blue'), null);
-  assert.equal(parseCssColor('#12'), null);
-  assert.equal(parseCssColor(undefined), null);
-});
-
-test('染料の色はテーマで変わり，サイトのアクセントには引っ張られない', () => {
-  const light = getFluidColors(false, '#0066cc');
-  const dark = getFluidColors(true, '#2997ff');
-  assert.deepEqual(light.primary, getFluidColors(false, '#ff0000').primary);
-  assert.deepEqual(dark.primary, getFluidColors(true).primary);
-  assert.notDeepEqual(light.primary, parseCssColor('#0066cc'));
-  assert.notDeepEqual(light.secondary, dark.secondary);
-  // 控えめ（最大でも半分以下）．暗い面の上のほうが，少し濃くないと見えにくい
-  assert.ok(light.maxAlpha > 0 && light.maxAlpha <= 0.5);
-  assert.ok(dark.maxAlpha > 0 && dark.maxAlpha <= 0.5);
-  assert.ok(dark.maxAlpha > light.maxAlpha);
-  // 読めない値・未指定でも同じ色
-  assert.deepEqual(getFluidColors(false, 'not-a-color').primary, light.primary);
-  // 濃さは，本文に重なる層（overlay）のほうが控えめ
-  assert.ok(getFluidColors(false, '#0066cc', 'overlay').maxAlpha < getFluidColors(false, '#0066cc', 'behind').maxAlpha);
-  assert.ok(getFluidColors(true, '#2997ff', 'overlay').maxAlpha < getFluidColors(true, '#2997ff', 'behind').maxAlpha);
-});
-
-test('層の設定：背後は負，本文の上は本文（10）より上でナビ（50）より下', () => {
-  assert.ok(['behind', 'overlay'].includes(FLUID_LAYER_MODE));
-  assert.ok(FLUID_LAYER_Z_INDEX.behind < 0);
-  assert.ok(FLUID_LAYER_Z_INDEX.overlay > 10 && FLUID_LAYER_Z_INDEX.overlay < 50);
+test('層：本文（10）より上で，ナビ（50）より下', () => {
+  assert.ok(FLUID_LAYER_Z_INDEX > 10 && FLUID_LAYER_Z_INDEX < 50);
 });
 
 test('出す条件：スイッチ・動きを減らす設定・タッチ端末・幅・読み込み画面・ページのすべてがそろったときだけ', () => {
@@ -290,14 +337,4 @@ test('出すページ：共通レイアウトのページだけ．紹介ペー�
   // 前方一致で巻き込まない
   assert.equal(isFluidPath('/applications'), true);
   assert.equal(isFluidPath('/apps-old'), true);
-});
-
-test('染料の広がりは動きに比例し，下限と上限で止まる', () => {
-  const slow = getFluidSplatRadiusForMovePx(VIEWPORT, 1);
-  const middle = getFluidSplatRadiusForMovePx(VIEWPORT, 20);
-  const fast = getFluidSplatRadiusForMovePx(VIEWPORT, 5000);
-  assert.ok(slow > 0 && slow < middle && middle < fast);
-  assert.equal(fast, getFluidSplatRadiusPx(VIEWPORT));
-  const [splat] = getPointerSplats({ x: 100, y: 100 }, { x: 120, y: 100 }, 1 / 60, VIEWPORT, 0);
-  assert.equal(splat.radiusPx, middle);
 });

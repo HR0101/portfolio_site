@@ -1,6 +1,9 @@
-// 流体の背景のシェーダー（WebGL2 / GLSL ES 3.00）．
-// 安定流体（Stam, 1999）の手順を，速度場と染料のテクスチャに対する全画面の描画として書いている．
-// 速度は「マス／秒」（速度場の 1 マスを 1 とする），染料は R = 濃さ，G = 濃さ × 色相（0〜1．虹色の位相のずれ）．
+// 流体カーソルのシェーダー（WebGL2 / GLSL ES 3.00）．
+// 流体の方程式は解かない．「画面に塗る速度のバッファ」を 1 枚持ち，それで色を足すだけ．
+// バッファの 1 画素は RGBA：
+//   xy … 速度（0.5 を 0 とする．±0.5 の範囲）
+//   z  … 重み 1（ゆっくり薄れる）
+//   w  … 重み 2（速く薄れる）
 
 // 画面いっぱいの三角形 1 枚（頂点バッファなし．gl_VertexID から作る）
 export const VERTEX_SOURCE = `#version 300 es
@@ -19,175 +22,175 @@ in vec2 vUv;
 out vec4 outColor;
 `;
 
-// 1 か所へ，ガウスの形で値を足す．足したあとの大きさ（成分の最大値）を uCap までに収め，向き・比率は保つ
-export const SPLAT_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uTarget;
-uniform vec2 uPoint;
-uniform vec3 uValue;
+// 1 コマの更新（バッファを 1 回だけ描く）：
+//   1. ぼかした低解像度の写しの速度で，前のコマを「来た方向」から読む（自分で自分を運ぶ）．
+//      さらに，勾配ノイズの微分を，重みに比例して足す（煙のようにうねる細い舌になる）
+//   2. 速度を薄れさせる（経過時間で補正した倍率．低い精度のテクスチャでも，必ず 1 段階は下げる）
+//   3. 筆：前のコマと今のコマのマウス位置を結ぶ線分までの距離で，速度と重みを足す
+export const UPDATE_SOURCE = `${FRAGMENT_HEADER}
+uniform sampler2D uPrevious;
+uniform sampler2D uBlurred;
+// バッファの大きさ（画素）
+uniform vec2 uSize;
+// 筆：前のコマ・今のコマの位置（バッファの画素．左下原点）と半径（バッファの画素）
+uniform vec2 uFrom;
+uniform vec2 uTo;
 uniform float uRadius;
-uniform float uAspect;
-uniform float uCap;
-void main() {
-  vec2 offset = vUv - uPoint;
-  offset.x *= uAspect;
-  float weight = exp(-dot(offset, offset) / (2.0 * uRadius * uRadius));
-  vec4 result = texture(uTarget, vUv) + vec4(uValue * weight, 0.0);
-  float largest = max(abs(result.x), abs(result.y));
-  result.xy *= min(1.0, uCap / max(largest, 1e-5));
-  outColor = vec4(result.xy, 0.0, 1.0);
-}`;
+// 慣性つきの速度（左下原点の向き．±0.5）
+uniform vec2 uVelocity;
+// 薄れの倍率：x = 速度，y = 重み 1，z = 重み 2
+uniform vec3 uDecay;
+// 速度 1 あたりに読みにいく距離（バッファの画素．経過時間で補正済み）
+uniform float uPush;
+// 勾配ノイズ：1 画素あたりの周期の数，微分に掛ける倍率（バッファの画素．経過時間で補正済み）
+uniform float uNoiseScale;
+uniform float uNoiseGain;
+// ノイズの位置を，速度・重みで歪める大きさ（ノイズの周期を 1 とする）
+uniform vec2 uNoiseWarp;
+// 低い精度のテクスチャで，薄れが止まらないよう，1 コマで必ず下げる量．これ未満は 0 へ落とす
+uniform float uMinStep;
+uniform float uZeroCut;
 
-// 速度に沿って，1 コマ前の場所から値を運んでくる（半ラグランジュ移流）．同時に薄れさせ，小さな値は 0 へ落とす
-export const ADVECTION_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uVelocity;
-uniform sampler2D uSource;
-uniform vec2 uVelocityTexel;
-uniform float uDt;
-uniform float uDecay;
-uniform float uFloor;
-void main() {
-  vec2 origin = vUv - uDt * texture(uVelocity, vUv).xy * uVelocityTexel;
-  vec2 carried = texture(uSource, origin).xy * uDecay;
-  if (abs(carried.x) + abs(carried.y) < uFloor) {
-    carried = vec2(0.0);
-  }
-  outColor = vec4(carried, 0.0, 1.0);
-}`;
+const float ZERO = 0.5;
 
-// 速度の発散（湧き出し・吸い込み）
-export const DIVERGENCE_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uVelocity;
-uniform vec2 uTexel;
-void main() {
-  float left = texture(uVelocity, vUv - vec2(uTexel.x, 0.0)).x;
-  float right = texture(uVelocity, vUv + vec2(uTexel.x, 0.0)).x;
-  float bottom = texture(uVelocity, vUv - vec2(0.0, uTexel.y)).y;
-  float top = texture(uVelocity, vUv + vec2(0.0, uTexel.y)).y;
-  outColor = vec4(0.5 * (right - left + top - bottom), 0.0, 0.0, 1.0);
-}`;
-
-// 圧力のポアソン方程式を解くヤコビ反復の 1 回
-export const PRESSURE_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uPressure;
-uniform sampler2D uDivergence;
-uniform vec2 uTexel;
-void main() {
-  float left = texture(uPressure, vUv - vec2(uTexel.x, 0.0)).x;
-  float right = texture(uPressure, vUv + vec2(uTexel.x, 0.0)).x;
-  float bottom = texture(uPressure, vUv - vec2(0.0, uTexel.y)).x;
-  float top = texture(uPressure, vUv + vec2(0.0, uTexel.y)).x;
-  float divergence = texture(uDivergence, vUv).x;
-  outColor = vec4((left + right + bottom + top - divergence) * 0.25, 0.0, 0.0, 1.0);
-}`;
-
-// 速度から圧力の勾配を引いて，発散のない場にする
-export const GRADIENT_SUBTRACT_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uPressure;
-uniform sampler2D uVelocity;
-uniform vec2 uTexel;
-void main() {
-  float left = texture(uPressure, vUv - vec2(uTexel.x, 0.0)).x;
-  float right = texture(uPressure, vUv + vec2(uTexel.x, 0.0)).x;
-  float bottom = texture(uPressure, vUv - vec2(0.0, uTexel.y)).x;
-  float top = texture(uPressure, vUv + vec2(0.0, uTexel.y)).x;
-  vec2 velocity = texture(uVelocity, vUv).xy - 0.5 * vec2(right - left, top - bottom);
-  outColor = vec4(velocity, 0.0, 1.0);
-}`;
-
-// 速度の回転（渦度）
-export const CURL_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uVelocity;
-uniform vec2 uTexel;
-void main() {
-  float left = texture(uVelocity, vUv - vec2(uTexel.x, 0.0)).y;
-  float right = texture(uVelocity, vUv + vec2(uTexel.x, 0.0)).y;
-  float bottom = texture(uVelocity, vUv - vec2(0.0, uTexel.y)).x;
-  float top = texture(uVelocity, vUv + vec2(0.0, uTexel.y)).x;
-  outColor = vec4(0.5 * ((right - left) - (top - bottom)), 0.0, 0.0, 1.0);
-}`;
-
-// 渦度の強いところへ回転の力を足して，数値的に失われる渦を戻す（渦度の閉じ込め）
-export const VORTICITY_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uVelocity;
-uniform sampler2D uCurl;
-uniform vec2 uTexel;
-uniform float uStrength;
-uniform float uDt;
-void main() {
-  float left = texture(uCurl, vUv - vec2(uTexel.x, 0.0)).x;
-  float right = texture(uCurl, vUv + vec2(uTexel.x, 0.0)).x;
-  float bottom = texture(uCurl, vUv - vec2(0.0, uTexel.y)).x;
-  float top = texture(uCurl, vUv + vec2(0.0, uTexel.y)).x;
-  float center = texture(uCurl, vUv).x;
-  vec2 gradient = 0.5 * vec2(abs(right) - abs(left), abs(top) - abs(bottom));
-  vec2 direction = gradient / (length(gradient) + 1e-4);
-  vec2 force = uStrength * center * vec2(direction.y, -direction.x);
-  outColor = vec4(texture(uVelocity, vUv).xy + force * uDt, 0.0, 1.0);
-}`;
-
-// 値に係数を掛けて写す（前のコマの圧力を，少し弱めて次の反復の初期値にする）
-export const SCALE_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uSource;
-uniform float uScale;
-void main() {
-  outColor = vec4(texture(uSource, vUv).x * uScale, 0.0, 0.0, 1.0);
-}`;
-
-// 染料を画面へ出す．Lusion の「screen paint」に合わせ，色を塗るのではなく，流れ（速度）が作る薄い虹色の膜に見せる．
-//   ・色は染料の色ではなく，速度の向き・大きさの変化で位相が進む虹色（Lusion の sin(vel * 40 + vec3(0, 2, 4) * shift) と同じ考え方）
-//   ・動きが速いところほど膜がはっきりし，止まった所は淡く透ける
-//   ・濃い中心は白く淡いパステル，薄い縁ほど虹色が強い（シャボン玉の縁）
-// 濃さは指数で飽和させ（最大でも uMaxAlpha），ごく小さなディザで段を消す．出力は乗算済みアルファ（canvas の既定）
-export const DISPLAY_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uDye;
-uniform sampler2D uVelocity;
-uniform vec3 uColorPrimary;
-uniform vec3 uColorSecondary;
-uniform float uMaxAlpha;
-uniform float uVisible;
-uniform float uVelocityScale;
-float hash(vec2 p) {
-  return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+// 整数のハッシュ（格子点ごとの勾配の向きを決める）
+float hashAngle(ivec2 cell) {
+  uvec2 v = uvec2(cell + ivec2(4096));
+  v = v * 1664525u + 1013904223u;
+  v.x += v.y * 1664525u;
+  v.y += v.x * 1664525u;
+  v ^= v >> 16u;
+  v.x += v.y * 1664525u;
+  v.y += v.x * 1664525u;
+  v ^= v >> 16u;
+  return float((v.x ^ v.y) & 65535u) / 65536.0 * 6.2831853;
 }
+
+vec2 gradientAt(ivec2 cell) {
+  float angle = hashAngle(cell);
+  return vec2(cos(angle), sin(angle));
+}
+
+// 勾配ノイズと，その微分（x = 値，yz = 微分）
+vec3 gradientNoise(vec2 point) {
+  ivec2 cell = ivec2(floor(point));
+  vec2 local = fract(point);
+  vec2 fade = local * local * local * (local * (local * 6.0 - 15.0) + 10.0);
+  vec2 fadeSlope = 30.0 * local * local * (local * (local - 2.0) + 1.0);
+  vec2 g00 = gradientAt(cell);
+  vec2 g10 = gradientAt(cell + ivec2(1, 0));
+  vec2 g01 = gradientAt(cell + ivec2(0, 1));
+  vec2 g11 = gradientAt(cell + ivec2(1, 1));
+  float v00 = dot(g00, local);
+  float v10 = dot(g10, local - vec2(1.0, 0.0));
+  float v01 = dot(g01, local - vec2(0.0, 1.0));
+  float v11 = dot(g11, local - vec2(1.0, 1.0));
+  float cross = v00 - v10 - v01 + v11;
+  float value = v00 + fade.x * (v10 - v00) + fade.y * (v01 - v00) + fade.x * fade.y * cross;
+  vec2 slope = g00 + fade.x * (g10 - g00) + fade.y * (g01 - g00) + fade.x * fade.y * (g00 - g10 - g01 + g11)
+    + fadeSlope * (fade.yx * cross + vec2(v10, v01) - v00);
+  return vec3(value, slope);
+}
+
+float capsuleDistance(vec2 point, vec2 a, vec2 b) {
+  vec2 pa = point - a;
+  vec2 ba = b - a;
+  float along = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0);
+  return length(pa - ba * along);
+}
+
 void main() {
-  vec2 dye = texture(uDye, vUv).xy;
-  float density = max(dye.x - uVisible, 0.0);
-  if (density <= 0.0) {
-    outColor = vec4(0.0);
-    return;
+  vec2 pixel = vUv * uSize;
+  vec2 texel = 1.0 / uSize;
+  vec4 here = texture(uPrevious, vUv);
+
+  // 1. 運ぶ：ぼかした写しの速度の，逆向きから読む
+  vec2 blurredVelocity = texture(uBlurred, vUv).xy - ZERO;
+  vec2 shift = -blurredVelocity * uPush;
+  // 細い舌：位置を重みと速度で少し歪めた勾配ノイズの微分を，重みに比例して足す
+  vec2 warp = (here.xy - ZERO) * uNoiseWarp.x + here.zw * uNoiseWarp.y;
+  vec3 noise = gradientNoise(pixel * uNoiseScale + warp);
+  shift += noise.yz * (here.z + here.w) * uNoiseGain;
+  vec4 carried = texture(uPrevious, vUv + shift * texel);
+
+  // 2. 薄れ：符号のある速度も，絶対値で薄れさせる
+  vec4 before = vec4(carried.xy - ZERO, carried.zw);
+  vec4 factor = vec4(uDecay.x, uDecay.x, uDecay.y, uDecay.z);
+  vec4 magnitude = abs(before);
+  vec4 faded = min(magnitude * factor, max(magnitude - uMinStep, 0.0));
+  faded *= step(uZeroCut, faded);
+  vec4 value = sign(before) * faded;
+
+  // 3. 筆：線分（カプセル）までの距離で，1 - smoothstep(0, 半径, 距離)．止まっていれば半径 0 で何も足さない
+  float brush = 0.0;
+  if (uRadius > 1e-4) {
+    brush = 1.0 - smoothstep(0.0, uRadius, capsuleDistance(pixel, uFrom, uTo));
   }
-  float hue = clamp(dye.y / max(dye.x, 1e-4), 0.0, 1.0);
-  float body = 1.0 - exp(-density * 2.4);
-  // 速度（マス／秒）を，ほぼ -1〜1 にそろえる
-  vec2 velocity = texture(uVelocity, vUv).xy * uVelocityScale;
-  float speed = clamp(length(velocity) * 2.5, 0.0, 1.0);
-  // 速度の変化で位相が進む虹色．濃さと色相でもゆっくりずれる
-  float phase = (velocity.x + velocity.y) * 14.0 + body * 2.5 + hue * 2.0;
-  vec3 film = 0.5 + 0.5 * sin(phase + vec3(0.0, 2.1, 4.2));
-  // 中心は淡く白っぽく，縁ほど虹色を強く
-  float rim = 1.0 - body;
-  vec3 color = mix(vec3(1.0), film, 0.35 + 0.55 * rim * (0.4 + 0.6 * speed));
-  color = mix(color, mix(uColorPrimary, uColorSecondary, hue), 0.12);
-  float alpha = body * mix(0.35, 1.0, speed) * uMaxAlpha;
-  float dither = (hash(gl_FragCoord.xy) - 0.5) / 255.0;
-  outColor = vec4(color * alpha + dither, max(alpha + dither, 0.0));
+  value.xy += uVelocity * brush;
+  value.zw += brush;
+
+  outColor = clamp(vec4(value.xy + ZERO, value.zw), 0.0, 1.0);
 }`;
 
-
-// 画面を歪ませるための「ずらしの地図」（SVG の feDisplacementMap の入力）を作る．
-// R・G = 0.5 + ずらす向き（流れの速度 × 染料の濃さ），B = 0.5．何もない所は 0.5（ずらさない）．
-// 画面の座標は下向きが正なので，y を反転して読む（G も反転）．小さな RGBA8 の対象へ描き，JS で読み出す
-export const DISPLACEMENT_SOURCE = `${FRAGMENT_HEADER}
-uniform sampler2D uDye;
-uniform sampler2D uVelocity;
-uniform float uVisible;
-uniform float uVelocityScale;
-uniform float uGain;
+// ガウスぼかしの 1 方向（片側 8 タップ．標準偏差 uSigma は，タップ数の 1/3 前後を渡す）．
+// 1 回目は 1/4 解像度のバッファを 1/8 解像度へ読み取りながらぼかす（縮小を兼ねる）
+export const BLUR_SOURCE = `${FRAGMENT_HEADER}
+uniform sampler2D uSource;
+// 1 タップの間隔（出力の 1 画素ぶん．向きを持つ）
+uniform vec2 uStep;
+uniform float uSigma;
+const int TAPS = 8;
 void main() {
-  vec2 uv = vec2(vUv.x, 1.0 - vUv.y);
-  float density = max(texture(uDye, uv).x - uVisible, 0.0);
-  float weight = 1.0 - exp(-density * 3.5);
-  vec2 velocity = texture(uVelocity, uv).xy * uVelocityScale;
-  vec2 shift = clamp(velocity * weight * uGain, -1.0, 1.0);
-  outColor = vec4(0.5 + 0.5 * shift.x, 0.5 - 0.5 * shift.y, 0.5, 1.0);
+  vec4 sum = vec4(0.0);
+  float total = 0.0;
+  float inverseVariance = 0.5 / max(uSigma * uSigma, 1e-4);
+  for (int index = -TAPS; index <= TAPS; index++) {
+    float weight = exp(-float(index * index) * inverseVariance);
+    sum += texture(uSource, vUv + uStep * float(index)) * weight;
+    total += weight;
+  }
+  outColor = sum / total;
+}`;
+
+// 表示：速度と重みから，位相の違う正弦で色を足す（淡い虹色の干渉縞）．
+// 足す色 c（RGB．正負あり）を，乗算済みアルファの canvas へ，合成結果が「背景 + c」になるように出す：
+//   a = max(0, −min(c))，rgb = c + a，alpha = a  →  結果 = rgb + 背景 × (1 − a)（背景が白なら，ちょうど 背景 + c）
+export const DISPLAY_SOURCE = `${FRAGMENT_HEADER}
+uniform sampler2D uField;
+uniform float uPhaseScale;
+uniform float uRgbShift;
+uniform float uShade;
+uniform float uFalloffStart;
+uniform float uFalloffEnd;
+uniform float uColorMultiplier;
+uniform float uSaturation;
+
+// 始点 > 終点でも決まる smoothstep（GLSL の smoothstep は，始点 >= 終点だと未定義）
+float falloff(float edge0, float edge1, float value) {
+  float t = clamp((value - edge0) / (edge1 - edge0), 0.0, 1.0);
+  return t * t * (3.0 - 2.0 * t);
+}
+
+// 段（バンド）を消す，ごく小さなディザ（画素の位置から作る）
+float dither(vec2 fragment) {
+  return fract(52.9829189 * fract(dot(fragment, vec2(0.06711056, 0.00583715)))) - 0.5;
+}
+
+void main() {
+  vec4 field = texture(uField, vUv);
+  float weight = (field.z + field.w) * 0.5;
+  vec2 velocity = (0.5 - field.xy) * 2.0 * weight;
+  vec3 phase = vec3(velocity.x + velocity.y) * uPhaseScale + vec3(0.0, 2.0, 4.0) * uRgbShift;
+  float strength = falloff(uFalloffStart, uFalloffEnd, weight) * uShade * max(abs(velocity.x), abs(velocity.y)) * uColorMultiplier;
+  vec3 color = sin(phase) * strength;
+  // 彩度：1 で正弦のまま，小さいほど 3 成分の平均（白っぽい光）へ寄せる
+  color = mix(vec3((color.r + color.g + color.b) / 3.0), color, uSaturation);
+
+  float alpha = clamp(max(0.0, -min(color.r, min(color.g, color.b))), 0.0, 1.0);
+  vec3 premultiplied = color + alpha;
+
+  // 何も描いていない所へはディザを足さない
+  float visible = smoothstep(0.0, 0.004, strength);
+  premultiplied += dither(gl_FragCoord.xy) * (1.0 / 255.0) * visible;
+  outColor = vec4(clamp(premultiplied, 0.0, 1.0), alpha);
 }`;
