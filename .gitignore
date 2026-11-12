@@ -29,6 +29,7 @@ dist-ssr
 
 # Local agent workspace
 .agents/
+.claude/
 
 # TypeScript build cache
 *.tsbuildinfo
@@ -39,6 +40,7 @@ out/
 BusTimeApp-screenshots/
 public/favicon-candidates/
 
-# ローカルの Pages Secrets と MusicKit 署名鍵
+# ローカルの Pages Secrets・Wrangler 状態・MusicKit 署名鍵
+.wrangler/
 .dev.vars
 AuthKey_*.p8
