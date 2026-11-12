@@ -44,3 +44,6 @@ public/favicon-candidates/
 .wrangler/
 .dev.vars
 AuthKey_*.p8
+
+# HideTheKey が出力する監査レポート（生成物）
+hide-the-key-report.html
