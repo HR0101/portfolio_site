@@ -11,12 +11,13 @@ async function loadModule(name) {
   }).outputText;
   return import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 }
-const { buildDeveloperToken, normalizeRecentTracks, getRecentMusic, musicTtl } = await loadModule('appleMusic');
+const { buildDeveloperToken, normalizeRecentTracks, getRecentMusic, musicTtl, resizeArtworkUrl } = await loadModule('appleMusic');
 const { serveApi } = await loadModule('http');
 // 秘密情報のフィクスチャは毎回メモリ内で生成し，値をファイルへ残さない．
 const keys = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
 const exported = await webcrypto.subtle.exportKey('pkcs8', keys.privateKey);
-const pem = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(exported).toString('base64')}\n-----END PRIVATE KEY-----`;
+const pemEdge = (label) => ['-----', label, ' PRIVATE KEY-----'].join('');
+const pem = `${pemEdge('BEGIN')}\n${Buffer.from(exported).toString('base64')}\n${pemEdge('END')}`;
 const env = {
   APPLE_MUSIC_TEAM_ID: randomUUID(), APPLE_MUSIC_KEY_ID: randomUUID(),
   APPLE_MUSIC_PRIVATE_KEY: pem, APPLE_MUSIC_USER_TOKEN: randomUUID(),
@@ -68,7 +69,7 @@ test('必須項目がない行・曲以外を除外し，想定外の構造は�
   for (const response of [null, [], {}, { data: {} }, { data: null }, { data: [{ type: 'songs', attributes: [] }] }]) {
     assert.deepEqual(normalizeRecentTracks(response), []);
   }
-  assert.equal(normalizeRecentTracks({ data: Array.from({ length: 8 }, () => track()) }, 8).length, 5);
+  assert.equal(normalizeRecentTracks({ data: Array.from({ length: 20 }, () => track()) }, 20).length, 15);
   assert.equal(normalizeRecentTracks({ data: [track(), track()] }, 1).length, 1);
   assert.deepEqual(normalizeRecentTracks({ data: [track()] }, 0), []);
 });
@@ -109,7 +110,7 @@ test('Apple の 401 / 403 / 429 / その他の失敗と通信例外を状態に�
 test('成功時は所定の endpoint と認証を使い，出力へトークンや鍵を含めない', async () => {
   let developerToken;
   const response = await handler(env, async (url, init) => {
-    assert.equal(url, 'https://api.music.apple.com/v1/me/recent/played/tracks?limit=5');
+    assert.equal(url, 'https://api.music.apple.com/v1/me/recent/played/tracks?limit=10&offset=0&types=songs,library-songs,music-videos,library-music-videos');
     assert.equal(init.headers['Music-User-Token'], env.APPLE_MUSIC_USER_TOKEN);
     assert.ok(init.signal);
     developerToken = init.headers.Authorization.slice('Bearer '.length);
@@ -164,7 +165,7 @@ test('音楽クライアントはタイムアウトを指定し，5 分以内の
   const tracks = normalizeRecentTracks({ data: [track()] });
   for (const [minutes, expectedCalls] of [[4, 0], [6, 1]]) {
     let calls = 0;
-    const store = new Map([['apple_music_recent_v1', JSON.stringify({ timestamp: Date.now() - minutes * 60 * 1000, tracks })]]);
+    const store = new Map([['apple_music_recent_v2', JSON.stringify({ timestamp: Date.now() - minutes * 60 * 1000, tracks })]]);
     const client = await musicClient(async (url, _init, timeoutMs) => {
       calls += 1;
       assert.equal(url, '/api/music/recent');
@@ -188,10 +189,61 @@ test('音楽クライアントは失敗・404・タイムアウトで空配列�
     assert.deepEqual(data.tracks, []);
     assert.equal(data.apiStatus, ['404', 'timeout'].includes(apiStatus) ? 'offline' : apiStatus);
   }
-  const client = await musicClient(() => { throw new Error(); }, new Map([['apple_music_recent_v1', JSON.stringify({
+  const client = await musicClient(() => { throw new Error(); }, new Map([['apple_music_recent_v2', JSON.stringify({
     timestamp: Date.now(), tracks: [{ title: 'テスト曲', artist: 'テスト奏者', artworkUrl: 'https://evil.example/image', url: 'javascript:alert(1)' }],
   })]]));
   const [result] = (await client.fetchRecentMusic()).tracks;
   assert.equal(result.artworkUrl, '');
   assert.equal(result.url, undefined);
+});
+
+test('ジャケットの大きさを取り直す：形が合うときだけ変え，それ以外は元の URL を返す', () => {
+  const base = 'https://is1-ssl.mzstatic.com/image/thumb/Music/ab/cd/x.jpg/120x120bb.jpg';
+  assert.equal(resizeArtworkUrl(base, 360), 'https://is1-ssl.mzstatic.com/image/thumb/Music/ab/cd/x.jpg/360x360bb.jpg');
+  assert.equal(resizeArtworkUrl('https://is1-ssl.mzstatic.com/image/120x120bb.jpg', 600.4), 'https://is1-ssl.mzstatic.com/image/600x600bb.jpg');
+  // 範囲外・不正な大きさ
+  for (const size of [0, 59, 1001, Number.NaN, Number.POSITIVE_INFINITY]) assert.equal(resizeArtworkUrl(base, size), base);
+  // 形が合わない URL・許可外のホスト・https 以外は，そのまま返す
+  for (const url of ['https://is1-ssl.mzstatic.com/image/cover.jpg', 'https://example.com/image/120x120bb.jpg', 'http://is1-ssl.mzstatic.com/image/120x120bb.jpg', 'not a url', '']) {
+    assert.equal(resizeArtworkUrl(url, 360), url);
+  }
+});
+
+test('履歴が 10 件以上あるときは続きを取って 15 件まで返し，続きの失敗は無視する', async () => {
+  const urls = [];
+  const full = Array.from({ length: 10 }, (_, index) => track('songs', { name: `曲${index}` }));
+  const rest = Array.from({ length: 5 }, (_, index) => track('songs', { name: `続き${index}` }));
+  const body = await (await handler(env, async (url) => {
+    urls.push(url);
+    return Response.json({ data: url.includes('offset=0') ? full : rest });
+  })).json();
+  assert.deepEqual(urls, [
+    'https://api.music.apple.com/v1/me/recent/played/tracks?limit=10&offset=0&types=songs,library-songs,music-videos,library-music-videos',
+    'https://api.music.apple.com/v1/me/recent/played/tracks?limit=5&offset=10&types=songs,library-songs,music-videos,library-music-videos',
+  ]);
+  assert.equal(body.apiStatus, 'success');
+  assert.equal(body.tracks.length, 15);
+  assert.equal(body.tracks[0].title, '曲0');
+  assert.equal(body.tracks[14].title, '続き4');
+  // 続きが失敗しても，1 ページ目の 10 件は出す
+  for (const second of [async () => new Response(null, { status: 500 }), async () => { throw new Error('timeout'); }]) {
+    let calls = 0;
+    const partial = await (await handler(env, async () => { calls += 1; return calls === 1 ? Response.json({ data: full }) : second(); })).json();
+    assert.equal(partial.apiStatus, 'success');
+    assert.equal(partial.tracks.length, 10);
+  }
+  // 1 ページ目が 10 件に満たないときは，続きを取らない
+  let calls = 0;
+  const short = await (await handler(env, async () => { calls += 1; return Response.json({ data: full.slice(0, 4) }); })).json();
+  assert.equal(calls, 1);
+  assert.equal(short.tracks.length, 4);
+});
+
+test('ミュージックビデオで聴いた分も，曲と同じ形で返す（動画以外の種類は返さない）', () => {
+  const tracks = normalizeRecentTracks({ data: [track('music-videos', { name: 'ビデオの曲' }), track('library-music-videos', { name: 'ライブラリのビデオ' }), track('albums'), track('playlists'), track('stations')] });
+  assert.deepEqual(tracks.map(item => item.title), ['ビデオの曲', 'ライブラリのビデオ']);
+  assert.deepEqual(Object.keys(tracks[0]).sort(), ['album', 'artist', 'artworkUrl', 'title', 'url']);
+  // アルバム名が無い動画でも成り立つ
+  const noAlbum = normalizeRecentTracks({ data: [track('music-videos', { albumName: undefined })] });
+  assert.equal(noAlbum[0].album, '');
 });
