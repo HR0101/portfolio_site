@@ -1,105 +1,156 @@
-.section { background:var(--site-surface); color:var(--site-ink); scroll-margin-top:64px; }
-.stage { max-width:1200px; margin:auto; padding:80px max(24px, 4vw) 32px; }
-.heading :global(.portfolio-section-heading) { margin-bottom:0; }
-.heading :global(.portfolio-section-heading h2) { margin-top:12px; font-size:clamp(28px, 3vw, 40px); }
-.heading :global(.portfolio-section-description) { max-width:680px; margin-top:14px; font-size:13px; line-height:1.85; }
-/* 見出しの下の一文：カードが粒子になって次へ移るのに合わせて，対応する句が muted → ink の色へ灯る（--lit-k は About.tsx が書く）．
-   色を混ぜる関数に対応しないブラウザでは，宣言が無効になり，説明文の色のままで読める */
-.chunk { --lit:clamp(0, calc(var(--seg, 1) * var(--m, 1) - var(--w, 0)), 1); color:color-mix(in srgb, var(--site-ink) calc(var(--lit) * 100%), var(--site-muted)); transition:color 200ms var(--site-ease); }
-.body { display:grid; grid-template-columns:minmax(180px,.42fr) minmax(0,1.9fr); align-items:center; gap:clamp(32px,5vw,72px); padding:40px 0; }
-.chapters { display:flex; flex-direction:column; align-self:center; }
-.chapters button { position:relative; display:flex; gap:18px; align-items:center; min-height:64px; padding:16px 0; border-bottom:1px solid var(--site-line); text-align:left; color:var(--site-muted); font-size:13px; line-height:1.6; }
-.chapters button::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px; background:var(--site-ink); transform:scaleX(0); transform-origin:left; }
-.chapterNumber { flex-shrink:0; font:10px var(--font-mono); opacity:.7; }
-.chapters button[aria-selected=true] { color:var(--site-ink); }
-.chapters button[aria-selected=true]::after { transform:scaleX(1); }
+/* 自己紹介：サイトのテーマ色（ライト・ダーク）に合わせた面の上で，同じ数の線の三角錐が，章ごとに別の立体（脳・携帯・チップ・つながった 2 つの輪）へ並び替わる．
+   広い画面（固定表示）では，全画面の舞台を固定し，スクロールで 4 つの章を 1 つずつ見せる．
+   図形の計算は lib/aboutFigures.ts，描画と値の書き込みは About.tsx（--r・--side・番号と目盛りの transform）．
+   それ以外（小さい画面・動きを減らす設定）は，動かない図形つきのカード 4 枚を並べた普通の表示になる． */
 
-/* ===== カード =====
-   4 枚とも常に置いてあり，いま正面の 1 枚だけが見える．固定表示のときは，左端と右端を行き来しながら高さが下がる場所
-   （--slot-x / --slot-y．値は lib/cardParticles.ts の CARD_SLOTS）に置かれ，切り替わるときは粒子になって次の場所へ移る．
-   項目の一覧は，いつもカードの反対側に立って，カードと一緒に動く．
-   見た目は「静かな暗い面に，点描の小さな惑星」：Hero の点描の惑星と同じ，主張しすぎない点の集まりだけを飾りにする．
-   面は光らせず，縁は細い 1 本の線．章の色は，惑星の点・核・ラベル・アイコン・角のうっすらした色にだけ使う．*/
-.cardStack {
-  position:relative; display:grid; min-width:0;
-  /* 粒子の墨色（カードの外の背景の上でも見える色）．カードの中の文字は，それぞれ白を指定している */
-  color:#151a3d;
+.section { background:var(--site-surface); color:var(--site-ink); scroll-margin-top:64px; }
+.intro { max-width:1200px; margin:auto; padding:80px max(24px, 4vw) 40px; }
+.intro :global(.portfolio-section-heading) { margin-bottom:0; }
+.intro :global(.portfolio-section-heading h2) { margin-top:12px; font-size:clamp(28px, 3vw, 40px); }
+/* 説明は左の狭い幅に収める（右半分へ飛んでくる大きな惑星と重ならないように） */
+.intro :global(.portfolio-section-description) { max-width:420px; margin-top:14px; font-size:13px; line-height:1.85; }
+.chunk { color:var(--site-ink); }
+
+/* テーマ色（--site-surface / --site-ink 等）に合わせた配色と，動きの曲線．
+   文字の大きさの差・色の変化の曲線・丸いボタンの塗り替わり・文字の波は，dala.craftedbygc.com の解析を参考にした（色・書体・文言は自前） */
+.section {
+  --about-bg:var(--site-surface);
+  --about-card:var(--site-surface-soft);
+  --about-ink:var(--site-ink);
+  --about-muted:color-mix(in srgb, var(--site-ink) 74%, transparent);
+  --about-faint:color-mix(in srgb, var(--site-ink) 48%, transparent);
+  --about-line:var(--site-line);
+  --about-on-accent:#fff;
+  /* 色・塗りの変化（余韻のある減速）と，小さな操作の反応（きびきびした減速） */
+  --about-ease:cubic-bezier(.5, 1, .89, 1);
+  --about-dur:500ms;
+  --about-ease-quick:cubic-bezier(.25, 1, .5, 1);
+  --about-dur-quick:300ms;
 }
-:global(.dark) .cardStack { color:#cfd8ff; }
-.slot {
-  grid-area:1 / 1; position:relative; visibility:hidden; pointer-events:none;
-  /* 影は枠に付ける（カードの切り抜きに合わせて影も消えるように）．控えめな 1 本の影 */
-  filter:drop-shadow(0 1px 2px rgb(5 8 25 / .18)) drop-shadow(0 18px 24px rgb(5 8 25 / .26));
+:global(.dark) .section {
+  --about-card:var(--site-surface);
+  --about-muted:rgb(244 239 230 / .74);
+  --about-faint:rgb(244 239 230 / .46);
+  --about-line:rgb(255 255 255 / .1);
+  --about-on-accent:#0a0a0c;
 }
-.slot[data-active=true] { visibility:visible; pointer-events:auto; }
-:global(.dark) .slot { filter:drop-shadow(0 0 1px rgb(255 255 255 / .12)) drop-shadow(0 14px 28px rgb(0 0 0 / .45)); }
-.card {
-  --about-glow:color-mix(in srgb,var(--about-accent) 62%,#fff);
-  position:relative; isolation:isolate; overflow:clip; height:100%; min-height:380px; padding:40px; border:0; border-radius:28px;
-  color:#fff; -webkit-font-smoothing:antialiased;
-  /* 静かな暗い面．角（惑星のあたり）にだけ，章の色をごくうっすら差す */
-  background:
-    radial-gradient(58% 54% at 88% 10%, color-mix(in srgb,var(--about-accent) 16%,transparent), transparent 70%),
-    linear-gradient(165deg,#0e1219 0%,#090b11 100%);
+
+/* ===== 文章の部品（普通の表示と固定表示で共通）===== */
+.meta { display:flex; align-items:center; gap:12px; margin:0 0 12px; font-size:12px; line-height:1; }
+.count { color:var(--about-faint); font:400 11px/1 var(--font-mono); }
+.label { padding-left:12px; border-left:1px solid var(--about-line); color:var(--about-accent); font-weight:600; letter-spacing:.03em; }
+.title { margin:0 0 12px; color:var(--about-ink); font-size:26px; line-height:1.25; font-weight:600; letter-spacing:-.02em; }
+.titleLine { display:block; }
+.titlePart { display:inline-block; white-space:nowrap; }
+.space { display:inline-block; width:.28em; }
+.charMask { display:inline-block; overflow:hidden; vertical-align:top; padding-bottom:.1em; }
+.char { display:inline-block; }
+.description { max-width:34em; margin:0; text-wrap:pretty; color:var(--about-muted); font-size:15px; font-weight:300; line-height:1.95; }
+
+/* 丸いボタン：章の色の面の上に，下から楕円の面（本文色）がせり上がって塗り替わる */
+.cta {
+  position:relative; overflow:hidden; display:inline-flex; align-items:center; justify-content:center;
+  min-height:46px; margin-left:auto; padding:0 24px; border-radius:999px;
+  background:var(--about-accent); color:var(--about-on-accent); font-size:14px; font-weight:600; white-space:nowrap;
+  transition:background-color var(--about-dur) var(--about-ease);
 }
-/* 縁：細い 1 本の線と，上辺のかすかな光 */
-.card::after {
-  content:''; position:absolute; inset:0; z-index:2; border-radius:inherit; pointer-events:none;
-  border:1.5px solid rgb(255 255 255 / .2);
-  box-shadow:inset 0 1px 0 rgb(255 255 255 / .1);
+.ctaFill {
+  position:absolute; inset:0; pointer-events:none; background:var(--about-ink);
+  clip-path:ellipse(120% 180% at 50% 310%);
+  transition:clip-path var(--about-dur) var(--about-ease);
 }
-.top { display:flex; align-items:center; justify-content:space-between; margin-bottom:56px; }
-.icon { width:52px; height:52px; border:1px solid rgb(255 255 255 / .13); border-radius:16px; display:grid; place-items:center; background:rgb(255 255 255 / .045); color:var(--about-glow); }
-.copy { position:relative; z-index:1; }
-.label { display:inline-flex; margin-bottom:14px; padding:6px 11px; border:1px solid rgb(255 255 255 / .16); border-radius:999px; color:var(--about-glow); font:600 10px/1 var(--font-mono); letter-spacing:.14em; }
-/* 文字だけが，暗い面の上に白くはっきり浮かぶ */
-.copy h3 { margin:0 0 14px; color:#fff; font-size:clamp(28px,3vw,40px); line-height:1.3; font-weight:600; letter-spacing:-.035em; }
-.copy p { max-width:26em; color:rgb(255 255 255 / .82); font-size:15px; line-height:1.95; }
-/* 粒子を描く面．カードの外へ散る粒子が見えるよう，カードを置く場所より広く取る（固定表示のときだけ使う） */
-.particles { position:absolute; z-index:3; display:none; pointer-events:none; }
-.footer { display:flex; align-items:center; gap:20px; padding-top:12px; border-top:1px solid var(--site-line); color:var(--site-muted); font-size:10px; }
-.footer > a { display:inline-flex; align-items:center; gap:6px; min-height:44px; margin-left:auto; color:var(--site-ink); white-space:nowrap; }
-.scrollHint { display:none; align-items:center; gap:6px; }
-.progress { flex:1; max-width:200px; height:1px; overflow:hidden; background:var(--site-line); }
-.progress > span { display:block; width:100%; height:100%; background:var(--site-ink); transform:scaleX(0); transform-origin:left; }
-.section a:focus-visible, .chapters button:focus-visible { outline:2px solid var(--site-ink); outline-offset:5px; border-radius:4px; }
+.ctaLabel { position:relative; z-index:1; display:inline-flex; align-items:center; gap:8px; transition:color var(--about-dur-quick) var(--about-ease-quick); }
+
+/* ===== 普通の表示（小さい画面・動きを減らす設定）：動かない図形つきのカードを並べる ===== */
+.stage, .backdrop, .figure { display:none; }
+.flow { padding-bottom:32px; }
+.chapters { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:20px; max-width:1200px; margin-inline:auto; padding-inline:max(24px, 4vw); }
+.chapter {
+  display:flex; flex-direction:column; overflow:hidden; border-radius:24px; border:1px solid var(--about-line);
+  background:radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--about-accent) 12%, transparent), transparent 70%), var(--about-card);
+  -webkit-font-smoothing:antialiased;
+}
+.stillFigure { display:block; width:100%; height:240px; }
+.copy { padding:0 32px 32px; }
+.footer { display:flex; align-items:center; max-width:1200px; margin:24px auto 0; padding-inline:max(24px, 4vw); }
+
+/* ===== 背景固定表示＋交互縦スクロール（PC） ===== */
 @media(min-width:1000px) and (min-height:760px) and (prefers-reduced-motion:no-preference) {
-  .track[data-pin] { height:380svh; }
-  [data-pin] .stage { position:sticky; top:64px; height:calc(100svh - 64px); display:flex; flex-direction:column; padding-block:24px 12px; }
-  [data-pin] .body { flex:1; min-height:0; padding-block:0; margin-block:32px 28px; }
-  [data-pin] .scrollHint { display:flex; }
-  [data-pin] .selectHint { display:none; }
-  [data-pin] .chunk { transition:none; }
-  /* カードと項目の一覧が動き回る広い場所．body いっぱいに取り，カードの大きさは場所に対する割合で決め，
-     置く位置は --slot-x / --slot-y（0〜1），一覧の位置は --list-x / --list-y（0〜1．About.tsx が書く）で決める */
-  [data-pin] .body { position:relative; display:block; min-height:400px; --list-w:200px; --list-h:256px; }
-  [data-pin] .chapters { position:absolute; z-index:4; width:var(--list-w); height:var(--list-h); left:calc((100% - var(--list-w)) * var(--list-x, 0)); top:calc(max(0px, 100% - var(--list-h)) * var(--list-y, 0)); }
-  [data-pin] .cardStack { position:absolute; inset:0; display:block; --card-w:min(560px,60%); --card-h:min(400px,100%); }
-  [data-pin] .slot { position:absolute; width:var(--card-w); height:var(--card-h); left:calc(max(0px, 100% - var(--card-w)) * var(--slot-x, 0)); top:calc(max(0px, 100% - var(--card-h)) * var(--slot-y, 0)); }
-  [data-pin] .card { min-height:0; }
-  /* カードが粒子になるあいだは，左から（粒子の動き出しと同じ向きに）切り抜かれて消え，再形成されるときは左から現れる
-     （--card-presence と --mask-dir は About.tsx が書く） */
-  [data-pin] .slot[data-active=true] .card {
-    -webkit-mask-image:linear-gradient(var(--mask-dir, 90deg), #000 calc(var(--card-presence, 1) * 118% - 18%), transparent calc(var(--card-presence, 1) * 118%));
-    mask-image:linear-gradient(var(--mask-dir, 90deg), #000 calc(var(--card-presence, 1) * 118% - 18%), transparent calc(var(--card-presence, 1) * 118%));
+  .track[data-pin] { position:relative; --pad-x:clamp(48px, 8.5vw, 144px); }
+  [data-pin] .stage { display:block; position:absolute; inset:0; z-index:0; pointer-events:none; }
+  [data-pin] .backdrop {
+    display:block; position:sticky; top:0; width:100%; height:100svh;
+    overflow:hidden; background:var(--about-bg); -webkit-font-smoothing:antialiased;
   }
-  [data-pin] .particles { display:block; }
+  /* テーマ背景色の canvas：線の三角錐でできた立体を章の反対側に大きく描き，見出し〜全章を通して背後に置く */
+  [data-pin] .figure { display:block; position:absolute; inset:0; width:100%; height:100%; background:var(--about-bg); }
+  [data-pin] .flow { position:relative; z-index:2; padding-bottom:0; }
+  [data-pin] .intro {
+    display:flex; align-items:center; max-width:none; min-height:74svh;
+    padding:clamp(108px, 15svh, 152px) var(--pad-x) 6svh;
+  }
+  [data-pin] .intro :global(.portfolio-section-heading) { max-width:min(34rem, 42%); }
+
+  /* 章の文章：見出しに続いて，左→右→左→右と交互に縦スクロールで流れる（--r は現れ具合 0〜1） */
+  [data-pin] .chapters { display:block; max-width:none; padding:0 0 54svh; }
+  [data-pin] .chapter {
+    --r:1; --side:1;
+    display:flex; flex-direction:row; align-items:center; justify-content:flex-start;
+    min-height:108svh; padding:8svh var(--pad-x);
+    overflow:visible; border:0; border-radius:0; background:none;
+  }
+  [data-pin] .chapter[data-align=right] { justify-content:flex-end; }
+  [data-pin] .copy {
+    width:min(33rem, 40%); padding:0;
+    text-shadow:0 0 24px color-mix(in srgb, var(--about-bg) 85%, transparent);
+  }
+  [data-pin] .meta, [data-pin] .description, [data-pin] .cta {
+    opacity:clamp(0, calc((var(--r) - .2) * 1.35), 1);
+    transform:translateY(calc(var(--side) * (1 - var(--r)) * 28px));
+  }
+  /* 題名：本文との大きさの差を大きく取り，字間を詰めて 1 つの塊に見せる */
+  [data-pin] .title {
+    margin-bottom:clamp(18px, 3svh, 32px);
+    font-size:clamp(2.8rem, 5.8vw, 6.2rem); line-height:1.1; font-weight:400; letter-spacing:-.045em;
+  }
+  /* 題名の区切りごとに 1 行にする */
+  [data-pin] .titlePart { display:block; }
+  [data-pin] .charMask { padding-bottom:.12em; }
+  /* 題名は 1 文字ずつ，少し傾いた姿勢から，枠の下を通ってまっすぐ起き上がる */
+  [data-pin] .char {
+    --p:clamp(0, calc(var(--r) * 1.9 - var(--i) * .06), 1);
+    transform-origin:0 100%;
+    transform:translateY(calc(var(--side) * (1 - var(--p)) * 112%)) rotate(calc(var(--side) * (1 - var(--p)) * 6deg));
+    will-change:transform;
+  }
+  [data-pin] .meta { margin-bottom:16px; font-size:14px; }
+  [data-pin] .count { font-size:12px; }
+  [data-pin] .label { padding-left:0; border-left:0; }
+  [data-pin] .description { max-width:27em; margin-bottom:clamp(20px, 3.4svh, 32px); font-size:clamp(1.05rem, 1.3vw, 1.3rem); line-height:1.8; }
+  /* 丸いボタンは結びの章の下へ置き，そのまま押せる */
+  [data-pin] .cta { margin-left:0; pointer-events:auto; }
+
+  [data-pin] .footer { display:none; }
+  /* キーボードの輪郭を視認性の高いテーマの文字色にする */
+  [data-pin] .cta:focus-visible { outline-color:var(--about-ink); }
 }
-@media(max-width:999px), (max-height:759px) {
-  .body { grid-template-columns:minmax(0,1fr); gap:24px; }
-  .chapters { display:grid; grid-template-columns:1fr 1fr; column-gap:24px; }
-  .chapters button { min-height:52px; padding-block:12px; font-size:12px; }
-  .card { padding:32px; min-height:360px; }
-  .top { margin-bottom:48px; }
+
+@media(hover:hover) and (pointer:fine) {
+  .cta:hover .ctaFill { clip-path:ellipse(120% 180% at 50% 100%); }
+  .cta:hover .ctaLabel { color:var(--about-bg); }
 }
-@media(max-width:600px) {
-  .stage { padding-top:48px; }
-  .body { padding-block:28px; gap:24px; }
-  .chapters { column-gap:16px; }
-  .chapters button { gap:8px; font-size:11px; }
-  .card { min-height:380px; padding:24px; }
-  .top { margin-bottom:96px; }
-  .copy h3 { font-size:26px; }
-  .footer { flex-wrap:wrap; gap:12px; }
-  .progress { display:none; }
+.cta:focus-visible .ctaFill { clip-path:ellipse(120% 180% at 50% 100%); }
+.cta:focus-visible .ctaLabel { color:var(--about-bg); }
+
+@media(max-width:700px) {
+  .intro { padding-top:48px; }
+  .chapters { grid-template-columns:minmax(0, 1fr); }
+  .stillFigure { height:200px; }
+  .copy { padding:0 24px 28px; }
+  .title { font-size:24px; }
+}
+
+/* 動きを減らす設定：塗り替わりと色の変化をすぐに切り替える（図形と文章は，もともと動かない普通の表示になる） */
+@media(prefers-reduced-motion:reduce) {
+  .cta, .ctaFill, .ctaLabel { transition:none; }
 }

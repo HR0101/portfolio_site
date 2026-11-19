@@ -122,9 +122,10 @@ export function ProductShowcase() {
       const showcaseEnd = bounds.top + window.scrollY - STICKY_TOP + (bounds.height - viewport.offsetHeight);
       const exit = about ? Math.min(1, Math.max(0, (window.scrollY - showcaseEnd) / Math.max(1, about.startScroll - showcaseEnd))) : 0;
       planet.current?.setAutoRotate(!reduced.matches && (flight < 1 || exit > 0));
-      // 暗いカードの中へ入る後半で，ページの色から暗い面の色（白い点＋暗い球の本体）へ移す
+      // ダーク表示では自己紹介セクションへ入る後半で暗い面の色へ寄せる．ライト表示ではページ色のままつなぐ
       const landing = Math.min(1, Math.max(0, (exit - .45) / .5));
-      planet.current?.setTone(1 - landing * landing * (3 - 2 * landing));
+      const dark = document.documentElement.classList.contains('dark');
+      planet.current?.setTone(dark ? 1 - landing * landing * (3 - 2 * landing) : 1);
       planet.current?.setHeroVisibility(reduced.matches
         ? Number(sourceBounds.bottom > STICKY_TOP)
         : Math.min(1, Math.max(0, (.9 - flight) / .25)));
