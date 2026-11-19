@@ -39,6 +39,7 @@ out/
 # Raw screenshot assets and design candidates
 BusTimeApp-screenshots/
 public/favicon-candidates/
+assets/
 
 # ローカルの Pages Secrets・Wrangler 状態・MusicKit 署名鍵
 .wrangler/
