@@ -1,7 +1,7 @@
 import { fetchWithTimeout } from '../lib/fetchWithTimeout';
 import { normalizeRecentTracks, type MusicStatus, type RecentTrack } from '../lib/edge/appleMusic';
 
-const cacheKey = 'apple_music_recent_v1';
+const cacheKey = 'apple_music_recent_v2';
 const cacheLifetimeMs = 5 * 60 * 1000;
 const requestTimeoutMs = 8000;
 export interface RecentMusicResponse {

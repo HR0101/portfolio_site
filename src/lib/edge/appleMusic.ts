@@ -3,7 +3,12 @@ const secondsPerHour = 3600;
 const tokenLifetimeSeconds = 12 * secondsPerHour;
 const tokenRefreshMarginSeconds = 5 * 60;
 const timeoutMs = 8000;
-const maxTracks = 5;
+// 画面に出す曲数（横 3 列 × 縦 5 行）．Apple の API は 1 回に 10 件までなので，2 回に分けて取る
+const maxTracks = 15;
+const recentPageSize = 10;
+// 履歴に載る種類．曲のほかに，ミュージックビデオで聴いた分も含める（曲だけにすると，ビデオで聴いたものが落ちる）
+const trackTypes = ['songs', 'library-songs', 'music-videos', 'library-music-videos'];
+const recentTypesQuery = trackTypes.join(',');
 const artworkSize = '120';
 export const musicTtl = 120;
 export type MusicStatus = 'success' | 'offline' | 'rate_limited' | 'no_token' | 'token_expired';
@@ -72,6 +77,26 @@ function safeArtwork(value: unknown): string {
   }
   return '';
 }
+// 取得済みのジャケット URL（…/120x120bb.jpg）の大きさを，画面に合わせて取り直す（大きく見せるときだけ使う）．
+// 形が合わないとき・範囲外のときは，元の URL をそのまま返す．許可するのは，すでに検証済みの mzstatic.com の https だけ
+const artworkSizePattern = /\/(\d{2,4})x(\d{2,4})(bb|cc|sr|ss)?\.(jpg|png|webp)$/;
+const artworkMinSize = 60;
+const artworkMaxSize = 1000;
+export function resizeArtworkUrl(url: string, size: number): string {
+  if (!Number.isFinite(size) || size < artworkMinSize || size > artworkMaxSize) return url;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' || !parsed.hostname.endsWith('.mzstatic.com')) return url;
+    const rounded = Math.round(size);
+    const next = parsed.pathname.replace(artworkSizePattern, (_match, _w, _h, suffix = '', extension) => `/${rounded}x${rounded}${suffix}.${extension}`);
+    if (next === parsed.pathname) return url;
+    parsed.pathname = next;
+    return parsed.href;
+  } catch {
+    return url;
+  }
+}
+
 function safeMusicUrl(value: unknown): string | undefined {
   const raw = text(value);
   if (!raw.startsWith('https://music.apple.com/') || raw.includes('\\')) return undefined;
@@ -92,7 +117,7 @@ export function normalizeRecentTracks(response: unknown, limit = maxTracks): Rec
   for (const row of data) {
     if (tracks.length >= count) break;
     const item = record(row);
-    if (item?.type !== 'songs' && item?.type !== 'library-songs') continue;
+    if (!item || !trackTypes.includes(String(item.type))) continue;
     const attributes = record(item.attributes);
     const title = text(attributes?.name);
     const artist = text(attributes?.artistName);
@@ -143,14 +168,29 @@ export async function getRecentMusic(env: MusicEnv, dependencies: {
   if (!teamId || !keyId || !privateKeyPem || !userToken) return empty('no_token');
   try {
     const token = await developerToken({ teamId, keyId, privateKeyPem, now: (dependencies.now ?? Date.now)(), subtle: dependencies.subtle ?? crypto.subtle });
-    const response = await (dependencies.fetch ?? fetch)('https://api.music.apple.com/v1/me/recent/played/tracks?limit=5', {
+    const request = (limit: number, offset: number) => (dependencies.fetch ?? fetch)(`https://api.music.apple.com/v1/me/recent/played/tracks?limit=${limit}&offset=${offset}&types=${recentTypesQuery}`, {
       headers: { Authorization: `Bearer ${token}`, 'Music-User-Token': userToken },
       signal: AbortSignal.timeout(timeoutMs),
     });
+    const response = await request(recentPageSize, 0);
     if (response.status === 401 || response.status === 403) return empty('token_expired');
     if (response.status === 429) return empty('rate_limited');
     if (!response.ok) return empty('offline');
-    return { tracks: normalizeRecentTracks(await response.json()), apiStatus: 'success' };
+    const first = record(await response.json());
+    const rows: unknown[] = Array.isArray(first?.data) ? [...first.data] : [];
+    // 1 ページが埋まっているときだけ，続きを取る．続きの失敗は無視して，取れた分を出す
+    if (rows.length >= recentPageSize && maxTracks > recentPageSize) {
+      try {
+        const next = await request(maxTracks - recentPageSize, recentPageSize);
+        if (next.ok) {
+          const second = record(await next.json());
+          if (Array.isArray(second?.data)) rows.push(...second.data);
+        }
+      } catch {
+        // 2 ページ目が取れなくても，1 ページ目の曲は出す．
+      }
+    }
+    return { tracks: normalizeRecentTracks({ data: rows }), apiStatus: 'success' };
   } catch {
     return empty('offline');
   }
