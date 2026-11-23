@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
+  ArrowDown,
+  ArrowLeft,
   ArrowUpRight,
   DatabaseBackup,
   Copy,
@@ -22,6 +24,7 @@ import { MORE_TOTAL } from './more-data';
 import { MoreGrid } from './more-grid';
 import { PhoneTour } from './phone-tour';
 import { ScreenTour } from './screen-tour';
+import { SCREEN_DIR, SCREENSHOT_WIDTH, MAC_SCREENSHOT_HEIGHT } from './screen-assets';
 import styles from './product.module.css';
 import { CareDiagram } from './care-diagram';
 import { TechTimeline } from './tech-timeline';
@@ -42,8 +45,6 @@ export const metadata: Metadata = {
     type: 'website',
   },
 };
-
-const SCREEN_DIR = '/projects/arkserver-screens';
 
 // GitHub のリポジトリ名（旧名 AllServerForMac から改名済み）．変えるときは，ここと data/apps.ts の repositories を直す
 const ARK_REPOSITORY = 'ArkServer';
@@ -113,7 +114,7 @@ const CARE = [
 ];
 
 // 使っている技術と，選んだ理由
-const stack = [
+const STACK = [
   ['アプリ本体', 'SwiftUI（macOS 15.5 以降）', '機能ごとの MVVM 構成．画面・状態・副作用を Features 配下で分けている．'],
   ['配信', 'Swifter（HTTP サーバー）', 'アルバム・動画・写真・サムネイルを配信し，ブラウザ用の画面も同じサーバーが返す．'],
   ['検出', 'Bonjour（_myvideoserver._tcp.）', 'iPhone アプリが LAN 内のこの Mac を自動で見つける．IP アドレスの手入力は不要．'],
@@ -127,80 +128,83 @@ export default function ArkServerPage() {
     <article className={styles.page} data-product-page>
       <ProductMotion />
       <nav className={styles.localNav} aria-label="Ark Server ナビゲーション">
-        <Link href="/#projects">← アプリの一覧</Link>
-        <span>Ark Server</span>
-        <a href="#ark-screens">画面を見る ↓</a>
+        <Link href="/#projects"><ArrowLeft size={16} aria-hidden="true" /> アプリの一覧</Link>
+        <span>Ark Server <small>macOS / iOS / Web</small></span>
+        <a href="#ark-screens">画面を見る <ArrowDown size={16} aria-hidden="true" /></a>
       </nav>
 
-        <header className={styles.hero}>
-          {/* 空．ライトは夜明け，ダークは夜（星と月） */}
-
-          <div className={styles.heroInner}>
-            <div className={styles.heroCopy}>
-              <p className={styles.eyebrow}>自宅のメディアライブラリ</p>
-              <div className={styles.appName} data-morph-title>
-                <img data-morph-icon src="/projects/arkserver.svg" alt="" width={44} height={44} />
-                Ark Server <span>macOS</span>
-              </div>
-              <h1>
-                Mac の動画と写真を，
-                <br />
-                <em>
-                  手元の端末で
-                </em>
-              </h1>
-              <p className={styles.lead}>
-                <span className={styles.phrase}>同じ Wi‑Fi の iPhone やブラウザから，</span>
-                <span className={styles.phrase}>Mac のライブラリを再生できます．</span>
-                <span className={styles.phrase}>PIN 認証と</span>
-                <span className={styles.phrase}>3世代のバックアップで</span>
-                <span className={styles.phrase}>保護します．</span>
-              </p>
-              <div className={styles.heroActions}>
-                <a
-                  className={`${styles.primaryLink}`}
-                  href={buildRepositoryUrl(siteConfig.githubUsername, ARK_REPOSITORY)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <GitHubIcon className="w-4 h-4" /> ソースコード
-                  <span className="sr-only">（GitHub・新しいタブで開きます）</span>
-                </a>
-                <a className={styles.secondaryLink} href="#ark-screens">
-                  画面を見る <span aria-hidden="true">↓</span>
-                </a>
-              </div>
+      <header className={styles.hero}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroCopy}>
+            <div className={styles.appName} data-morph-title>
+              <img data-morph-icon src="/projects/arkserver.svg" alt="" width={44} height={44} />
+              <span>Ark Server</span>
             </div>
-
-            {/* 海の情景に，配信側と閲覧側の実画面を重ねる */}
-            <figure className={styles.heroStage} data-morph-surface>
-              <div className={styles.libraryLabel}><span className={styles.connectionDot} aria-hidden="true" />Mac · 配信中（同じ Wi‑Fi 内）</div>
-              <div className={styles.heroWindow} data-morph-target>
-                <img src={`${SCREEN_DIR}/dashboard.webp`} alt="Ark Server のホーム画面．接続先と QR コードはぼかしています" width={840} height={525} loading="eager" fetchPriority="high" />
-              </div>
-              <svg className={styles.libraryBase} viewBox="0 0 600 112" aria-hidden="true">
-                <path className={styles.libraryDeck} d="M12 8 H588 L550 40 H50 Z" />
-                <rect x="50" y="48" width="500" height="24" rx="8" />
-                <rect x="110" y="80" width="380" height="24" rx="8" />
-                <g className={styles.libraryPorts}><circle cx="78" cy="60" r="3" /><circle cx="92" cy="60" r="3" /><circle cx="138" cy="92" r="3" /></g>
-                <g className={styles.libraryVents}><path d="M432 60h84M376 92h84" /></g>
-              </svg>
-              <div className={styles.heroPhone}>
-                <img
-                  src={`${SCREEN_DIR}/mob-home.webp`}
-                  alt="同じサーバーをスマホのブラウザで開いた画面．動画が大きなサムネイルで縦に並び，下にホーム・ショート・続きを見る・アルバムのタブがある"
-                  width={840}
-                  height={1818}
-                  loading="eager"
-                />
-              </div>
-            </figure>
+            <p className={styles.eyebrow}>自宅のメディアライブラリ</p>
+            <h1>
+              <span>Mac の動画と写真を，</span>
+              <em>手元の端末で</em>
+            </h1>
+            <p className={styles.lead}>
+              Mac に集めたライブラリを，<br />
+              同じ Wi‑Fi の iPhone やブラウザへ．<br />
+              整理も，再生も，自分の手元に．
+            </p>
+            <div className={styles.heroActions}>
+              <a className={styles.primaryLink} href="#ark-screens">
+                画面を見る <ArrowDown size={18} aria-hidden="true" />
+              </a>
+              <a
+                className={styles.secondaryLink}
+                href={buildRepositoryUrl(siteConfig.githubUsername, ARK_REPOSITORY)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <GitHubIcon className="w-4 h-4" /> ソースコード
+                <ArrowUpRight size={16} aria-hidden="true" />
+                <span className="sr-only">（GitHub・新しいタブで開きます）</span>
+              </a>
+            </div>
           </div>
 
-          <p className={styles.heroCaption}>実際の画面（撮影用に作った合成映像を取り込んで撮影）</p>
-        </header>
-
-      <ul className={styles.requirements} aria-label="対応環境">{HERO_CHIPS.map(chip => <li key={chip}>{chip}</li>)}</ul>
+          <figure className={styles.heroStage} data-morph-surface>
+            <div className={styles.libraryLabel}>
+              <span>Mac / Ark Server</span>
+              <span>ひとつのライブラリ</span>
+            </div>
+            <div className={styles.heroWindow} data-morph-target>
+              <img
+                src={`${SCREEN_DIR}/library.webp`}
+                alt="Ark Server の動画ライブラリ．Mac に保存した動画がサムネイルで一覧できる実際の画面"
+                width={SCREENSHOT_WIDTH}
+                height={MAC_SCREENSHOT_HEIGHT}
+                loading="eager"
+                fetchPriority="high"
+              />
+            </div>
+            <div className={styles.heroConnection} aria-hidden="true">
+              <span /> 同じ Wi‑Fi <ArrowDown size={16} />
+            </div>
+            <div className={styles.heroPhone}>
+              <img
+                src={`${SCREEN_DIR}/mob-home.webp`}
+                alt="同じライブラリをスマホのブラウザで開いた実際の画面．動画のサムネイルと，ホーム・ショート・続きを見る・アルバムのタブが並ぶ"
+                width={SCREENSHOT_WIDTH}
+                height={1818}
+                loading="eager"
+              />
+            </div>
+            <figcaption className={styles.heroCaption}>Mac とスマホのブラウザで，同じライブラリへ</figcaption>
+          </figure>
+        </div>
+        <div className={styles.heroFooter}>
+          <ul className={styles.requirements} aria-label="対応環境">
+            {HERO_CHIPS.map(chip => <li key={chip}>{chip}</li>)}
+          </ul>
+          <a className={styles.exploreLink} href="#ark-how">仕組みを知る <ArrowDown size={16} aria-hidden="true" /></a>
+        </div>
+        <p className={styles.captureNote}>実際の画面（撮影用に作った合成映像を取り込んで撮影）</p>
+      </header>
 
       <section className={styles.stats} aria-label="数字で見る">
         <div className={styles.statsIntro}>
@@ -224,9 +228,9 @@ export default function ArkServerPage() {
         </ul>
       </section>
 
-      <section className={styles.how}>
+      <section id="ark-how" className={styles.how}>
         <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>配信の仕組み</p>
+          <p className={styles.eyebrow}><span className={styles.chapterNumber} aria-hidden="true">01</span>配信の仕組み</p>
           <h2 data-product-enter="heading">
             <span>Mac から配信して，</span>
             iPhone やブラウザで見る
@@ -243,7 +247,7 @@ export default function ArkServerPage() {
 
       <section id="ark-screens" className={styles.tourSection}>
         <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>Mac の画面</p>
+          <p className={styles.eyebrow}><span className={styles.chapterNumber} aria-hidden="true">02</span>Mac の画面</p>
           <h2 data-product-enter="heading">
             <span>8つの画面で，</span>
             使い方を紹介
@@ -260,7 +264,7 @@ export default function ArkServerPage() {
 
       <section className={styles.demos}>
         <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>操作デモ</p>
+          <p className={styles.eyebrow}><span className={styles.chapterNumber} aria-hidden="true">03</span>操作デモ</p>
           <h2 data-product-enter="heading">
             <span>動きで見る，</span>
             3つの仕組み
@@ -276,7 +280,7 @@ export default function ArkServerPage() {
 
       <section id="ark-iphone" className={styles.iphone}>
         <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>iPhone アプリ</p>
+          <p className={styles.eyebrow}><span className={styles.chapterNumber} aria-hidden="true">04</span>iPhone アプリ</p>
           <h2 data-product-enter="heading">
             <span>iPhone でも，</span>
             同じライブラリを
@@ -291,11 +295,11 @@ export default function ArkServerPage() {
         </p>
       </section>
 
-      <section className={styles.browser}>
+      <section id="ark-browser" className={styles.browser}>
         <div className={styles.browserIntro}>
           <div>
             <div className={styles.sectionIntro}>
-              <p className={styles.eyebrow}>ブラウザ版</p>
+              <p className={styles.eyebrow}><span className={styles.chapterNumber} aria-hidden="true">05</span>ブラウザ版</p>
               <h2 data-product-enter="heading">
                 <span>アプリがなくても，</span>
                 ブラウザで
@@ -319,7 +323,7 @@ export default function ArkServerPage() {
         </div>
         <figure className={styles.browserShowcase}>
           <div className={styles.showcaseChrome} aria-hidden="true"><span>● ● ●</span><span>Ark Server · Web</span></div>
-          <img src={`${SCREEN_DIR}/web-home.webp`} alt="ブラウザ版のホーム画面．左にナビゲーション，右に動画一覧が並ぶ" width={840} height={525} loading="lazy" decoding="async" />
+          <img src={`${SCREEN_DIR}/web-home.webp`} alt="ブラウザ版のホーム画面．左にナビゲーション，右に動画一覧が並ぶ" width={SCREENSHOT_WIDTH} height={MAC_SCREENSHOT_HEIGHT} loading="lazy" decoding="async" />
           <figcaption>ブラウザ版の実際の画面</figcaption>
         </figure>
         <details className={styles.previewDetails}>
@@ -330,7 +334,7 @@ export default function ArkServerPage() {
 
       <section className={styles.more}>
         <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>そのほかの機能</p>
+          <p className={styles.eyebrow}><span className={styles.chapterNumber} aria-hidden="true">06</span>そのほかの機能</p>
           <h2 data-product-enter="heading">
             <span>再生から整理まで，</span>
             {MORE_TOTAL}の機能
@@ -340,11 +344,11 @@ export default function ArkServerPage() {
         <MoreGrid />
       </section>
 
-      <div className={styles.technicalNotes} aria-label="主な技術"><span>Bonjour</span><span>PIN</span><span>Swifter</span><span>AVFoundation</span><span>SwiftUI</span></div>
+      <div className={styles.technicalNotes} aria-label="主な技術"><span>SwiftUI</span><span>Swifter</span><span>Bonjour</span><span>AVFoundation</span><span>PIN 認証</span></div>
 
       <section className={styles.looks}>
         <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>外観</p>
+          <p className={styles.eyebrow}><span className={styles.chapterNumber} aria-hidden="true">07</span>外観</p>
           <h2 data-product-enter="heading">
             <span>暗い外観と，</span>
             明るい外観を比較
@@ -359,7 +363,7 @@ export default function ArkServerPage() {
 
       <section className={styles.care}>
         <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>データと接続</p>
+          <p className={styles.eyebrow}><span className={styles.chapterNumber} aria-hidden="true">08</span>データと接続</p>
           <h2 data-product-enter="heading">
             <span>接続とデータを守る，</span>
             8つの仕組み
@@ -391,15 +395,15 @@ export default function ArkServerPage() {
         </p>
       </section>
 
-      <section className={styles.stack}>
+      <section id="ark-stack" className={styles.stack}>
         <div className={styles.sectionIntro}>
-          <p className={styles.eyebrow}>技術構成</p>
+          <p className={styles.eyebrow}><span className={styles.chapterNumber} aria-hidden="true">09</span>技術構成</p>
           <h2 data-product-enter="heading">
             <span>標準の部品で，</span>
             配信と再生を支える
           </h2>
         </div>
-        <TechTimeline items={stack} />
+        <TechTimeline items={STACK} />
       </section>
 
       <section className={styles.closing}>
@@ -409,12 +413,13 @@ export default function ArkServerPage() {
               <img className={styles.closingMark} src="/projects/arkserver.svg" width={48} height={48} alt="" />
               <p className={styles.eyebrow}>ソースコード</p>
               <h2 data-product-enter="heading">
-                <span>ソースコードを公開しています</span>
+                <span>つくる仕組みも，</span>
+                ソースコードから
               </h2>
               <p>Mac 用の Ark Server と，iPhone 用の VideoPlayer のコードを GitHub で確認できます．</p>
               <div className={styles.heroActions}>
                 <a
-                  className={`${styles.primaryLink}`}
+                  className={styles.primaryLink}
                   href={buildRepositoryUrl(siteConfig.githubUsername, ARK_REPOSITORY)}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -424,7 +429,7 @@ export default function ArkServerPage() {
                   <span className="sr-only">（GitHub・新しいタブで開きます）</span>
                 </a>
                 <a
-                  className={`${styles.secondaryLink}`}
+                  className={styles.secondaryLink}
                   href={buildRepositoryUrl(siteConfig.githubUsername, 'VideoPlayer')}
                   target="_blank"
                   rel="noopener noreferrer"

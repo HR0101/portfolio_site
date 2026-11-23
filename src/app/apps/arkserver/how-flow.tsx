@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { KeyRound, Lock, LockOpen, Radar, Send, Wifi } from 'lucide-react';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
-import { Waves } from './waves';
 import styles from './product.module.css';
 
 // 3つの段階．各段階をこの時間ずつ見せて，順にくり返す（ミリ秒）
@@ -70,10 +69,9 @@ export function HowFlow() {
             <Wifi size={18} />
             同じ Wi‑Fi
           </span>
-          <Waves />
           <span className={styles.flowRail} />
 
-          <span className={`${styles.flowRing} ${styles.flowRingA}`} />
+          <span className={styles.flowRing} />
           <span className={`${styles.flowRing} ${styles.flowRingB}`} />
           <span className={`${styles.flowRing} ${styles.flowRingC}`} />
 

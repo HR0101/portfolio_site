@@ -3,9 +3,7 @@
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import {
   AudioWaveform,
-  Anchor,
   Check,
-  LifeBuoy,
   Pause,
   Film,
   Layers,
@@ -17,6 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { TOUR_INTERVAL_MS, useAutoTour } from './use-auto-tour';
+import { SCREEN_DIR, SCREENSHOT_WIDTH, MAC_SCREENSHOT_HEIGHT } from './screen-assets';
 import styles from './product.module.css';
 import { MotionTabs } from '../../../components/MotionTabs';
 import { TourCallouts } from './tour-callouts';
@@ -33,9 +32,6 @@ interface TourScreen {
   image: string;
   alt: string;
 }
-
-// 画像の実寸（すべて Mac のウインドウを幅840へ縮めたもの）
-const IMAGE_DIR = '/projects/arkserver-screens';
 
 // アプリを開いてから使う順に並べる
 const SCREENS: TourScreen[] = [
@@ -174,7 +170,7 @@ export function ScreenTour() {
     const preload = () => {
       SCREENS.forEach((screen) => {
         const image = new Image();
-        image.src = `${IMAGE_DIR}/${screen.image}.webp`;
+        image.src = `${SCREEN_DIR}/${screen.image}.webp`;
       });
     };
     const idle = window.requestIdleCallback;
@@ -218,15 +214,8 @@ export function ScreenTour() {
       {...holdProps}
     >
       <div className={styles.tourBar}>
-      {/* 船の断面図．部屋が，そのままタブになっている（←→・Home・End でも移動できる） */}
-      <MotionTabs activeKey={active} className={styles.cutaway} role="tablist" aria-label="Ark Server の画面を選ぶ">
-        <span className={styles.cutawayMast} aria-hidden="true" />
-        <span className={styles.cutawayBow} aria-hidden="true">
-          <LifeBuoy size={30} />
-        </span>
-        <span className={styles.cutawayStern} aria-hidden="true">
-          <Anchor size={30} />
-        </span>
+      {/* 実画面の索引．←→・Home・End でも移動できる． */}
+      <MotionTabs activeKey={active} className={styles.screenTabs} role="tablist" aria-label="Ark Server の画面を選ぶ">
         {SCREENS.map((screen, index) => (
           <button
             key={screen.id}
@@ -239,15 +228,14 @@ export function ScreenTour() {
             aria-selected={index === active}
             aria-controls={`ark-panel-${screen.id}`}
             tabIndex={index === active ? 0 : -1}
-            className={styles.room}
-            style={{ gridArea: screen.id }}
+            className={styles.screenTab}
             onClick={() => select(index)}
             onKeyDown={(event) => handleKeyDown(event, index)}
           >
-            <span className={styles.roomIcon} aria-hidden="true">
+            <span className={styles.screenTabIcon} aria-hidden="true">
               <screen.icon size={18} />
             </span>
-            <span className={styles.roomText}>
+            <span className={styles.screenTabText}>
               <em aria-hidden="true">{String(index + 1).padStart(2, '0')}</em>
               <strong>{screen.tab}</strong>
               <small>{SCREEN_SUMMARIES[screen.id]}</small>
@@ -298,7 +286,7 @@ export function ScreenTour() {
             <figure className={styles.tourShot}>
               <div className={styles.stage}>
                 <div className={styles.annotatedStage}>
-                <img src={`${IMAGE_DIR}/${screen.image}.webp`} alt={screen.alt} width={840} height={525} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
+                <img src={`${SCREEN_DIR}/${screen.image}.webp`} alt={screen.alt} width={SCREENSHOT_WIDTH} height={MAC_SCREENSHOT_HEIGHT} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
                 {screen.id === 'dashboard' && <TourCallouts active={index === active} running={isPlaying} />}
                 </div>
               </div>

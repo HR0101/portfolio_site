@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { TOUR_INTERVAL_MS, useAutoTour } from './use-auto-tour';
+import { SCREEN_DIR, SCREENSHOT_WIDTH } from './screen-assets';
 import styles from './product.module.css';
 import { MotionTabs } from '../../../components/MotionTabs';
 
@@ -30,9 +31,7 @@ interface PhoneScreen {
 }
 
 // 画像の実寸（iPhone 17 Pro のシミュレータの画面を，幅840へ縮めたもの）
-const IMAGE_WIDTH = 840;
 const IMAGE_HEIGHT = 1827;
-const IMAGE_DIR = '/projects/arkserver-screens';
 
 // 初めて繋ぐところから，見る・操作するところまでを，使う順に並べる
 const SCREENS: PhoneScreen[] = [
@@ -131,7 +130,7 @@ export function PhoneTour() {
     const preload = () => {
       SCREENS.forEach((screen) => {
         const image = new Image();
-        image.src = `${IMAGE_DIR}/${screen.image}.webp`;
+        image.src = `${SCREEN_DIR}/${screen.image}.webp`;
       });
     };
     const idle = window.requestIdleCallback;
@@ -240,9 +239,9 @@ export function PhoneTour() {
               <div className={`${styles.stage} ${styles.phoneStage}`}>
                 <div className={styles.phoneFrame}>
                   <img
-                    src={`${IMAGE_DIR}/${screen.image}.webp`}
+                    src={`${SCREEN_DIR}/${screen.image}.webp`}
                     alt={screen.alt}
-                    width={IMAGE_WIDTH}
+                    width={SCREENSHOT_WIDTH}
                     height={IMAGE_HEIGHT}
                     loading={index === 0 ? 'eager' : 'lazy'}
                     decoding="async"
