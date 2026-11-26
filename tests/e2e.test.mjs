@@ -87,6 +87,10 @@ describe('トップページの基本構造', () => {
     assert.equal((comparison.match(/<button\b/g) ?? []).length, 2);
     assert.ok(comparison.includes('全時刻表を並べる'));
     assert.ok(comparison.includes('次の便だけ示す'));
+    // さわれる三角錐の面は読み上げから外し，操作の主役の技術ボタンは今までどおり残す
+    const tetraField = homePageHtml.match(/<div\b[^>]*data-testid="skill-tetra-field"[^>]*>/)?.[0] ?? '';
+    assert.ok(tetraField.includes('aria-hidden="true"'), '三角錐の面は aria-hidden');
+    assert.ok(homePageHtml.includes('data-skill-technology="SwiftUI"'), '技術ボタンは残す');
   });
 
   it('相談できること（FEATURES.contactIntro）は，スイッチに合わせて出る・出ない', () => {

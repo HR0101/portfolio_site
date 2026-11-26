@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import Link from 'next/link';
 import {
   Activity,
   AlertTriangle,
+  ArrowUpRight,
   ChevronDown,
   ExternalLink,
   FolderPlus,
@@ -23,7 +24,17 @@ import { contributionCellDelay } from '../lib/worksGithubMotion';
 import { SectionHeading } from '../components/SectionHeading';
 import { siteConfig } from '../config/site';
 import { formatRelativeTime } from '../lib/format';
-import { findTaglineByRepository } from '../data/apps';
+import { SWIFT_APPS, findTaglineByRepository } from '../data/apps';
+import { WEB_WORKS } from '../data/works';
+import {
+  LANGUAGE_DOT_COUNT,
+  allocateLanguageDots,
+  countRepositoryLanguages,
+  expandLanguageDots,
+  languageDotDelay,
+  resolveLanguageColor,
+  type LanguageAmount,
+} from '../lib/languageDots';
 import githubSnapshot from '../data/github-snapshot.json';
 import { devLog } from '../data/devLog';
 import { FEATURES } from '../config/features';
@@ -35,6 +46,7 @@ import {
   type ApiStatus,
   type ContributionCalendar,
   type GitHubEvent,
+  type GitHubLanguage,
   type GitHubRepo,
 } from '../services/githubService';
 
@@ -62,22 +74,8 @@ function shouldShowMonthLabel(
 // Contribution Graph をスクロールで現すときの，先頭に付ける余白（進捗の割合）
 const CONTRIBUTION_REVEAL_LEAD = 0.15;
 
-// 言語ごとの表示色（GitHub の言語カラーに準拠）
-const LANGUAGE_COLORS: Record<string, string> = {
-  Swift: '#f05138',
-  Python: '#3572a5',
-  C: '#555555',
-  'C++': '#f34b7d',
-  TypeScript: '#3178c6',
-  JavaScript: '#f1e05a',
-  HTML: '#e34c26',
-  CSS: '#563d7c',
-  'Jupyter Notebook': '#da5b0b',
-  Go: '#00add8',
-  Rust: '#dea584',
-  Kotlin: '#a97bff',
-};
-const DEFAULT_LANGUAGE_COLOR = '#8b949e';
+// カードに出すトピックの数の上限
+const MAX_REPO_TOPICS = 3;
 
 // 折りたたみ時に表示するリポジトリ件数
 const INITIAL_DISPLAY_REPOS = 6;
@@ -95,6 +93,23 @@ const STATIC_EXPORT = process.env.NEXT_PUBLIC_STATIC_EXPORT === '1';
 const snapshotDate = new Intl.DateTimeFormat('ja-JP', {
   timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric',
 }).format(new Date(githubSnapshot.generatedAt));
+const formatSnapshotDate = (iso: string) => new Intl.DateTimeFormat('ja-JP', {
+  timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric',
+}).format(new Date(iso));
+
+// リポジトリ名（小文字）→ サイト内の紹介ページ．アプリと Web サービスの両方から作る
+interface ProductPage {
+  name: string;
+  href: string;
+}
+const PRODUCT_PAGE_BY_REPOSITORY = new Map<string, ProductPage>([
+  ...SWIFT_APPS.flatMap((app) => (app.detailHref
+    ? app.repositories.map((repository): [string, ProductPage] => [repository.name.toLowerCase(), { name: app.name, href: app.detailHref! }])
+    : [])),
+  ...WEB_WORKS.flatMap((work): Array<[string, ProductPage]> => (work.repository && work.detailHref
+    ? [[work.repository.toLowerCase(), { name: work.name, href: work.detailHref }]]
+    : [])),
+]);
 
 // 複数 API の状態から，利用者へ知らせるべき最も重大な状態を選ぶ
 function aggregateApiStatus(statuses: ApiStatus[]): ApiStatus {
@@ -126,7 +141,9 @@ function eventIcon(eventType: string) {
 
 // 登場は外側，ホバー・押下はリンク本体が担当する．
 function RepositoryCard({ repo, index, extra = false }: { repo: GitHubRepo; index: number; extra?: boolean }) {
-  const languageColor = LANGUAGE_COLORS[repo.language] ?? DEFAULT_LANGUAGE_COLOR;
+  const languageColor = resolveLanguageColor(repo.language);
+  const productPage = PRODUCT_PAGE_BY_REPOSITORY.get(repo.name.toLowerCase());
+  const topics = repo.topics.slice(0, MAX_REPO_TOPICS);
   const delayStyle = {
     '--repo-delay-1': `${diagonalDelay(index, 1)}ms`,
     '--repo-delay-2': `${diagonalDelay(index, 2)}ms`,
@@ -136,8 +153,8 @@ function RepositoryCard({ repo, index, extra = false }: { repo: GitHubRepo; inde
   } as CSSProperties;
 
   return (
-    <div className={`${devLogStyles.repoEntrance} h-full`} style={delayStyle} data-extra-repo={extra}>
-      <a href={repo.htmlUrl} target="_blank" rel="noopener noreferrer" className={`${devLogStyles.repoCard} github-repo press-effect tile group relative overflow-hidden h-full flex flex-col p-5`}>
+    <div className={`${devLogStyles.repoEntrance} relative h-full`} style={delayStyle} data-extra-repo={extra}>
+      <a href={repo.htmlUrl} target="_blank" rel="noopener noreferrer" data-has-page={Boolean(productPage)} className={`${devLogStyles.repoCard} github-repo press-effect tile group relative overflow-hidden h-full flex flex-col p-5`}>
         <div className={`${devLogStyles.repoName} flex items-center justify-between gap-2`}>
           <h3 className="font-semibold truncate">
             <span className={devLogStyles.repoNameText}>{repo.name}</span>
@@ -145,10 +162,15 @@ function RepositoryCard({ repo, index, extra = false }: { repo: GitHubRepo; inde
           </h3>
           <ExternalLink className="w-4 h-4 shrink-0 text-slate-400" aria-hidden="true" />
         </div>
-        <p className={`${devLogStyles.repoDescription} mt-2 text-sm text-subtle dark:text-night-subtle line-clamp-2 flex-grow`}>
+        <p className={`${devLogStyles.repoDescription} mt-2 text-sm text-subtle dark:text-night-subtle line-clamp-2`}>
           {repo.description || findTaglineByRepository(repo.name) || '説明はまだありません．'}
         </p>
-        <div className={`${devLogStyles.repoMetadata} mt-4 flex items-center gap-4 text-xs text-subtle dark:text-night-subtle`}>
+        {topics.length > 0 && (
+          <span className={devLogStyles.repoTopics}>
+            {topics.map((topic) => <span key={topic}>{topic}</span>)}
+          </span>
+        )}
+        <div className={`${devLogStyles.repoMetadata} mt-auto pt-4 flex items-center gap-4 text-xs text-subtle dark:text-night-subtle`}>
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: languageColor }} aria-hidden="true" />
             {repo.language}
@@ -164,12 +186,78 @@ function RepositoryCard({ repo, index, extra = false }: { repo: GitHubRepo; inde
           <span className="ml-auto">{formatRelativeTime(repo.updatedAt)}</span>
         </div>
       </a>
+      {/* リンクは入れ子にできないので，紹介ページへの入口はカードの外（兄弟）に置き，カードの下端へ重ねる */}
+      {productPage && (
+        <Link href={productPage.href} className={`${devLogStyles.repoPageLink} press-effect`} aria-label={`${productPage.name}の紹介ページを見る`}>
+          紹介ページ
+          <ArrowUpRight className="w-3.5 h-3.5" aria-hidden="true" />
+        </Link>
+      )}
     </div>
+  );
+}
+
+// 言語の割合を 100 個の点で見せる．点は列ごとに上から埋めるので，1 つの言語が左から右へ続く塊になる．
+// コード量（バイト数）が取れないときは，掲載リポジトリの件数で割合を出す．
+function LanguageDots({ amounts, basis, asOf }: { amounts: LanguageAmount[]; basis: 'bytes' | 'repos'; asOf?: string }) {
+  const groups = useMemo(() => allocateLanguageDots(amounts), [amounts]);
+  const dots = useMemo(() => expandLanguageDots(groups), [groups]);
+  // 取得前も同じ場所に点を並べておき（灯っていない状態），取得後に灯す
+  const { ref, isInView } = useInView<HTMLElement>();
+  const [active, setActive] = useState<number | null>(null);
+  const ready = groups.length > 0;
+  const caption = basis === 'bytes'
+    ? `公開リポジトリの言語（コード量．GitHub の集計${asOf ? `，${formatSnapshotDate(asOf)}時点` : ''}）`
+    : '掲載リポジトリの主な言語（リポジトリの数）';
+  // 凡例に重ねたときだけ，その言語の点を残して他を淡くする（マウスのみ．情報は凡例の文字にもある）
+  const highlight = (event: PointerEvent<HTMLLIElement>, index: number) => {
+    if (event.pointerType === 'mouse') setActive(index);
+  };
+
+  return (
+    <figure ref={ref} className={devLogStyles.languages} data-lit={isInView && ready} data-highlight={active !== null}>
+      <figcaption>{caption}</figcaption>
+      <div className={devLogStyles.dotField} aria-hidden="true">
+        {Array.from({ length: LANGUAGE_DOT_COUNT }, (_, index) => {
+          const groupIndex = dots[index];
+          const group = groupIndex === undefined ? undefined : groups[groupIndex];
+          return (
+            <i
+              key={index}
+              data-active={active === groupIndex}
+              style={{
+                '--dot-color': group?.color ?? 'var(--site-line)',
+                '--dot-delay': `${languageDotDelay(index)}ms`,
+              } as CSSProperties}
+            />
+          );
+        })}
+      </div>
+      <ul className={devLogStyles.languageLegend} aria-label="言語ごとの割合">
+        {groups.map((group, index) => (
+          <li
+            key={group.name}
+            data-active={active === index}
+            onPointerEnter={(event) => highlight(event, index)}
+            onPointerLeave={() => setActive(null)}
+          >
+            <span className={devLogStyles.languageSwatch} style={{ '--dot-color': group.color } as CSSProperties} aria-hidden="true" />
+            <span className={devLogStyles.languageName}>{group.name}</span>
+            <span className={devLogStyles.languageShare}>
+              {group.dots}%
+              {basis === 'repos' && <span className={devLogStyles.languageCount}>（{group.size}件）</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </figure>
   );
 }
 
 export function GitHubActivity() {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
+  const [codeLanguages, setCodeLanguages] = useState<GitHubLanguage[] | null>(null);
+  const [languagesAt, setLanguagesAt] = useState<string | undefined>(undefined);
   const [events, setEvents] = useState<GitHubEvent[]>([]);
   const [calendar, setCalendar] = useState<ContributionCalendar | null>(null);
   const [apiStatus, setApiStatus] = useState<ApiStatus | 'loading'>('loading');
@@ -186,6 +274,8 @@ export function GitHubActivity() {
         fetchContributions(),
       ]);
       setRepos(reposResult.repos);
+      setCodeLanguages(reposResult.languages && reposResult.languages.length > 0 ? reposResult.languages : null);
+      setLanguagesAt(reposResult.languagesAt);
       setEvents(activityResult.events.slice(0, MAX_DISPLAY_EVENTS));
       setCalendar(contribResult.calendar);
       setApiStatus(
@@ -247,6 +337,12 @@ export function GitHubActivity() {
     });
   }, [contributionRef, reducedMotion, isLoading]);
 
+  // 言語の割合の元：コード量があればそれを，無ければ掲載リポジトリの件数を使う
+  const languageAmounts = useMemo<LanguageAmount[]>(
+    () => codeLanguages ?? countRepositoryLanguages(repos),
+    [codeLanguages, repos],
+  );
+
   return (
     <section
       id="github"
@@ -254,13 +350,20 @@ export function GitHubActivity() {
       className="tinted scroll-mt-24 py-24 md:py-32 bg-mist dark:bg-night-soft/40"
     >
       <div className="max-w-6xl mx-auto px-6">
-        <SectionHeading
-          label="05. GitHub Integration"
-          title="GitHub アクティビティ"
-          description={STATIC_EXPORT
-            ? `GitHubで公開している開発の記録です．リポジトリと最近の活動は${snapshotDate}に取得した情報を表示しています．`
-            : `GitHub API から ${siteConfig.githubUsername} の公開リポジトリと最近の活動を取得して表示しています．`}
-        />
+        <div className={devLogStyles.logOpening}>
+          <SectionHeading
+            label="05. GitHub Integration"
+            title="GitHub アクティビティ"
+            description={STATIC_EXPORT
+              ? `GitHubで公開している開発の記録です．リポジトリと最近の活動は${snapshotDate}に取得した情報を表示しています．`
+              : `GitHub API から ${siteConfig.githubUsername} の公開リポジトリと最近の活動を取得して表示しています．`}
+          />
+          <LanguageDots
+            amounts={languageAmounts}
+            basis={codeLanguages ? 'bytes' : 'repos'}
+            asOf={codeLanguages ? languagesAt : undefined}
+          />
+        </div>
 
         {/* API 接続状態の通知バナー */}
         <div className={devLogStyles.noticeSlot} data-open={noticeVisible}>

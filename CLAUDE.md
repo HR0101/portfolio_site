@@ -23,7 +23,7 @@ npm run check        # typecheck → lint → build → E2E をまとめて実�
 
 ### テスト
 
-`tests/e2e.test.mjs`（`node:test`・79ケース．単体テストを含めた全体は 453 件）が**本番ビルドを実際に起動して**検証する．検証範囲は，読み込み画面の土台と起動スクリプト／6セクションの存在／17プロダクトの掲載／公式WebPアイコン／GitHub リンクの実 URL／問い合わせ導線／アイコンの壁の構造（6 タイルの掲載順・選択ボタン）と，その他のアプリのページ（11 本）／メタデータと構造化データ／robots・sitemap・OGP 画像／API ルートが必ず 200 と `apiStatus` を返すこと／紹介ページ末尾の「次のプロダクト」／404 ページ／セキュリティヘッダー．
+`tests/e2e.test.mjs`（`node:test`・79ケース．単体テストを含めた全体は 491 件）が**本番ビルドを実際に起動して**検証する．検証範囲は，読み込み画面の土台と起動スクリプト／6セクションの存在／17プロダクトの掲載／公式WebPアイコン／GitHub リンクの実 URL／問い合わせ導線／アイコンの壁の構造（6 タイルの掲載順・選択ボタン）と，その他のアプリのページ（11 本）／メタデータと構造化データ／robots・sitemap・OGP 画像／API ルートが必ず 200 と `apiStatus` を返すこと／紹介ページ末尾の「次のプロダクト」／404 ページ／セキュリティヘッダー．
 
 ```bash
 npm run build && npm test
@@ -104,6 +104,8 @@ API Route は3本（`src/app/api/github/` 配下: `route.ts`=リポジトリ，`
 
 Contribution Graph は2段構え: `GITHUB_TOKEN` 設定時は GraphQL で取得して自前ヒートマップ描画（色は `globals.css` の `.contrib-0`〜`.contrib-4`），未設定時（`apiStatus: 'no_token'`）は外部画像 `ghchart.rshah.org` にフォールバック．
 
+**言語の割合（見出しの右．`LanguageDots`・`lib/languageDots.ts`．テスト `tests/language-dots.test.mjs`）**: 100 個の点（1 点＝1%）で言語の割合を出す（サイトの飾りの決まり「丸い点」に合わせた形．点は列ごとに上から埋め，1 つの言語が左から右へ続く塊になる．画面に入ると左の列から灯る．凡例にマウスを重ねるとその言語の点だけ残る）．色は **GitHub の言語の色**（API の色 → `GITHUB_LANGUAGE_COLORS` → 灰．`#rrggbb` 以外は通さない）．元の値は 2 段構え：`GITHUB_TOKEN` があるとき，`getGitHubRepos` が GraphQL で**公開リポジトリ（フォークを除く）全体の言語別のコード量（バイト数）**を集計して応答に `languages` を足す（取れなくても `apiStatus` は変えず，項目ごと省く）．スナップショット（`fetch-github-snapshot.mjs`）もトークンがあれば同じ値を入れ，API に無いときはその値を取得日つきで使う．どちらも無ければ，掲載リポジトリの**件数**で割合を出す（言語の無い `Other` は数えない）．上位 5 言語より後ろと 1% 未満は「その他」．ブラウザのキャッシュは `github_repos_cache_v5`（リポジトリと言語をまとめて保存）．リポジトリカードは，トピック（最大 3 つ）と，`apps.ts` / `works.ts` の紹介ページ（`detailHref`）につながるリポジトリだけ「紹介ページ」への入口を持つ（リンクは入れ子にできないので，カードの外の兄弟としてカードの下端に重ねる）．
+
 ### 動的 API 層（Cloudflare Pages Functions．`functions/`・`src/lib/edge/`）
 
 本番は静的書き出し（`STATIC_EXPORT=1`）なので，Next の API ルートは存在しない．代わりに，リポジトリ直下の **`functions/api/github/{index,activity,contributions}.ts`** と **`functions/api/music/recent.ts`**（Pages Functions）が同じパスの API を動かす．**ロジックは `src/lib/edge/`（`github.ts`・`appleMusic.ts`・`http.ts`．他を import しない純粋な TS）にあり，`functions/` と Next の API ルート（`src/app/api/...`．`npm run dev` 用）は同じ関数を呼ぶ薄いラッパー**．`wrangler.toml` は**置かない**（置くと Cloudflare ダッシュボードの環境変数が読み取り専用になる）．依存ライブラリも足さない（型は `functions/types.d.ts`）．
@@ -159,6 +161,7 @@ Apple 純正の組み合わせを使い，Web フォントは読み込まない�
 - **Apps の BusTimeApp の実機録画**（`sections/BusRecording.tsx`・`lib/recordingPlayback.ts`．テスト `tests/recording-playback.test.mjs`）: 既存の `public/projects/bustimeapp-demo-clean.mp4`（約 2MB）を，**パネルが開いている間（`data-open="true"`）かつ画面内のときだけ**再生し，15.1 秒のあと最後の画面を 5 秒保つ．`preload="none"`．カード一覧と reduced-motion は手動再生のみ．poster は既存のスクリーンショット．
 - **Apps の「見どころ」（UI の細部を拡大）**（`Projects.tsx` の `AppDetail`・`data/apps.ts` の `focusAreas`・`lib/zoomRegion.ts`．テスト `tests/zoom-region.test.mjs`）: BusTimeApp と Tsumugi の壁のパネルに，番号つきの見どころ各 4 件（画面上の番号の印＋ボタン＋注釈文）．押すと，同じ画像のその領域（0〜1 の割合 `region`）が媒体欄の中央へ拡大される（**transform と opacity だけ・260ms・`var(--site-ease)`**．キーボード起点と reduced-motion は即時．Escape・「全体に戻る」で戻る．戻るボタンは見どころのボタンと同じ列に置き，選んでもパネルの高さが変わらない）．拡大中は BusTimeApp の録画を止める．**強い拡大にするため，領域は幅 0.5 前後以下の「1 つの部品」に絞る**（全幅の帯にすると，細長い携帯画面の枠では幅で倍率が頭打ちになる）．`getZoomTransform` は領域を枠の `ZOOM_FILL`（0.94）に収め，倍率は `ZOOM_MAX_SCALE`（4．元画像の粗さを抑える）で止める．実測で約 2.3〜3.7 倍．領域の周囲は枠で切れてよい（虫眼鏡）．見どころつきの携帯画面のパネルは媒体欄を 42%（ほかは 36%）にして枠を広げている．対象アプリを増やすときは `focusAreas` を足すだけ（領域は画像を目で見て決め，注釈は領域の中に見える文字から言える範囲だけ．番号の印が領域の左上と離れるときは `markerPosition`）．
 - **Skills の「見せ方の比較」**（`Skills.tsx`）: BusTimeApp の実画面 2 枚（全時刻表 47 便／次の便「あと8分」）を同じ枠に重ね，**ボタンで切り替える（自動往復・hover 切替にしない）**．opacity の交差だけ・160ms．「改善前後」とは書かない（実装の前後ではない）．
+- **Skills の「さわれる三角錐」**（`sections/SkillTetraField.tsx`・`lib/skillTetra.ts`．テスト `tests/skill-tetra.test.mjs`．2026-11-26）: 「技術と，使った場面」（`SkillExamples`）の技術ボタンの真上に，技術 1 つにつき 1 個の線の三角錐を浮かべる（データは `SKILL_TOOL_GROUPS` / `SKILL_EXAMPLES` だけ．文章は足さない）．群れは下のボタンの列（`1.2fr 1.2fr .7fr`・gap 24px．`SKILL_FIELD_COLUMNS` と CSS の 2 か所をそろえる）の真上に並び，色は世界の色（Interface＝アプリの紫・Data & System＝組込みの緑青・Everyday Tools＝学ぶの金）．近づけると大きくなって速く回り，押すと `.95` に沈んで小さな三角錐がはじけ，使用例が切り替わる（ボタンと同じ `select`）．選んだ三角錐は逆へ回る大きな影と名前（下の線を文字の周りだけ `destination-out` で消して読ませる）を持つ．使用例のない技術（LaTeX）は淡い墨色で押せない．カーソルの位置でわずかに視差．**操作の主役は技術ボタンのまま**で，面は `aria-hidden`（E2E が確かめる）．出すのは PC のマウス・幅 1024px 以上・動きを減らさない設定だけ（`.field` の media）．描画は `useCanvasLoop`．発想は Naresh-Khatri/3d-portfolio（MIT）の「キーを押すとスキルが出る」キーボード（コード・見た目は使っていない）．
 - **M01〜M05（調査資料 8 章）の扱い**: M01（工程の結果部分だけ opacity＋8px・200ms）と M02（路線図の手動選択は点の移動 400ms・強調 200ms）は，既存の展示を仕様に合わせて調整した．M05（押下の沈み込み）は，サイトの規約に合わせて `.press-effect`＝`scale(.95)`・120ms（資料の .98 は採らない）．
 - **制作の姿勢の「EVIDENCE」**（`app/page.tsx`・`refinements.css` の `.principle-evidence*`）: 主張を，Subghost（CLI へ送らない監視専用）・Tsumugi（既定の診断は端末内で完結）・BusTimeApp（午前 4 時の運行日境界・共通の判断）の設計判断 3 件と紹介ページへのリンクで裏づける．文は `apps.ts` と各紹介ページで確認できる範囲だけ．
 - **GitHub の「最近の制作記録」**（`data/devLog.ts`・`sections/DevLog.module.css`．テスト `tests/dev-log.test.mjs`）: **手動で更新する 3 件**（日付・何が変わったか・使う人への効果）．API が失敗してもモックでも必ず出る静的データ．**git log・差分で確認できる変更だけを書く**．
