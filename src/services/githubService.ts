@@ -7,6 +7,9 @@ import githubSnapshot from '../data/github-snapshot.json';
 const snapshotRepos = githubSnapshot.repos as GitHubRepo[];
 const snapshotEvents = githubSnapshot.events as GitHubEvent[];
 const snapshotCalendar = githubSnapshot.calendar as ContributionCalendar | null;
+// 言語のコード量は，トークンつきで作ったスナップショットにだけ入っている
+const snapshotLanguages = (githubSnapshot as unknown as { languages?: GitHubLanguage[] }).languages;
+const snapshotGeneratedAt = githubSnapshot.generatedAt;
 
 // ─────────────────────────────────────
 // 型定義
@@ -22,6 +25,13 @@ export interface GitHubRepo {
   forksCount: number;
   updatedAt: string;
   topics: string[];
+}
+
+// 公開リポジトリ全体の，言語ごとのコード量（GitHub の集計．バイト数）
+export interface GitHubLanguage {
+  name: string;
+  size: number;
+  color?: string;
 }
 
 export interface GitHubEvent {
@@ -48,6 +58,10 @@ export type ApiStatus = 'success' | 'offline' | 'rate_limited' | 'no_token';
 export interface ReposResponse {
   repos: GitHubRepo[];
   apiStatus: ApiStatus;
+  // 言語のコード量（取れないときは無い．画面はリポジトリの件数で割合を出す）
+  languages?: GitHubLanguage[];
+  // languages がスナップショットのものなら，その取得日時（ISO 8601）
+  languagesAt?: string;
 }
 
 export interface ActivityResponse {
@@ -184,7 +198,8 @@ export const staticEvents: GitHubEvent[] = [
 
 const ACTIVITY_CACHE_LIMIT_MS = 10 * 60 * 1000;
 const CACHE_LIMIT_MS = 60 * 60 * 1000; // キャッシュ有効期間：1時間
-const REPOS_CACHE_KEY = 'github_repos_cache_v4';
+// v5：リポジトリと言語のコード量をまとめて保存する
+const REPOS_CACHE_KEY = 'github_repos_cache_v5';
 const ACTIVITY_CACHE_KEY = 'github_activity_cache_v3';
 const CONTRIB_CACHE_KEY = 'github_contrib_cache_v1';
 
@@ -256,21 +271,36 @@ function writeCache<T>(key: string, data: T): void {
 // 静的書き出しでも Pages Functions が動いていれば最新データを使う．
 // ─────────────────────────────────────
 
+interface ReposCache {
+  repos: GitHubRepo[];
+  languages?: GitHubLanguage[];
+}
+
+// 言語のコード量を応答に添える（API に無ければスナップショットの値と，その取得日時）
+function withLanguages(repos: GitHubRepo[], apiStatus: ApiStatus, languages?: GitHubLanguage[]): ReposResponse {
+  if (Array.isArray(languages) && languages.length > 0) return { repos, apiStatus, languages };
+  if (Array.isArray(snapshotLanguages) && snapshotLanguages.length > 0) {
+    return { repos, apiStatus, languages: snapshotLanguages, languagesAt: snapshotGeneratedAt };
+  }
+  return { repos, apiStatus };
+}
+
 export async function fetchRepos(): Promise<ReposResponse> {
-  const cached = readCache<GitHubRepo[]>(REPOS_CACHE_KEY);
-  if (cached) return { repos: cached, apiStatus: 'success' };
+  const cached = readCache<ReposCache>(REPOS_CACHE_KEY);
+  if (cached && Array.isArray(cached.repos)) return withLanguages(cached.repos, 'success', cached.languages);
   const repos = snapshotRepos.length > 0 ? snapshotRepos : staticRepos;
   try {
     const response = await fetchWithTimeout('/api/github');
-    if (!response.ok) return { repos, apiStatus: 'offline' };
+    if (!response.ok) return withLanguages(repos, 'offline');
     const data: ReposResponse = await response.json();
     if (data.apiStatus === 'success' && Array.isArray(data.repos)) {
-      writeCache(REPOS_CACHE_KEY, data.repos);
-      return data;
+      const languages = Array.isArray(data.languages) ? data.languages : undefined;
+      writeCache<ReposCache>(REPOS_CACHE_KEY, languages ? { repos: data.repos, languages } : { repos: data.repos });
+      return withLanguages(data.repos, 'success', languages);
     }
-    return { repos, apiStatus: data.apiStatus ?? 'offline' };
+    return withLanguages(repos, data.apiStatus ?? 'offline');
   } catch {
-    return { repos, apiStatus: 'offline' };
+    return withLanguages(repos, 'offline');
   }
 }
 

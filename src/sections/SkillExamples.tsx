@@ -7,9 +7,12 @@ import { Code2, Cpu, Layers3, Terminal } from 'lucide-react';
 import { ArrowSwap } from '../components/ArrowSwap';
 import { SKILL_EXAMPLES, SKILL_TOOL_GROUPS } from '../data/skillExamples';
 import { getSkillIndicatorTransform } from '../lib/skillsMotion';
+import { SkillTetraField } from './SkillTetraField';
 import styles from './SkillExamples.module.css';
 
 const GROUP_ICONS = [Layers3, Cpu, Terminal];
+// 使用例がある（押せる）技術．三角錐の面でも，これだけを押せるようにする
+const SELECTABLE_TECHNOLOGIES: ReadonlySet<string> = new Set(SKILL_EXAMPLES.map(example => example.technology));
 
 // 押下や親の Reveal の変形を含まない，レイアウト上の位置を測る．
 export function useSkillSelectionIndicator(selection: string | number) {
@@ -62,6 +65,8 @@ export function SkillExamples() {
         <h3 id={headingId}>技術と、使った場面</h3>
         <p>技術名を選ぶと、作品の使用例が切り替わります。</p>
       </div>
+      <SkillTetraField groups={SKILL_TOOL_GROUPS} selectable={SELECTABLE_TECHNOLOGIES} selected={technology}
+        onSelect={value => select(value, 'direct')} />
       <div ref={groupsRef} className={styles.groups}>
         {SKILL_TOOL_GROUPS.map(({ title, technologies }, index) => {
           const Icon = GROUP_ICONS[index];

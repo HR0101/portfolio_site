@@ -6,7 +6,7 @@
  *
  *   node scripts/fetch-github-snapshot.mjs
  *
- * GITHUB_TOKEN があればレート制限が緩和され，草（Contribution Graph）も取得する．
+ * GITHUB_TOKEN があればレート制限が緩和され，草（Contribution Graph）と言語のコード量も取得する．
  * 取得に失敗しても既存のスナップショットを残し，ビルドは止めない．
  */
 
@@ -20,6 +20,11 @@ const REQUEST_TIMEOUT_MS = 15000;
 const MAX_REPOS = 12;
 // 最近の活動として載せる件数
 const MAX_EVENTS = 6;
+// 言語のコード量を集計するとき，1 ページで読むリポジトリの数・たどるページの上限・1 リポジトリの言語の数
+const LANGUAGE_REPOS_PER_PAGE = 100;
+const MAX_LANGUAGE_PAGES = 5;
+const LANGUAGES_PER_REPO = 20;
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
 function buildHeaders() {
   const headers = {
@@ -136,6 +141,50 @@ async function fetchContributions() {
   };
 }
 
+// 公開リポジトリ（フォークを除く）全体の言語ごとのコード量．GraphQL のみで一度に取れるため，トークンがある場合だけ試みる
+// （src/lib/edge/github.ts の getGitHubLanguages と同じ集計）
+async function fetchLanguages() {
+  if (!process.env.GITHUB_TOKEN) {
+    return null;
+  }
+  const query = `query($login: String!, $after: String) {
+    user(login: $login) {
+      repositories(first: ${LANGUAGE_REPOS_PER_PAGE}, after: $after, privacy: PUBLIC, isFork: false, ownerAffiliations: OWNER) {
+        pageInfo { hasNextPage endCursor }
+        nodes { languages(first: ${LANGUAGES_PER_REPO}, orderBy: { field: SIZE, direction: DESC }) { edges { size node { name color } } } }
+      }
+    }
+  }`;
+  const totals = new Map();
+  let after = null;
+  for (let page = 1; page <= MAX_LANGUAGE_PAGES; page += 1) {
+    const data = await fetchJson('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { login: USERNAME, after } }),
+    });
+    const repositories = data?.data?.user?.repositories;
+    if (data?.errors?.length || !repositories || !Array.isArray(repositories.nodes)) {
+      throw new Error('言語のコード量を読み取れませんでした');
+    }
+    for (const repository of repositories.nodes) {
+      for (const edge of repository?.languages?.edges ?? []) {
+        const name = edge?.node?.name;
+        const size = edge?.size;
+        if (typeof name !== 'string' || !name || typeof size !== 'number' || !(size > 0)) continue;
+        // 色は style へ渡すので，#rrggbb の形だけを残す
+        const color = HEX_COLOR.test(edge.node.color ?? '') ? edge.node.color : totals.get(name)?.color;
+        const total = (totals.get(name)?.size ?? 0) + size;
+        totals.set(name, color ? { name, size: total, color } : { name, size: total });
+      }
+    }
+    if (!repositories.pageInfo?.hasNextPage || !repositories.pageInfo.endCursor) break;
+    after = repositories.pageInfo.endCursor;
+  }
+  const languages = [...totals.values()].sort((a, b) => b.size - a.size || a.name.localeCompare(b.name));
+  return languages.length > 0 ? languages : null;
+}
+
 async function main() {
   const snapshot = { generatedAt: new Date().toISOString(), repos: [], events: [], calendar: null };
   const failures = [];
@@ -144,6 +193,7 @@ async function main() {
     ['repos', fetchRepos],
     ['events', fetchEvents],
     ['calendar', fetchContributions],
+    ['languages', fetchLanguages],
   ]) {
     try {
       snapshot[key] = await task();
@@ -158,10 +208,15 @@ async function main() {
     return;
   }
 
+  // 言語のコード量は取れたときだけ載せる（無ければ画面はリポジトリの件数で割合を出す）
+  if (!snapshot.languages) {
+    delete snapshot.languages;
+  }
+
   await mkdir(path.dirname(OUTPUT_PATH), { recursive: true });
   await writeFile(OUTPUT_PATH, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
   console.info(
-    `✓ スナップショットを保存しました（リポジトリ${snapshot.repos.length}件 / 活動${snapshot.events.length}件 / 草${snapshot.calendar ? 'あり' : 'なし'}）`,
+    `✓ スナップショットを保存しました（リポジトリ${snapshot.repos.length}件 / 活動${snapshot.events.length}件 / 草${snapshot.calendar ? 'あり' : 'なし'} / 言語のコード量${snapshot.languages ? 'あり' : 'なし'}）`,
   );
   failures.forEach((message) => console.warn(`  ※ 取得できなかった項目 → ${message}`));
 }

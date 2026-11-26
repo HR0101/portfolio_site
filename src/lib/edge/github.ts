@@ -6,6 +6,9 @@ const maxPages = 5;
 const eventsPerPage = 10;
 const timeoutMs = 8000;
 const contributionThresholds = [1, 3, 6, 10];
+// 言語のコード量を集計するリポジトリの 1 ページの件数と，1 リポジトリあたりの言語の数
+const languageReposPerPage = 100;
+const languagesPerRepo = 20;
 
 export interface GitHubRepo {
   id: number;
@@ -17,6 +20,12 @@ export interface GitHubRepo {
   forksCount: number;
   updatedAt: string;
   topics: string[];
+}
+// 公開リポジトリ（フォークを除く）全体の，言語ごとのコード量（GitHub の集計．バイト数）
+export interface GitHubLanguage {
+  name: string;
+  size: number;
+  color?: string;
 }
 export interface GitHubEvent {
   id: string;
@@ -78,7 +87,55 @@ function failureStatus(response: Response): GitHubStatus {
   return 'offline';
 }
 
-export async function getGitHubRepos(options: Options): Promise<{ repos: GitHubRepo[]; apiStatus: GitHubStatus }> {
+interface RawLanguagePage {
+  data?: { user?: { repositories?: {
+    pageInfo?: { hasNextPage?: boolean; endCursor?: string | null };
+    nodes?: Array<{ languages?: { edges?: Array<{ size?: number; node?: { name?: string; color?: string | null } }> } } | null>;
+  } } };
+  errors?: unknown[];
+}
+
+const languageQuery = `query ($login: String!, $after: String) { user(login: $login) { repositories(first: ${languageReposPerPage}, after: $after, privacy: PUBLIC, isFork: false, ownerAffiliations: OWNER) { pageInfo { hasNextPage endCursor } nodes { languages(first: ${languagesPerRepo}, orderBy: { field: SIZE, direction: DESC }) { edges { size node { name color } } } } } } }`;
+
+// 言語のコード量は GraphQL でしか一度に取れないため，トークンがあるときだけ集計する．
+// 取れなかったときは undefined を返し，リポジトリの取得結果（apiStatus）には影響させない．
+export async function getGitHubLanguages(options: Options): Promise<GitHubLanguage[] | undefined> {
+  if (!options.token) return undefined;
+  try {
+    const totals = new Map<string, GitHubLanguage>();
+    let after: string | null = null;
+    for (let page = 1; page <= maxPages; page += 1) {
+      const response = await request(options, 'https://api.github.com/graphql', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: languageQuery, variables: { login: options.username, after } }),
+      });
+      if (!response.ok) return undefined;
+      const json: RawLanguagePage = await response.json();
+      const repositories = json?.data?.user?.repositories;
+      if (json?.errors?.length || !repositories || !Array.isArray(repositories.nodes)) return undefined;
+      for (const repository of repositories.nodes) {
+        for (const edge of repository?.languages?.edges ?? []) {
+          const name = edge?.node?.name;
+          const size = edge?.size;
+          if (typeof name !== 'string' || !name || typeof size !== 'number' || !Number.isFinite(size) || size <= 0) continue;
+          // 色は style へ渡すので，#rrggbb の形だけを通す
+          const color = typeof edge.node?.color === 'string' && /^#[0-9a-f]{6}$/i.test(edge.node.color) ? edge.node.color : undefined;
+          const current = totals.get(name);
+          const total = (current?.size ?? 0) + size;
+          const mergedColor = color ?? current?.color;
+          totals.set(name, mergedColor ? { name, size: total, color: mergedColor } : { name, size: total });
+        }
+      }
+      if (!repositories.pageInfo?.hasNextPage || !repositories.pageInfo.endCursor) break;
+      after = repositories.pageInfo.endCursor;
+    }
+    return [...totals.values()].sort((a, b) => b.size - a.size || a.name.localeCompare(b.name));
+  } catch {
+    return undefined;
+  }
+}
+
+export async function getGitHubRepos(options: Options): Promise<{ repos: GitHubRepo[]; apiStatus: GitHubStatus; languages?: GitHubLanguage[] }> {
   const fallback = (apiStatus: GitHubStatus) => ({ repos: options.fallbackRepos ?? [], apiStatus });
   try {
     const raw: RawRepo[] = [];
@@ -107,7 +164,8 @@ export async function getGitHubRepos(options: Options): Promise<{ repos: GitHubR
         topics: repo.topics ?? [],
       };
     });
-    return { repos, apiStatus: 'success' };
+    const languages = await getGitHubLanguages(options);
+    return languages && languages.length > 0 ? { repos, apiStatus: 'success', languages } : { repos, apiStatus: 'success' };
   } catch {
     return fallback('offline');
   }

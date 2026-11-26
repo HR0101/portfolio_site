@@ -11,7 +11,7 @@ async function loadModule(name) {
   }).outputText;
   return import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 }
-const { getGitHubRepos, getGitHubActivity, getGitHubContributions, githubTtl } = await loadModule('github');
+const { getGitHubRepos, getGitHubActivity, getGitHubContributions, getGitHubLanguages, githubTtl } = await loadModule('github');
 const { serveApi } = await loadModule('http');
 const snapshot = JSON.parse(await readFile(new URL('../src/data/github-snapshot.json', import.meta.url), 'utf8'));
 const options = { username: 'HR0101', token: randomUUID(), now: () => 0, fallbackRepos: snapshot.repos, fallbackEvents: snapshot.events };
@@ -34,13 +34,71 @@ test('リポジトリは既存の JSON のキーとデフォルト値を保つ',
 
 test('リポジトリはページをたどり，途中の制限では取得済みのデータを残す', async () => {
   let calls = 0;
-  const result = await getGitHubRepos({ ...options, fetch: async () => {
+  const result = await getGitHubRepos({ ...options, fetch: async (url) => {
+    // 言語の集計（GraphQL）は数えない
+    if (url.endsWith('/graphql')) return new Response(null, { status: 500 });
     calls += 1;
     return calls === 1 ? Response.json(Array.from({ length: 100 }, () => rawRepo)) : new Response(null, { status: 403 });
   } });
   assert.equal(calls, 2);
   assert.equal(result.repos.length, 100);
   assert.equal(result.apiStatus, 'success');
+});
+
+// 言語の GraphQL の 1 ページ分の応答を作る
+function languagePage(nodes, endCursor = null) {
+  return Response.json({ data: { user: { repositories: { pageInfo: { hasNextPage: Boolean(endCursor), endCursor }, nodes } } } });
+}
+const languageEdge = (name, size, color) => ({ size, node: { name, color } });
+
+test('言語のコード量は GraphQL のページをたどって合算し，色は #rrggbb だけを通す', async () => {
+  const afters = [];
+  const languages = await getGitHubLanguages({ ...options, fetch: async (url, init) => {
+    assert.equal(url, 'https://api.github.com/graphql');
+    assert.equal(init.headers.Authorization, `Bearer ${options.token}`);
+    const { variables, query } = JSON.parse(init.body);
+    assert.match(query, /isFork: false/);
+    assert.match(query, /privacy: PUBLIC/);
+    afters.push(variables.after);
+    return variables.after === null
+      ? languagePage([
+        { languages: { edges: [languageEdge('Swift', 300, '#F05138'), languageEdge('Python', 100, 'url(x)')] } },
+        null,
+        { languages: { edges: [languageEdge('', 5, '#000000'), languageEdge('Swift', -1, '#f05138')] } },
+      ], 'cursor-1')
+      : languagePage([{ languages: { edges: [languageEdge('Python', 250, '#3572a5'), languageEdge('C', 50, null)] } }]);
+  } });
+  assert.deepEqual(afters, [null, 'cursor-1']);
+  assert.deepEqual(languages, [
+    { name: 'Python', size: 350, color: '#3572a5' },
+    { name: 'Swift', size: 300, color: '#F05138' },
+    { name: 'C', size: 50 },
+  ]);
+});
+
+test('言語のコード量はリポジトリの応答に足し，取れないときは項目ごと省いて apiStatus を変えない', async () => {
+  const route = (graphql) => async (url) => (url.endsWith('/graphql') ? graphql() : Response.json([rawRepo]));
+  const withLanguages = await getGitHubRepos({ ...options, fetch: route(() => languagePage([{ languages: { edges: [languageEdge('Swift', 10, '#f05138')] } }])) });
+  assert.equal(withLanguages.apiStatus, 'success');
+  assert.deepEqual(withLanguages.languages, [{ name: 'Swift', size: 10, color: '#f05138' }]);
+  for (const graphql of [
+    () => new Response(null, { status: 403 }),
+    () => Response.json({ errors: [{ type: 'RATE_LIMITED' }] }),
+    () => new Response('invalid'),
+    () => { throw new Error(options.token); },
+    () => languagePage([]),
+  ]) {
+    const result = await getGitHubRepos({ ...options, fetch: route(graphql) });
+    assert.equal(result.apiStatus, 'success');
+    assert.equal('languages' in result, false);
+    assert.equal(JSON.stringify(result).includes(options.token), false);
+  }
+  // トークンがなければ GraphQL を呼ばない
+  const anonymous = await getGitHubRepos({ ...options, token: '', fetch: async (url) => {
+    assert.equal(url.endsWith('/graphql'), false);
+    return Response.json([rawRepo]);
+  } });
+  assert.equal('languages' in anonymous, false);
 });
 
 test('イベントは既存のキーと push の説明を保ち，コミット数の欠落にも対応する', async () => {

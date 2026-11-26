@@ -97,6 +97,14 @@
 .repoCard:focus-visible .repoName > svg { opacity:1; transform:translate(2px, -2px); }
 .repoDescription { min-block-size:2.5rem; }
 .repoMetadata { min-block-size:1rem; }
+/* トピック（GitHub の topics．最大 3 つ） */
+.repoTopics { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+.repoTopics > span { padding:2px 8px; border-radius:999px; background:var(--site-surface-soft); color:var(--site-muted); font:400 11px/1.6 var(--font-mono); }
+/* 紹介ページへの入口．カードの外の兄弟なので，カードの下端に席を空けて重ねる */
+.repoCard[data-has-page='true'] { padding-bottom:64px; }
+.repoPageLink { position:absolute; left:12px; bottom:10px; z-index:1; display:inline-flex; align-items:center; gap:4px; min-block-size:44px; padding-inline:8px; color:var(--site-accent); font-size:13px; font-weight:400; transition:transform var(--dur-fast) var(--ease-out); }
+.repoPageLink > svg { transition:transform var(--dur-fast) var(--ease-out); }
+.repoPageLink:focus-visible { border-radius:8px; }
 .repoDisclosure { display:grid; grid-template-rows:0fr; opacity:0; visibility:hidden; transition:grid-template-rows var(--dur-press) var(--ease-out), opacity var(--dur-press) ease, visibility 0s var(--dur-press); }
 .repoDisclosure[data-open='true'] { grid-template-rows:1fr; opacity:1; visibility:visible; transition-duration:var(--dur-base), var(--dur-fast), 0s; transition-delay:0s; }
 .repoDisclosureInner { min-height:0; overflow:hidden; }
@@ -134,7 +142,10 @@
 @starting-style { .tooltip[data-open='true'] { opacity:0; transform:scale(.96); } }
 
 @media (hover:hover) and (pointer:fine) {
-  .repoCard:hover { transform:translateY(-3px); border-color:color-mix(in srgb, var(--site-ink) 25%, var(--site-line)); }
+  /* 紹介ページの入口に重ねているあいだも，カードと入口を一緒に浮かせる（入口へ移ったときに沈まない） */
+  .repoCard:hover, .repoEntrance:has(.repoPageLink:hover) .repoCard { transform:translateY(-3px); border-color:color-mix(in srgb, var(--site-ink) 25%, var(--site-line)); }
+  .repoEntrance:has(.repoCard:hover) .repoPageLink, .repoPageLink:hover { transform:translateY(-3px); }
+  .repoPageLink:hover > svg { transform:translate(2px, -2px); }
   .repoCard:hover .repoNameText::after { transform:scaleX(1); }
   .repoCard:hover .repoName > svg { opacity:1; transform:translate(2px, -2px); }
   .repoToggle:hover { border-color:var(--site-ink); }
@@ -148,8 +159,8 @@
   .repoEntrance { --repo-delay:var(--repo-delay-1); }
   .repoStage[data-repos-visible='false'] .repoEntrance { opacity:0; }
   .repoStage[data-repos-visible='true'][data-loading='false'] .repoEntrance { animation:repoArrive var(--dur-slow) var(--ease-out) var(--repo-delay) backwards; }
-  .repoStage[data-repos-visible='true'][data-loading='false'] :is(.repoName, .repoDescription, .repoMetadata) { animation:repoContentArrive var(--dur-fast) ease backwards; animation-delay:var(--repo-delay); }
-  .repoStage[data-repos-visible='true'][data-loading='false'] .repoDescription { animation-delay:calc(var(--repo-delay) + var(--repo-inner-step)); }
+  .repoStage[data-repos-visible='true'][data-loading='false'] :is(.repoName, .repoDescription, .repoTopics, .repoMetadata) { animation:repoContentArrive var(--dur-fast) ease backwards; animation-delay:var(--repo-delay); }
+  .repoStage[data-repos-visible='true'][data-loading='false'] :is(.repoDescription, .repoTopics) { animation-delay:calc(var(--repo-delay) + var(--repo-inner-step)); }
   .repoStage[data-repos-visible='true'][data-loading='false'] .repoMetadata { animation-delay:calc(var(--repo-delay) + var(--repo-inner-step) * 2); }
   /* 展開は CSS transition．途中の連打でも現在の位置から戻せる． */
   .repoEntrance[data-extra-repo='true'] { opacity:0; transform:translateY(8px); transition:opacity var(--dur-press) ease, transform var(--dur-press) var(--ease-out); }
@@ -174,8 +185,9 @@
 @keyframes eventIconArrive { from { opacity:0; transform:scale(.9); } to { opacity:1; transform:scale(1); } }
 
 @media (prefers-reduced-motion:reduce) {
-  .repoEntrance, .repoName, .repoDescription, .repoMetadata, .eventRow, .eventIcon, .contributionCell { animation:none !important; opacity:1; transform:none; }
-  .repoCard:is(:hover, :focus-visible, :active), .repoToggle:active, .repoName > svg, .contributionCell:hover { transform:none; }
+  .repoEntrance, .repoName, .repoDescription, .repoTopics, .repoMetadata, .eventRow, .eventIcon, .contributionCell { animation:none !important; opacity:1; transform:none; }
+  .repoCard:is(:hover, :focus-visible, :active), .repoToggle:active, .repoName > svg, .contributionCell:hover, .repoPageLink, .repoPageLink > svg { transform:none; }
+  .repoEntrance:has(.repoPageLink:hover) .repoCard, .repoEntrance:has(.repoCard:hover) .repoPageLink { transform:none; }
   .repoDisclosure, .noticeSlot { transition:none; }
   .notice { transform:none; transition:opacity var(--dur-fast) ease; }
   .contributionWipe { clip-path:none; }
@@ -186,4 +198,42 @@
   .repoCard:is(:hover, :focus-visible) .repoNameText::after { opacity:1; }
   .tooltip, .tooltip[data-open='true'] { transform:none; transition-property:opacity; }
   @starting-style { .tooltip[data-open='true'] { transform:none; } }
+}
+
+.logOpening {
+  display:grid;
+  gap:28px 5%;
+  align-items:end;
+  margin-bottom:clamp(28px, 5vw, 64px);
+  padding-block:24px;
+  border-block:1px solid var(--site-ink);
+}
+.logOpening :global(.portfolio-section-heading) { margin:0; }
+.logOpening :global(.reveal-line) { display:none; }
+/* 言語の割合：100 個の点（1 点＝1%）．列ごとに上から埋め，1 つの言語が左から右へ続く塊になる */
+.languages { margin:0; font:400 13px/1.5 var(--font-mono); color:var(--site-ink); }
+.languages figcaption { margin-bottom:12px; color:var(--site-muted); }
+.dotField { display:grid; grid-template-rows:repeat(4, auto); grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr); gap:4px; }
+.dotField > i { display:block; aspect-ratio:1; border-radius:50%; background:var(--site-line); }
+.languages[data-lit='true'] .dotField > i { background:var(--dot-color); }
+.languages[data-highlight='true'] .dotField > i:not([data-active='true']) { opacity:.2; }
+.languageLegend { margin:12px 0 0; padding:0; list-style:none; }
+.languageLegend > li { display:flex; align-items:center; gap:8px; padding-block:6px; border-top:1px solid var(--site-line); }
+.languageSwatch { inline-size:8px; block-size:8px; flex:none; border-radius:50%; background:var(--dot-color); }
+.languageName { flex:1; min-inline-size:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.languageShare { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.languageCount { color:var(--site-muted); }
+.languages[data-highlight='true'] .languageLegend > li:not([data-active='true']) { color:var(--site-muted); }
+.languageLegend > li { transition:color var(--dur-fast) ease; }
+@media (prefers-reduced-motion:no-preference) {
+  /* 画面に入ると，左の列から順に灯る（遅れは languageDots.ts の languageDotDelay．480ms で頭打ち） */
+  .dotField > i { transform:scale(.6); transition:background-color var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out), opacity var(--dur-fast) ease; }
+  .languages[data-lit='true'] .dotField > i { transform:none; transition-delay:var(--dot-delay), var(--dot-delay), 0s; }
+  .languages[data-highlight='true'] .dotField > i { transition-delay:0s; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .dotField > i, .languageLegend > li { transition:none; transform:none; }
+}
+@media (min-width:820px) {
+  .logOpening { grid-template-columns:minmax(0, 1.4fr) minmax(0, .7fr); }
 }
